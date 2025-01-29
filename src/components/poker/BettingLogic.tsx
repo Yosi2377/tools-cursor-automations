@@ -18,6 +18,12 @@ export const useBettingLogic = (
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     console.log(`${currentPlayer.name} betting ${amount}`);
     
+    // Check if the player has already bet this amount
+    if (currentPlayer.currentBet === amount && amount > 0) {
+      console.log('Player has already bet this amount, skipping');
+      return;
+    }
+    
     const updatedContext = placeBet(gameContext, currentPlayer, amount, setGameContext);
     if (!updatedContext) return;
 
@@ -40,13 +46,14 @@ export const useBettingLogic = (
       const nextPlayer = updatedContext.players[nextPlayerIndex];
       if (nextPlayer.isActive) {
         console.log('Triggering opponent action for:', nextPlayer.name);
+        // Add a delay before the next opponent action
         setTimeout(() => {
-          handleOpponentAction(
-            nextPlayer,
-            updatedContext,
-            handleBet,
-            handlePlayerFold
-          );
+          const amountToCall = updatedContext.currentBet - nextPlayer.currentBet;
+          if (amountToCall > 0 && nextPlayer.chips >= amountToCall) {
+            handleBet(amountToCall);
+          } else {
+            handlePlayerFold();
+          }
         }, 1500);
       }
     }
@@ -73,12 +80,12 @@ export const useBettingLogic = (
       if (nextPlayer.isActive) {
         console.log('Triggering opponent action after fold for:', nextPlayer.name);
         setTimeout(() => {
-          handleOpponentAction(
-            nextPlayer,
-            updatedContext,
-            handleBet,
-            handlePlayerFold
-          );
+          const amountToCall = updatedContext.currentBet - nextPlayer.currentBet;
+          if (amountToCall > 0 && nextPlayer.chips >= amountToCall) {
+            handleBet(amountToCall);
+          } else {
+            handlePlayerFold();
+          }
         }, 1500);
       }
     }
