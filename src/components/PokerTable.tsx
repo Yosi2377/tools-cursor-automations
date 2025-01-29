@@ -23,13 +23,15 @@ const PokerTable = () => {
   });
 
   const startNewHand = () => {
-    const { updatedPlayers } = dealCards(gameContext.players);
+    const { updatedPlayers, remainingDeck } = dealCards(gameContext.players);
     setGameContext(prev => ({
       ...prev,
-      players: updatedPlayers,
+      players: updatedPlayers.map((p, i) => ({ ...p, isTurn: i === 0 })),
       gameState: "betting",
       currentPlayer: 0,
-      players: updatedPlayers.map((p, i) => ({ ...p, isTurn: i === 0 }))
+      communityCards: [],
+      pot: 0,
+      currentBet: prev.minimumBet
     }));
     toast({
       title: "New hand started",
@@ -49,16 +51,104 @@ const PokerTable = () => {
       return;
     }
 
-    setGameContext(prev => placeBet(prev, currentPlayer.id, amount));
+    const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
+    const updatedContext = placeBet(gameContext, currentPlayer.id, amount);
+    
+    setGameContext(prev => ({
+      ...updatedContext,
+      currentPlayer: nextPlayerIndex,
+      players: updatedContext.players.map((p, i) => ({
+        ...p,
+        isTurn: i === nextPlayerIndex && p.isActive
+      }))
+    }));
+
     toast({
       title: "Bet placed",
       description: `${currentPlayer.name} bet ${amount} chips`,
+    });
+
+    // Check if we need to deal community cards
+    const activePlayers = updatedContext.players.filter(p => p.isActive);
+    const allPlayersActed = activePlayers.every(p => p.currentBet === updatedContext.currentBet);
+    
+    if (allPlayersActed && activePlayers.length > 1) {
+      if (updatedContext.communityCards.length === 0) {
+        // Deal flop
+        dealCommunityCards(3);
+      } else if (updatedContext.communityCards.length === 3) {
+        // Deal turn
+        dealCommunityCards(1);
+      } else if (updatedContext.communityCards.length === 4) {
+        // Deal river
+        dealCommunityCards(1);
+      }
+    }
+  };
+
+  const dealCommunityCards = (count: number) => {
+    const newCards = Array(count).fill(null).map(() => ({
+      suit: ["hearts", "diamonds", "clubs", "spades"][Math.floor(Math.random() * 4)],
+      rank: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"][Math.floor(Math.random() * 13)],
+      faceUp: true
+    }));
+
+    setGameContext(prev => ({
+      ...prev,
+      communityCards: [...prev.communityCards, ...newCards],
+      players: prev.players.map(p => ({ ...p, currentBet: 0 })),
+      currentBet: prev.minimumBet
+    }));
+
+    toast({
+      title: "Community cards dealt",
+      description: `${count} new card${count > 1 ? 's' : ''} dealt to the table`,
     });
   };
 
   const handleFold = () => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
-    setGameContext(prev => fold(prev, currentPlayer.id));
+    const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
+    
+    setGameContext(prev => {
+      const updatedContext = fold(prev, currentPlayer.id);
+      const activePlayers = updatedContext.players.filter(p => p.isActive);
+
+      // Check if only one player remains
+      if (activePlayers.length === 1) {
+        const winner = activePlayers[0];
+        toast({
+          title: "Game Over",
+          description: `${winner.name} wins ${updatedContext.pot} chips!`,
+        });
+        
+        return {
+          ...updatedContext,
+          gameState: "waiting",
+          players: updatedContext.players.map(p => ({
+            ...p,
+            chips: p.id === winner.id ? p.chips + updatedContext.pot : p.chips,
+            cards: [],
+            currentBet: 0,
+            isActive: true,
+            isTurn: false
+          })),
+          pot: 0,
+          communityCards: [],
+          currentBet: 0
+        };
+      }
+
+      return {
+        ...updatedContext,
+        currentPlayer: nextPlayerIndex,
+        players: updatedContext.players.map((p, i) => ({
+          ...p,
+          isTurn: i === nextPlayerIndex && p.isActive
+        }))
+      };
+    });
+
     toast({
       title: "Player folded",
       description: `${currentPlayer.name} has folded`,
