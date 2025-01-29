@@ -74,18 +74,26 @@ const PokerTable = () => {
       description: `${currentPlayer.name} bet ${amount} chips`,
     });
 
-    // Check if we need to deal community cards
+    // Check if all active players have matched the current bet
     const activePlayers = updatedContext.players.filter(p => p.isActive);
     const allPlayersActed = activePlayers.every(p => p.currentBet === updatedContext.currentBet);
     
     if (allPlayersActed && activePlayers.length > 1) {
+      // Deal community cards based on current state
       if (updatedContext.communityCards.length === 0) {
-        dealCommunityCards(3);
+        dealCommunityCards(3); // Deal the flop
       } else if (updatedContext.communityCards.length === 3) {
-        dealCommunityCards(1);
+        dealCommunityCards(1); // Deal the turn
       } else if (updatedContext.communityCards.length === 4) {
-        dealCommunityCards(1);
+        dealCommunityCards(1); // Deal the river
       }
+
+      // Reset player bets for the next betting round
+      setGameContext(prev => ({
+        ...prev,
+        players: prev.players.map(p => ({ ...p, currentBet: 0 })),
+        currentBet: prev.minimumBet
+      }));
     }
   };
 
