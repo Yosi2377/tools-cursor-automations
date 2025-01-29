@@ -16,8 +16,9 @@ export const useBettingLogic = (
 
   const handleBet = (amount: number) => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
-    const updatedContext = placeBet(gameContext, currentPlayer, amount, setGameContext);
+    console.log(`${currentPlayer.name} betting ${amount}`);
     
+    const updatedContext = placeBet(gameContext, currentPlayer, amount, setGameContext);
     if (!updatedContext) return;
 
     const nextPlayerIndex = updatedContext.currentPlayer;
@@ -53,8 +54,9 @@ export const useBettingLogic = (
 
   const handlePlayerFold = () => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
-    const updatedContext = handleFold(gameContext, currentPlayer, setGameContext);
+    console.log(`${currentPlayer.name} folding`);
     
+    const updatedContext = handleFold(gameContext, currentPlayer, setGameContext);
     const nextPlayerIndex = updatedContext.currentPlayer;
     
     setGameContext(prev => ({
