@@ -9,9 +9,7 @@ export const checkAndDealCommunityCards = (
   const activePlayers = gameContext.players.filter(p => p.isActive);
   
   // Check if all active players have matched the current bet
-  const allPlayersActed = activePlayers.every(p => 
-    p.currentBet === gameContext.currentBet || !p.isActive
-  );
+  const allPlayersActed = activePlayers.every(p => p.currentBet === gameContext.currentBet);
 
   console.log('Checking community cards:', {
     activePlayers: activePlayers.length,
@@ -43,8 +41,8 @@ export const checkAndDealCommunityCards = (
         ...prev,
         communityCards: [...prev.communityCards, ...newCards],
         players: prev.players.map(p => ({ ...p, currentBet: 0 })),
-        currentBet: prev.minimumBet,
-        currentPlayer: (prev.dealerPosition + 1) % prev.players.length // Reset to first player after dealer
+        currentBet: 0,
+        currentPlayer: (prev.dealerPosition + 1) % prev.players.length
       }));
 
       toast(`${stage} dealt!`);

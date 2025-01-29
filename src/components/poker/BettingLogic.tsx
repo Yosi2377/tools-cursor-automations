@@ -23,6 +23,7 @@ export const useBettingLogic = (
     const nextPlayerIndex = updatedContext.currentPlayer;
     
     setGameContext(prev => ({
+      ...prev,
       ...updatedContext,
       players: updatedContext.players.map((p, i) => ({
         ...p,
@@ -57,6 +58,7 @@ export const useBettingLogic = (
     const nextPlayerIndex = updatedContext.currentPlayer;
     
     setGameContext(prev => ({
+      ...prev,
       ...updatedContext,
       players: updatedContext.players.map((p, i) => ({
         ...p,
