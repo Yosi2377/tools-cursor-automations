@@ -16,7 +16,7 @@ const PokerTable = () => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [gameContext, setGameContext] = useState<GameContext>({
     players: [
-      { id: 1, name: "You", chips: 1000, cards: [], position: "bottom", isActive: true, currentBet: 0, isTurn: false, score: 0, isDealer: true },
+      { id: 1, name: "You", chips: 1000, cards: [], position: "bottom", isActive: true, currentBet: 0, isTurn: false, score: 0 },
       { id: 2, name: "John", chips: 1500, cards: [], position: "left", isActive: true, currentBet: 0, isTurn: false, score: 120 },
       { id: 3, name: "Alice", chips: 2000, cards: [], position: "top", isActive: true, currentBet: 0, isTurn: false, score: 350 },
       { id: 4, name: "Bob", chips: 800, cards: [], position: "right", isActive: true, currentBet: 0, isTurn: false, score: 80 },
@@ -28,6 +28,7 @@ const PokerTable = () => {
     gameState: "waiting",
     minimumBet: 20,
     currentBet: 0,
+    dealerPosition: 0, // Track dealer position separately
   });
 
   const { dealCommunityCards } = useCardDealing();
@@ -62,6 +63,17 @@ const PokerTable = () => {
         <TableFelt />
         <PotDisplay amount={gameContext.pot} rake={gameContext.rake} />
         <CommunityCards cards={gameContext.communityCards} />
+        
+        {/* Dealer Button */}
+        <div 
+          className="absolute w-8 h-8 rounded-full bg-white text-black flex items-center justify-center text-sm font-bold border-2 border-poker-accent shadow-lg"
+          style={{
+            left: `${50 + 35 * Math.cos(2 * Math.PI * gameContext.dealerPosition / gameContext.players.length)}%`,
+            top: `${50 + 35 * Math.sin(2 * Math.PI * gameContext.dealerPosition / gameContext.players.length)}%`,
+          }}
+        >
+          D
+        </div>
         
         {gameContext.players.map((player) => (
           <PlayerSpot 
