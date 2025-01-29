@@ -35,14 +35,9 @@ const PokerTable = () => {
   const { handleBet, handleFold, handleTimeout } = useBettingLogic(
     gameContext,
     setGameContext,
-    (count) => {
-      const newCards = dealCommunityCards(count);
-      setGameContext(prev => ({
-        ...prev,
-        communityCards: [...prev.communityCards, ...newCards],
-        players: prev.players.map(p => ({ ...p, currentBet: 0 })),
-        currentBet: prev.minimumBet
-      }));
+    (count: number) => {
+      const cards = dealCommunityCards(count);
+      return cards;
     }
   );
 
