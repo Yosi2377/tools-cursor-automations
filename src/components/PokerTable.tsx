@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, DollarSign } from 'lucide-react';
 import PlayerSpot from './PlayerSpot';
 import { Button } from '@/components/ui/button';
-import { GameContext, Player } from '../types/poker';
+import { GameContext, Player, Card, Suit, Rank } from '../types/poker';
 import { dealCards, placeBet, fold } from '../utils/pokerLogic';
 import { toast } from '@/components/ui/use-toast';
 
@@ -74,22 +74,22 @@ const PokerTable = () => {
     
     if (allPlayersActed && activePlayers.length > 1) {
       if (updatedContext.communityCards.length === 0) {
-        // Deal flop
         dealCommunityCards(3);
       } else if (updatedContext.communityCards.length === 3) {
-        // Deal turn
         dealCommunityCards(1);
       } else if (updatedContext.communityCards.length === 4) {
-        // Deal river
         dealCommunityCards(1);
       }
     }
   };
 
   const dealCommunityCards = (count: number) => {
-    const newCards = Array(count).fill(null).map(() => ({
-      suit: ["hearts", "diamonds", "clubs", "spades"][Math.floor(Math.random() * 4)],
-      rank: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"][Math.floor(Math.random() * 13)],
+    const suits: Suit[] = ["hearts", "diamonds", "clubs", "spades"];
+    const ranks: Rank[] = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+    
+    const newCards: Card[] = Array(count).fill(null).map(() => ({
+      suit: suits[Math.floor(Math.random() * suits.length)],
+      rank: ranks[Math.floor(Math.random() * ranks.length)],
       faceUp: true
     }));
 
@@ -114,7 +114,6 @@ const PokerTable = () => {
       const updatedContext = fold(prev, currentPlayer.id);
       const activePlayers = updatedContext.players.filter(p => p.isActive);
 
-      // Check if only one player remains
       if (activePlayers.length === 1) {
         const winner = activePlayers[0];
         toast({
@@ -236,6 +235,3 @@ const PokerTable = () => {
       )}
     </div>
   );
-};
-
-export default PokerTable;
