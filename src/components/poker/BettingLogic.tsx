@@ -56,35 +56,41 @@ export const useBettingLogic = (
 
     // Check if all active players have matched the current bet
     const activePlayers = updatedContext.players.filter(p => p.isActive);
-    const allPlayersActed = activePlayers.every(p => p.currentBet === updatedContext.currentBet);
+    const allPlayersActed = activePlayers.every(p => 
+      !p.isActive || p.currentBet === updatedContext.currentBet
+    );
     
     if (allPlayersActed && activePlayers.length > 1) {
-      if (updatedContext.communityCards.length === 0) {
-        dealCommunityCards(3); // Deal the flop
-        toast({
-          title: "Flop dealt",
-          description: "Three community cards have been dealt",
-        });
-      } else if (updatedContext.communityCards.length === 3) {
-        dealCommunityCards(1); // Deal the turn
-        toast({
-          title: "Turn dealt",
-          description: "Fourth community card has been dealt",
-        });
-      } else if (updatedContext.communityCards.length === 4) {
-        dealCommunityCards(1); // Deal the river
-        toast({
-          title: "River dealt",
-          description: "Final community card has been dealt",
-        });
-      }
+      // Reset bets and deal community cards
+      setGameContext(prev => {
+        let newCards: Card[] = [];
+        let description = "";
 
-      // Reset player bets for the next betting round
-      setGameContext(prev => ({
-        ...prev,
-        players: prev.players.map(p => ({ ...p, currentBet: 0 })),
-        currentBet: prev.minimumBet
-      }));
+        if (prev.communityCards.length === 0) {
+          newCards = dealCommunityCards(3); // Deal the flop
+          description = "The flop has been dealt!";
+        } else if (prev.communityCards.length === 3) {
+          newCards = dealCommunityCards(1); // Deal the turn
+          description = "The turn has been dealt!";
+        } else if (prev.communityCards.length === 4) {
+          newCards = dealCommunityCards(1); // Deal the river
+          description = "The river has been dealt!";
+        }
+
+        if (newCards.length > 0) {
+          toast({
+            title: "Community Cards Dealt",
+            description: description,
+          });
+        }
+
+        return {
+          ...prev,
+          communityCards: [...prev.communityCards, ...newCards],
+          players: prev.players.map(p => ({ ...p, currentBet: 0 })),
+          currentBet: prev.minimumBet
+        };
+      });
     }
   };
 
@@ -114,7 +120,7 @@ export const useBettingLogic = (
             currentBet: 0,
             isActive: true,
             isTurn: false,
-            isDealer: false
+            isDealer: p.id === winner.id // Winner becomes the next dealer
           })),
           pot: 0,
           rake: 0,

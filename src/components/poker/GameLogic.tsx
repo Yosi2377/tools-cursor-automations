@@ -7,47 +7,38 @@ export const useGameLogic = (
   setGameContext: React.Dispatch<React.SetStateAction<GameContext>>
 ) => {
   const startNewHand = () => {
+    // Find the current dealer or set it to the first player if no dealer
+    const currentDealerIndex = gameContext.players.findIndex(p => p.isDealer);
+    const nextDealerIndex = currentDealerIndex === -1 ? 0 : (currentDealerIndex + 1) % gameContext.players.length;
+    
+    // Deal cards and set the first player after the dealer to start
     const { updatedPlayers, remainingDeck } = dealCards(gameContext.players);
+    const firstPlayerIndex = (nextDealerIndex + 1) % gameContext.players.length;
+    
     setGameContext(prev => ({
       ...prev,
-      players: updatedPlayers.map((p, i) => ({ ...p, isTurn: i === 0 })),
+      players: updatedPlayers.map((p, i) => ({ 
+        ...p,
+        isDealer: i === nextDealerIndex,
+        isTurn: i === firstPlayerIndex,
+        isActive: true,
+        currentBet: 0
+      })),
       gameState: "betting",
-      currentPlayer: 0,
+      currentPlayer: firstPlayerIndex,
       communityCards: [],
       pot: 0,
+      rake: 0,
       currentBet: prev.minimumBet
     }));
+
     toast({
       title: "New hand started",
       description: "Cards have been dealt to all players",
     });
   };
 
-  const handleWinner = (winner: Player, updatedContext: GameContext) => {
-    toast({
-      title: "Game Over",
-      description: `${winner.name} wins ${updatedContext.pot} chips!`,
-    });
-    
-    return {
-      ...updatedContext,
-      gameState: "waiting",
-      players: updatedContext.players.map(p => ({
-        ...p,
-        chips: p.id === winner.id ? p.chips + updatedContext.pot : p.chips,
-        cards: [],
-        currentBet: 0,
-        isActive: true,
-        isTurn: false
-      })),
-      pot: 0,
-      communityCards: [],
-      currentBet: 0
-    };
-  };
-
   return {
-    startNewHand,
-    handleWinner,
+    startNewHand
   };
 };
