@@ -235,3 +235,6 @@ const PokerTable = () => {
       )}
     </div>
   );
+};
+
+export default PokerTable;
