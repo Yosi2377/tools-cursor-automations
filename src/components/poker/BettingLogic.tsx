@@ -1,8 +1,9 @@
-import { GameContext, Card, Suit, Rank } from '@/types/poker';
+import { GameContext, Card } from '@/types/poker';
 import { toast } from '@/components/ui/use-toast';
 import { placeBet, fold } from '@/utils/pokerLogic';
-
-const RAKE_PERCENTAGE = 0.12; // 12% rake
+import { calculateRake } from '@/utils/rakeCalculator';
+import { handleGameEnd } from '@/utils/gameEndHandler';
+import { dealCommunityCardsForStage } from '@/utils/communityCardDealer';
 
 export const useBettingLogic = (
   gameContext: GameContext,
@@ -16,10 +17,6 @@ export const useBettingLogic = (
       description: `${gameContext.players[gameContext.currentPlayer].name} took too long and folded`,
       variant: "destructive",
     });
-  };
-
-  const calculateRake = (amount: number) => {
-    return Math.floor(amount * RAKE_PERCENTAGE);
   };
 
   const handleBet = (amount: number) => {
@@ -38,7 +35,6 @@ export const useBettingLogic = (
     const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
     const updatedContext = placeBet(gameContext, currentPlayer.id, amount);
     
-    // Update game context immediately with the new bet
     setGameContext(prev => ({
       ...updatedContext,
       currentPlayer: nextPlayerIndex,
@@ -50,7 +46,6 @@ export const useBettingLogic = (
       }))
     }));
 
-    // Check if all active players have matched the current bet
     const activePlayers = updatedContext.players.filter(p => p.isActive);
     const allPlayersActed = activePlayers.every(p => 
       !p.isActive || p.currentBet === updatedContext.currentBet
@@ -61,49 +56,21 @@ export const useBettingLogic = (
       description: `${currentPlayer.name} bet ${amount} chips (Rake: ${rake} chips)`,
     });
     
-    // If all players have acted and there are still active players
     if (allPlayersActed && activePlayers.length > 1) {
-      // Immediately show dealing toast
       toast({
         title: "Dealing cards...",
         description: "Get ready for the next round!",
       });
 
-      // Deal community cards after a short delay
       setTimeout(() => {
         setGameContext(prev => {
-          let newCards: Card[] = [];
-          
-          // Determine which cards to deal based on current state
-          if (prev.communityCards.length === 0) {
-            newCards = dealCommunityCards(3); // Deal flop
-            toast({
-              title: "Flop dealt!",
-              description: "Three community cards are now on the table",
-            });
-          } else if (prev.communityCards.length === 3) {
-            newCards = dealCommunityCards(1); // Deal turn
-            toast({
-              title: "Turn dealt!",
-              description: "Fourth community card is now on the table",
-            });
-          } else if (prev.communityCards.length === 4) {
-            newCards = dealCommunityCards(1); // Deal river
-            toast({
-              title: "River dealt!",
-              description: "Final community card is now on the table",
-            });
-          }
-
-          // Reset betting for the next round
+          const { newCards, updatedContext } = dealCommunityCardsForStage(prev, dealCommunityCards);
           return {
             ...prev,
-            communityCards: [...prev.communityCards, ...newCards],
-            players: prev.players.map(p => ({ ...p, currentBet: 0 })),
-            currentBet: prev.minimumBet
+            ...updatedContext
           };
         });
-      }, 500); // Shorter delay for more responsive dealing
+      }, 500);
     }
   };
 
@@ -116,30 +83,13 @@ export const useBettingLogic = (
       const activePlayers = updatedContext.players.filter(p => p.isActive);
 
       if (activePlayers.length === 1) {
-        const winner = activePlayers[0];
-        const finalPot = updatedContext.pot;
-        toast({
-          title: "Game Over",
-          description: `${winner.name} wins ${finalPot} chips! (Total rake: ${updatedContext.rake} chips)`,
-        });
-        
-        return {
-          ...updatedContext,
-          gameState: "waiting",
-          players: updatedContext.players.map(p => ({
-            ...p,
-            chips: p.id === winner.id ? p.chips + finalPot : p.chips,
-            cards: [],
-            currentBet: 0,
-            isActive: true,
-            isTurn: false,
-          })),
-          pot: 0,
-          rake: 0,
-          communityCards: [],
-          currentBet: 0,
-          dealerPosition: (prev.dealerPosition + 1) % prev.players.length
-        };
+        return handleGameEnd(
+          activePlayers[0],
+          updatedContext.pot,
+          updatedContext.rake,
+          updatedContext.players,
+          prev.dealerPosition
+        );
       }
 
       return {
