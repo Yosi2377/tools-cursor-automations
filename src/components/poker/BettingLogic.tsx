@@ -7,7 +7,7 @@ const RAKE_PERCENTAGE = 0.12; // 12% rake
 export const useBettingLogic = (
   gameContext: GameContext,
   setGameContext: React.Dispatch<React.SetStateAction<GameContext>>,
-  dealCommunityCards: (count: number) => void
+  dealCommunityCards: (count: number) => Card[]
 ) => {
   const handleTimeout = () => {
     handleFold();

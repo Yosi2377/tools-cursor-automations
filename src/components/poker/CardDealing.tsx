@@ -5,11 +5,13 @@ export const useCardDealing = () => {
     const suits: Suit[] = ["hearts", "diamonds", "clubs", "spades"];
     const ranks: Rank[] = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
     
-    return Array(count).fill(null).map(() => ({
+    const newCards: Card[] = Array(count).fill(null).map(() => ({
       suit: suits[Math.floor(Math.random() * suits.length)],
       rank: ranks[Math.floor(Math.random() * ranks.length)],
       faceUp: true
     }));
+
+    return newCards;
   };
 
   return {
