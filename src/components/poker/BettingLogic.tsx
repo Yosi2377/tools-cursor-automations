@@ -61,36 +61,39 @@ export const useBettingLogic = (
     );
     
     if (allPlayersActed && activePlayers.length > 1) {
-      // Deal community cards based on the current stage
-      setGameContext(prev => {
-        let newCards: Card[] = [];
-        let description = "";
+      // Deal community cards based on betting round
+      setTimeout(() => {
+        setGameContext(prev => {
+          let newCards: Card[] = [];
+          let description = "";
 
-        if (prev.communityCards.length === 0) {
-          newCards = dealCommunityCards(3); // Deal the flop
-          description = "The flop has been dealt!";
-        } else if (prev.communityCards.length === 3) {
-          newCards = dealCommunityCards(1); // Deal the turn
-          description = "The turn has been dealt!";
-        } else if (prev.communityCards.length === 4) {
-          newCards = dealCommunityCards(1); // Deal the river
-          description = "The river has been dealt!";
-        }
+          if (prev.communityCards.length === 0) {
+            newCards = dealCommunityCards(3); // Deal the flop
+            description = "The flop has been dealt!";
+          } else if (prev.communityCards.length === 3) {
+            newCards = dealCommunityCards(1); // Deal the turn
+            description = "The turn has been dealt!";
+          } else if (prev.communityCards.length === 4) {
+            newCards = dealCommunityCards(1); // Deal the river
+            description = "The river has been dealt!";
+          }
 
-        if (newCards.length > 0) {
-          toast({
-            title: "Community Cards Dealt",
-            description: description,
-          });
-        }
+          if (newCards.length > 0) {
+            toast({
+              title: "Community Cards Dealt",
+              description: description,
+            });
+          }
 
-        return {
-          ...prev,
-          communityCards: [...prev.communityCards, ...newCards],
-          players: prev.players.map(p => ({ ...p, currentBet: 0 })),
-          currentBet: prev.minimumBet
-        };
-      });
+          // Reset all player bets after dealing community cards
+          return {
+            ...prev,
+            communityCards: [...prev.communityCards, ...newCards],
+            players: prev.players.map(p => ({ ...p, currentBet: 0 })),
+            currentBet: prev.minimumBet
+          };
+        });
+      }, 1000); // Add delay for better animation timing
     }
   };
 
