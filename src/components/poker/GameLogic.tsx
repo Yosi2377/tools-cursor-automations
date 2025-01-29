@@ -8,8 +8,8 @@ export const useGameLogic = (
 ) => {
   const startNewHand = () => {
     // Find the current dealer or set it to the first player if no dealer
-    const currentDealerIndex = gameContext.players.findIndex(p => p.isDealer);
-    const nextDealerIndex = currentDealerIndex === -1 ? 0 : (currentDealerIndex + 1) % gameContext.players.length;
+    const currentDealerIndex = gameContext.dealerPosition;
+    const nextDealerIndex = (currentDealerIndex + 1) % gameContext.players.length;
     
     // Deal cards and set the first player after the dealer to start
     const { updatedPlayers, remainingDeck } = dealCards(gameContext.players);
@@ -19,7 +19,6 @@ export const useGameLogic = (
       ...prev,
       players: updatedPlayers.map((p, i) => ({ 
         ...p,
-        isDealer: i === nextDealerIndex,
         isTurn: i === firstPlayerIndex,
         isActive: true,
         currentBet: 0
@@ -29,7 +28,8 @@ export const useGameLogic = (
       communityCards: [],
       pot: 0,
       rake: 0,
-      currentBet: prev.minimumBet
+      currentBet: prev.minimumBet,
+      dealerPosition: nextDealerIndex
     }));
 
     toast({
