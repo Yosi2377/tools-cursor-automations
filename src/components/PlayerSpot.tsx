@@ -15,7 +15,10 @@ const PlayerSpot: React.FC<PlayerProps> = ({ player }) => {
   };
 
   const renderCard = (card: Card) => {
-    if (!card.faceUp) {
+    // Only show face-up cards for the bottom player (user)
+    const shouldShowCard = player.position === "bottom";
+    
+    if (!shouldShowCard) {
       return (
         <div
           className="w-12 h-16 bg-blue-800 rounded-lg shadow-xl transform hover:rotate-2 transition-transform"
@@ -63,12 +66,10 @@ const PlayerSpot: React.FC<PlayerProps> = ({ player }) => {
         <div className="text-white text-base font-medium tracking-wide">{player.name}</div>
         <div className="text-poker-accent font-bold text-lg">${player.chips.toLocaleString()}</div>
         
-        {/* Player's current bet */}
         {player.currentBet > 0 && (
           <div className="text-yellow-400 text-sm">Bet: ${player.currentBet}</div>
         )}
         
-        {/* Player cards */}
         <div className="flex gap-2 -mt-1">
           {player.cards.map((card, index) => (
             <div key={index} className="animate-card-deal" style={{ animationDelay: `${index * 0.2}s` }}>
