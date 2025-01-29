@@ -7,8 +7,10 @@ export const handleOpponentAction = (
   handleBet: (amount: number) => void,
   handleFold: () => void
 ) => {
-  // Randomly decide to bet or fold
-  const shouldFold = Math.random() < 0.3; // 30% chance to fold
+  console.log('Opponent action for:', currentPlayer.name);
+  
+  // Randomly decide to bet or fold with 70% chance to bet
+  const shouldFold = Math.random() < 0.3;
   
   if (shouldFold) {
     handleFold();
@@ -19,5 +21,9 @@ export const handleOpponentAction = (
   } else {
     const minBet = Math.max(gameContext.minimumBet, gameContext.currentBet);
     handleBet(minBet);
+    toast({
+      title: "Player action",
+      description: `${currentPlayer.name} bets ${minBet} chips`,
+    });
   }
 };

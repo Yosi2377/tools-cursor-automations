@@ -12,12 +12,8 @@ export const useBettingLogic = (
   dealCommunityCards: (count: number) => Card[]
 ) => {
   const handleTimeout = () => {
+    console.log('Timeout triggered for player:', gameContext.players[gameContext.currentPlayer].name);
     handleFold();
-    toast({
-      title: "Time's up!",
-      description: `${gameContext.players[gameContext.currentPlayer].name} took too long and folded`,
-      variant: "destructive",
-    });
   };
 
   const handleBet = (amount: number) => {
@@ -53,18 +49,22 @@ export const useBettingLogic = (
     });
     
     const shouldDealCards = checkAndDealCommunityCards(updatedContext, dealCommunityCards, setGameContext);
+    console.log('Should deal cards:', shouldDealCards);
 
-    // If next player is not the bottom player (human), trigger opponent action
-    const activePlayers = updatedContext.players.filter(p => p.isActive);
-    if (!shouldDealCards && nextPlayerIndex !== 0 && activePlayers.length > 1) {
-      setTimeout(() => {
-        handleOpponentAction(
-          gameContext.players[nextPlayerIndex],
-          gameContext,
-          handleBet,
-          handleFold
-        );
-      }, 1500); // Add delay for more natural gameplay
+    // If next player is not the bottom player (human) and we're not dealing cards, trigger opponent action
+    if (!shouldDealCards && nextPlayerIndex !== 0) {
+      const nextPlayer = updatedContext.players[nextPlayerIndex];
+      if (nextPlayer.isActive) {
+        console.log('Triggering opponent action for:', nextPlayer.name);
+        setTimeout(() => {
+          handleOpponentAction(
+            nextPlayer,
+            updatedContext,
+            handleBet,
+            handleFold
+          );
+        }, 1500);
+      }
     }
   };
 
@@ -102,16 +102,19 @@ export const useBettingLogic = (
     });
 
     // If next player is not the bottom player (human), trigger opponent action
-    const activePlayers = gameContext.players.filter(p => p.isActive);
-    if (nextPlayerIndex !== 0 && activePlayers.length > 1) {
-      setTimeout(() => {
-        handleOpponentAction(
-          gameContext.players[nextPlayerIndex],
-          gameContext,
-          handleBet,
-          handleFold
-        );
-      }, 1500); // Add delay for more natural gameplay
+    if (nextPlayerIndex !== 0) {
+      const nextPlayer = gameContext.players[nextPlayerIndex];
+      if (nextPlayer.isActive) {
+        console.log('Triggering opponent action after fold for:', nextPlayer.name);
+        setTimeout(() => {
+          handleOpponentAction(
+            nextPlayer,
+            gameContext,
+            handleBet,
+            handleFold
+          );
+        }, 1500);
+      }
     }
   };
 
