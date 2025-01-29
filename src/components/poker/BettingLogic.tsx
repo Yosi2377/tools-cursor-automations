@@ -38,6 +38,7 @@ export const useBettingLogic = (
     const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
     const updatedContext = placeBet(gameContext, currentPlayer.id, amount);
     
+    // First update the game context with the new bet
     setGameContext(prev => ({
       ...updatedContext,
       currentPlayer: nextPlayerIndex,
@@ -49,40 +50,53 @@ export const useBettingLogic = (
       }))
     }));
 
-    toast({
-      title: "Bet placed",
-      description: `${currentPlayer.name} bet ${amount} chips (Rake: ${rake} chips)`,
-    });
-
     // Check if all active players have matched the current bet
     const activePlayers = updatedContext.players.filter(p => p.isActive);
     const allPlayersActed = activePlayers.every(p => 
       !p.isActive || p.currentBet === updatedContext.currentBet
     );
+
+    toast({
+      title: "Bet placed",
+      description: `${currentPlayer.name} bet ${amount} chips (Rake: ${rake} chips)`,
+    });
     
     if (allPlayersActed && activePlayers.length > 1) {
-      // Deal community cards based on betting round
+      // Delay the dealing of community cards for better visual feedback
       setTimeout(() => {
         setGameContext(prev => {
           let newCards: Card[] = [];
           let description = "";
+          let delay = 0;
 
           if (prev.communityCards.length === 0) {
             newCards = dealCommunityCards(3); // Deal the flop
-            description = "The flop has been dealt!";
+            description = "Dealing the flop...";
+            delay = 500; // Shorter delay for flop animation
           } else if (prev.communityCards.length === 3) {
             newCards = dealCommunityCards(1); // Deal the turn
-            description = "The turn has been dealt!";
+            description = "Dealing the turn...";
+            delay = 300; // Quick delay for turn
           } else if (prev.communityCards.length === 4) {
             newCards = dealCommunityCards(1); // Deal the river
-            description = "The river has been dealt!";
+            description = "Dealing the river...";
+            delay = 300; // Quick delay for river
           }
 
           if (newCards.length > 0) {
+            // Show toast for dealing animation
             toast({
-              title: "Community Cards Dealt",
+              title: "Dealing Cards",
               description: description,
             });
+
+            // After cards are dealt, show the result
+            setTimeout(() => {
+              toast({
+                title: "Community Cards",
+                description: `${newCards.length === 3 ? "Flop" : newCards.length === 1 ? (prev.communityCards.length === 3 ? "Turn" : "River") : ""} has been dealt!`,
+              });
+            }, delay);
           }
 
           // Reset all player bets after dealing community cards
@@ -93,7 +107,7 @@ export const useBettingLogic = (
             currentBet: prev.minimumBet
           };
         });
-      }, 1000); // Add delay for better animation timing
+      }, 1000); // Initial delay before dealing animation starts
     }
   };
 
