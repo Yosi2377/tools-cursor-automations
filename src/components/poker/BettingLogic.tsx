@@ -61,7 +61,7 @@ export const useBettingLogic = (
     );
     
     if (allPlayersActed && activePlayers.length > 1) {
-      // Reset bets and deal community cards
+      // Deal community cards based on the current stage
       setGameContext(prev => {
         let newCards: Card[] = [];
         let description = "";
@@ -120,12 +120,12 @@ export const useBettingLogic = (
             currentBet: 0,
             isActive: true,
             isTurn: false,
-            isDealer: p.id === winner.id // Winner becomes the next dealer
           })),
           pot: 0,
           rake: 0,
           communityCards: [],
-          currentBet: 0
+          currentBet: 0,
+          dealerPosition: (prev.dealerPosition + 1) % prev.players.length
         };
       }
 
