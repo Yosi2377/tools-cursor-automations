@@ -6,11 +6,18 @@ interface CommunityCardsProps {
 }
 
 const CommunityCards: React.FC<CommunityCardsProps> = ({ cards }) => {
-  const suitColors = {
-    hearts: "text-red-500",
-    diamonds: "text-red-500",
-    clubs: "text-gray-900",
-    spades: "text-gray-900"
+  const getSuitSymbol = (suit: string) => {
+    switch (suit.toLowerCase()) {
+      case 'hearts': return '♥';
+      case 'diamonds': return '♦';
+      case 'clubs': return '♣';
+      case 'spades': return '♠';
+      default: return '';
+    }
+  };
+
+  const getSuitColor = (suit: string) => {
+    return ['hearts', 'diamonds'].includes(suit.toLowerCase()) ? 'text-red-500' : 'text-gray-900';
   };
 
   return (
@@ -18,21 +25,22 @@ const CommunityCards: React.FC<CommunityCardsProps> = ({ cards }) => {
       {cards.map((card, index) => (
         <div
           key={index}
-          className="w-16 h-24 bg-white rounded-lg shadow-xl animate-card-deal flex flex-col items-center justify-center transform hover:scale-105 transition-transform"
+          className="w-16 h-24 bg-white rounded-lg shadow-xl animate-card-deal flex flex-col items-center justify-between p-2 transform hover:scale-105 transition-transform"
           style={{ 
             animationDelay: `${index * 0.1}s`,
             backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
             boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)'
           }}
         >
-          <span className={`text-lg font-bold ${suitColors[card.suit]}`}>
+          <div className={`text-lg font-bold ${getSuitColor(card.suit)} self-start`}>
             {card.rank}
-          </span>
-          <span className={`text-2xl ${suitColors[card.suit]}`}>
-            {card.suit === "hearts" ? "♥" :
-             card.suit === "diamonds" ? "♦" :
-             card.suit === "clubs" ? "♣" : "♠"}
-          </span>
+          </div>
+          <div className={`text-3xl ${getSuitColor(card.suit)}`}>
+            {getSuitSymbol(card.suit)}
+          </div>
+          <div className={`text-lg font-bold ${getSuitColor(card.suit)} self-end transform rotate-180`}>
+            {card.rank}
+          </div>
         </div>
       ))}
     </div>
