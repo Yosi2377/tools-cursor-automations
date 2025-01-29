@@ -31,7 +31,7 @@ const PokerTable = () => {
 
   const { dealCommunityCards } = useCardDealing();
   const { startNewHand } = useGameLogic(gameContext, setGameContext);
-  const { handleBet, handleFold } = useBettingLogic(
+  const { handleBet, handleFold, handleTimeout } = useBettingLogic(
     gameContext,
     setGameContext,
     (count) => {
@@ -68,7 +68,11 @@ const PokerTable = () => {
         <CommunityCards cards={gameContext.communityCards} />
         
         {gameContext.players.map((player) => (
-          <PlayerSpot key={player.id} player={player} />
+          <PlayerSpot 
+            key={player.id} 
+            player={player} 
+            onTimeout={player.isTurn ? handleTimeout : undefined}
+          />
         ))}
       </div>
 

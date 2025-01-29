@@ -17,6 +17,7 @@ export interface Player {
   currentBet: number;
   isTurn: boolean;
   score?: number;
+  timeRemaining?: number;
 }
 
 export type GameState = "waiting" | "dealing" | "betting" | "showdown";
@@ -29,4 +30,5 @@ export interface GameContext {
   gameState: GameState;
   minimumBet: number;
   currentBet: number;
+  turnTimer?: number;
 }

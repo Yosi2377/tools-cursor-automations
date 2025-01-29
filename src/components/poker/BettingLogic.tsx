@@ -7,6 +7,15 @@ export const useBettingLogic = (
   setGameContext: React.Dispatch<React.SetStateAction<GameContext>>,
   dealCommunityCards: (count: number) => void
 ) => {
+  const handleTimeout = () => {
+    handleFold();
+    toast({
+      title: "Time's up!",
+      description: `${gameContext.players[gameContext.currentPlayer].name} took too long and folded`,
+      variant: "destructive",
+    });
+  };
+
   const handleBet = (amount: number) => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     
@@ -122,5 +131,6 @@ export const useBettingLogic = (
   return {
     handleBet,
     handleFold,
+    handleTimeout,
   };
 };

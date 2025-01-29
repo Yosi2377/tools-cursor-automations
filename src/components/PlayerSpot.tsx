@@ -1,82 +1,76 @@
 import React from 'react';
-import { User } from 'lucide-react';
-import { Player, Card } from '../types/poker';
+import { Player } from '@/types/poker';
+import { Avatar, AvatarFallback } from './ui/avatar';
+import TurnTimer from './poker/TurnTimer';
 
-interface PlayerProps {
+interface PlayerSpotProps {
   player: Player;
+  onTimeout?: () => void;
 }
 
-const PlayerSpot: React.FC<PlayerProps> = ({ player }) => {
-  const positions = {
-    bottom: "bottom-8 left-1/2 -translate-x-1/2",
-    left: "left-8 top-1/2 -translate-y-1/2",
-    top: "top-8 left-1/2 -translate-x-1/2",
-    right: "right-8 top-1/2 -translate-y-1/2",
-  };
-
-  const renderCard = (card: Card) => {
-    // Only show face-up cards for the bottom player (user)
-    const shouldShowCard = player.position === "bottom";
-    
-    if (!shouldShowCard) {
-      return (
-        <div
-          className="w-12 h-16 bg-blue-800 rounded-lg shadow-xl transform hover:rotate-2 transition-transform"
-          style={{
-            backgroundImage: 'linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%)',
-            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)'
-          }}
-        />
-      );
+const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
+  const getPositionClasses = () => {
+    switch (player.position) {
+      case 'bottom':
+        return 'bottom-0 left-1/2 -translate-x-1/2 transform';
+      case 'left':
+        return 'left-0 top-1/2 -translate-y-1/2 transform';
+      case 'top':
+        return 'top-0 left-1/2 -translate-x-1/2 transform';
+      case 'right':
+        return 'right-0 top-1/2 -translate-y-1/2 transform';
+      default:
+        return '';
     }
-
-    const suitColors = {
-      hearts: "text-red-500",
-      diamonds: "text-red-500",
-      clubs: "text-gray-900",
-      spades: "text-gray-900"
-    };
-
-    return (
-      <div
-        className="w-12 h-16 bg-white rounded-lg shadow-xl flex flex-col items-center justify-center transform hover:rotate-2 transition-transform"
-        style={{
-          backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
-          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)'
-        }}
-      >
-        <span className={`text-sm font-bold ${suitColors[card.suit]}`}>
-          {card.rank}
-        </span>
-        <span className={`text-lg ${suitColors[card.suit]}`}>
-          {card.suit === "hearts" ? "♥" :
-           card.suit === "diamonds" ? "♦" :
-           card.suit === "clubs" ? "♣" : "♠"}
-        </span>
-      </div>
-    );
   };
 
   return (
-    <div className={`absolute ${positions[player.position]} ${player.isTurn ? 'animate-pulse' : ''}`}>
-      <div className="flex flex-col items-center gap-2 transform hover:scale-105 transition-transform">
-        <div className={`w-20 h-20 rounded-full ${player.isActive ? 'bg-black/40' : 'bg-red-900/40'} backdrop-blur-sm flex items-center justify-center border-2 ${player.isTurn ? 'border-yellow-400' : 'border-poker-accent'} shadow-lg`}>
-          <User className="w-10 h-10 text-poker-accent" />
-        </div>
-        <div className="text-white text-base font-medium tracking-wide">{player.name}</div>
-        <div className="text-poker-accent font-bold text-lg">${player.chips.toLocaleString()}</div>
+    <div className={`absolute ${getPositionClasses()} flex flex-col items-center gap-2`}>
+      <div className={`relative p-4 rounded-lg ${
+        player.isTurn ? 'bg-poker-accent/20 animate-pulse' : 'bg-black/20'
+      }`}>
+        <Avatar className="w-16 h-16 border-2 border-poker-accent">
+          <AvatarFallback className="bg-poker-background text-poker-accent">
+            {player.name[0]}
+          </AvatarFallback>
+        </Avatar>
         
-        {player.currentBet > 0 && (
-          <div className="text-yellow-400 text-sm">Bet: ${player.currentBet}</div>
+        {player.isTurn && (
+          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
+            <TurnTimer 
+              isActive={player.isTurn} 
+              onTimeout={onTimeout}
+            />
+          </div>
         )}
-        
-        <div className="flex gap-2 -mt-1">
-          {player.cards.map((card, index) => (
-            <div key={index} className="animate-card-deal" style={{ animationDelay: `${index * 0.2}s` }}>
-              {renderCard(card)}
-            </div>
-          ))}
+
+        <div className="mt-2 text-center">
+          <p className="text-poker-accent font-semibold">{player.name}</p>
+          <p className="text-sm text-poker-accent/80">${player.chips}</p>
+          {player.currentBet > 0 && (
+            <p className="text-xs text-poker-accent/60">Bet: ${player.currentBet}</p>
+          )}
         </div>
+
+        {player.cards.length > 0 && (
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mt-2 flex gap-1">
+            {player.cards.map((card, index) => (
+              <div
+                key={index}
+                className={`w-10 h-14 rounded-md shadow-lg ${
+                  card.faceUp
+                    ? 'bg-white text-black'
+                    : 'bg-poker-accent/20 border border-poker-accent/40'
+                } flex items-center justify-center animate-card-deal`}
+                style={{
+                  animationDelay: `${index * 0.2}s`
+                }}
+              >
+                {card.faceUp ? `${card.rank}${card.suit[0].toUpperCase()}` : ''}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
