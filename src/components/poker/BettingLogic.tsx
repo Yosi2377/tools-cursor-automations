@@ -37,6 +37,37 @@ export const useBettingLogic = (
     }
   };
 
+  const checkAndDealCommunityCards = (updatedContext: GameContext) => {
+    const activePlayers = updatedContext.players.filter(p => p.isActive);
+    const allPlayersActed = activePlayers.every(p => 
+      !p.isActive || p.currentBet === updatedContext.currentBet
+    );
+
+    if (allPlayersActed && activePlayers.length > 1) {
+      toast({
+        title: "Dealing cards...",
+        description: "Get ready for the next round!",
+      });
+
+      setTimeout(() => {
+        setGameContext(prev => {
+          const { newCards, updatedContext } = dealCommunityCardsForStage(prev, dealCommunityCards);
+          return {
+            ...prev,
+            ...updatedContext,
+            players: prev.players.map(p => ({
+              ...p,
+              currentBet: 0
+            })),
+            currentBet: prev.minimumBet
+          };
+        });
+      }, 500);
+      return true;
+    }
+    return false;
+  };
+
   const handleBet = (amount: number) => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     
@@ -64,35 +95,16 @@ export const useBettingLogic = (
       }))
     }));
 
-    const activePlayers = updatedContext.players.filter(p => p.isActive);
-    const allPlayersActed = activePlayers.every(p => 
-      !p.isActive || p.currentBet === updatedContext.currentBet
-    );
-
     toast({
       title: "Bet placed",
       description: `${currentPlayer.name} bet ${amount} chips (Rake: ${rake} chips)`,
     });
     
-    if (allPlayersActed && activePlayers.length > 1) {
-      toast({
-        title: "Dealing cards...",
-        description: "Get ready for the next round!",
-      });
-
-      setTimeout(() => {
-        setGameContext(prev => {
-          const { newCards, updatedContext } = dealCommunityCardsForStage(prev, dealCommunityCards);
-          return {
-            ...prev,
-            ...updatedContext
-          };
-        });
-      }, 500);
-    }
+    const shouldDealCards = checkAndDealCommunityCards(updatedContext);
 
     // If next player is not the bottom player (human), trigger opponent action
-    if (nextPlayerIndex !== 0 && activePlayers.length > 1) {
+    const activePlayers = updatedContext.players.filter(p => p.isActive);
+    if (!shouldDealCards && nextPlayerIndex !== 0 && activePlayers.length > 1) {
       setTimeout(() => {
         handleOpponentAction();
       }, 1500); // Add delay for more natural gameplay
