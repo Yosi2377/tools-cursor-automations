@@ -1,15 +1,69 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, DollarSign } from 'lucide-react';
 import PlayerSpot from './PlayerSpot';
 import { Button } from '@/components/ui/button';
+import { GameContext, Player } from '../types/poker';
+import { dealCards, placeBet, fold } from '../utils/pokerLogic';
+import { toast } from '@/components/ui/use-toast';
 
 const PokerTable = () => {
-  const players = [
-    { id: 1, name: "Player 1", chips: 1000, position: "bottom" },
-    { id: 2, name: "Player 2", chips: 1500, position: "left" },
-    { id: 3, name: "Player 3", chips: 2000, position: "top" },
-    { id: 4, name: "Player 4", chips: 800, position: "right" },
-  ];
+  const [gameContext, setGameContext] = useState<GameContext>({
+    players: [
+      { id: 1, name: "Player 1", chips: 1000, cards: [], position: "bottom", isActive: true, currentBet: 0, isTurn: false },
+      { id: 2, name: "Player 2", chips: 1500, cards: [], position: "left", isActive: true, currentBet: 0, isTurn: false },
+      { id: 3, name: "Player 3", chips: 2000, cards: [], position: "top", isActive: true, currentBet: 0, isTurn: false },
+      { id: 4, name: "Player 4", chips: 800, cards: [], position: "right", isActive: true, currentBet: 0, isTurn: false },
+    ],
+    pot: 0,
+    communityCards: [],
+    currentPlayer: 0,
+    gameState: "waiting",
+    minimumBet: 20,
+    currentBet: 0,
+  });
+
+  const startNewHand = () => {
+    const { updatedPlayers } = dealCards(gameContext.players);
+    setGameContext(prev => ({
+      ...prev,
+      players: updatedPlayers,
+      gameState: "betting",
+      currentPlayer: 0,
+      players: updatedPlayers.map((p, i) => ({ ...p, isTurn: i === 0 }))
+    }));
+    toast({
+      title: "New hand started",
+      description: "Cards have been dealt to all players",
+    });
+  };
+
+  const handleBet = (amount: number) => {
+    const currentPlayer = gameContext.players[gameContext.currentPlayer];
+    
+    if (currentPlayer.chips < amount) {
+      toast({
+        title: "Invalid bet",
+        description: "You don't have enough chips",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGameContext(prev => placeBet(prev, currentPlayer.id, amount));
+    toast({
+      title: "Bet placed",
+      description: `${currentPlayer.name} bet ${amount} chips`,
+    });
+  };
+
+  const handleFold = () => {
+    const currentPlayer = gameContext.players[gameContext.currentPlayer];
+    setGameContext(prev => fold(prev, currentPlayer.id));
+    toast({
+      title: "Player folded",
+      description: `${currentPlayer.name} has folded`,
+    });
+  };
 
   return (
     <div className="relative w-full h-screen bg-poker-background p-4 overflow-hidden">
@@ -28,18 +82,18 @@ const PokerTable = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-sm px-6 py-3 rounded-full border border-poker-accent/30">
           <div className="flex items-center gap-2 text-poker-accent">
             <DollarSign className="w-5 h-5" />
-            <span className="font-bold text-xl">1,200</span>
+            <span className="font-bold text-xl">{gameContext.pot}</span>
           </div>
         </div>
 
         {/* Community cards */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-16 flex gap-3">
-          {[1, 2, 3, 4, 5].map((card) => (
+          {gameContext.communityCards.map((card, index) => (
             <div
-              key={card}
+              key={index}
               className="w-16 h-24 bg-white rounded-lg shadow-xl animate-card-deal transform hover:scale-105 transition-transform"
               style={{ 
-                animationDelay: `${card * 0.1}s`,
+                animationDelay: `${index * 0.1}s`,
                 backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
                 boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)'
               }}
@@ -48,31 +102,48 @@ const PokerTable = () => {
         </div>
 
         {/* Player spots */}
-        {players.map((player) => (
+        {gameContext.players.map((player) => (
           <PlayerSpot key={player.id} player={player} />
         ))}
       </div>
 
+      {/* Game controls */}
+      {gameContext.gameState === "waiting" && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+          <Button 
+            onClick={startNewHand}
+            className="bg-poker-accent text-black hover:bg-poker-accent/90 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+          >
+            Start New Hand
+          </Button>
+        </div>
+      )}
+
       {/* Player controls */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
-        <Button 
-          variant="destructive" 
-          className="px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-        >
-          Fold
-        </Button>
-        <Button 
-          variant="outline" 
-          className="bg-poker-accent text-black hover:bg-poker-accent/90 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-        >
-          Call
-        </Button>
-        <Button 
-          className="bg-poker-accent text-black hover:bg-poker-accent/90 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-        >
-          Raise
-        </Button>
-      </div>
+      {gameContext.gameState === "betting" && gameContext.players[gameContext.currentPlayer].position === "bottom" && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
+          <Button 
+            variant="destructive" 
+            onClick={handleFold}
+            className="px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+          >
+            Fold
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => handleBet(gameContext.currentBet)}
+            className="bg-poker-accent text-black hover:bg-poker-accent/90 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+          >
+            Call ${gameContext.currentBet}
+          </Button>
+          <Button 
+            onClick={() => handleBet(gameContext.currentBet * 2)}
+            className="bg-poker-accent text-black hover:bg-poker-accent/90 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+          >
+            Raise to ${gameContext.currentBet * 2}
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
