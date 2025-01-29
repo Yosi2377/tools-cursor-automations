@@ -40,13 +40,13 @@ const TurnTimer: React.FC<TurnTimerProps> = ({
       <Progress 
         value={progress} 
         className="h-2 bg-poker-accent/20"
-        indicatorClassName={`${
+        indicatorClassName={
           timeLeft <= 5 
             ? 'animate-pulse bg-red-500' 
             : timeLeft <= 10 
               ? 'bg-yellow-500' 
               : 'bg-poker-accent'
-        }`}
+        }
       />
       <p className="text-sm text-poker-accent font-mono">
         {timeLeft}s
