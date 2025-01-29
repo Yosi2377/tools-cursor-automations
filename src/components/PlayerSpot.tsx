@@ -43,6 +43,12 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       <div className={`relative p-4 rounded-lg ${
         player.isTurn ? 'bg-poker-accent/20 animate-pulse' : 'bg-black/20'
       }`}>
+        {player.isDealer && (
+          <div className="absolute -left-4 -top-4 w-8 h-8 rounded-full bg-white text-black flex items-center justify-center text-sm font-bold border-2 border-poker-accent shadow-lg">
+            D
+          </div>
+        )}
+        
         <Avatar className="w-16 h-16 border-2 border-poker-accent">
           <AvatarFallback className="bg-poker-background text-poker-accent">
             {player.name[0]}

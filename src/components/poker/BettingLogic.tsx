@@ -2,6 +2,8 @@ import { GameContext, Card, Suit, Rank } from '@/types/poker';
 import { toast } from '@/components/ui/use-toast';
 import { placeBet, fold } from '@/utils/pokerLogic';
 
+const RAKE_PERCENTAGE = 0.12; // 12% rake
+
 export const useBettingLogic = (
   gameContext: GameContext,
   setGameContext: React.Dispatch<React.SetStateAction<GameContext>>,
@@ -16,6 +18,10 @@ export const useBettingLogic = (
     });
   };
 
+  const calculateRake = (amount: number) => {
+    return Math.floor(amount * RAKE_PERCENTAGE);
+  };
+
   const handleBet = (amount: number) => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     
@@ -28,12 +34,15 @@ export const useBettingLogic = (
       return;
     }
 
+    const rake = calculateRake(amount);
     const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
     const updatedContext = placeBet(gameContext, currentPlayer.id, amount);
     
     setGameContext(prev => ({
       ...updatedContext,
       currentPlayer: nextPlayerIndex,
+      rake: (prev.rake || 0) + rake,
+      pot: updatedContext.pot - rake,
       players: updatedContext.players.map((p, i) => ({
         ...p,
         isTurn: i === nextPlayerIndex && p.isActive
@@ -42,7 +51,7 @@ export const useBettingLogic = (
 
     toast({
       title: "Bet placed",
-      description: `${currentPlayer.name} bet ${amount} chips`,
+      description: `${currentPlayer.name} bet ${amount} chips (Rake: ${rake} chips)`,
     });
 
     // Check if all active players have matched the current bet
@@ -50,7 +59,6 @@ export const useBettingLogic = (
     const allPlayersActed = activePlayers.every(p => p.currentBet === updatedContext.currentBet);
     
     if (allPlayersActed && activePlayers.length > 1) {
-      // Deal community cards based on current state
       if (updatedContext.communityCards.length === 0) {
         dealCommunityCards(3); // Deal the flop
         toast({
@@ -90,9 +98,10 @@ export const useBettingLogic = (
 
       if (activePlayers.length === 1) {
         const winner = activePlayers[0];
+        const finalPot = updatedContext.pot; // Pot after rake
         toast({
           title: "Game Over",
-          description: `${winner.name} wins ${updatedContext.pot} chips!`,
+          description: `${winner.name} wins ${finalPot} chips! (Total rake: ${updatedContext.rake} chips)`,
         });
         
         return {
@@ -100,13 +109,15 @@ export const useBettingLogic = (
           gameState: "waiting",
           players: updatedContext.players.map(p => ({
             ...p,
-            chips: p.id === winner.id ? p.chips + updatedContext.pot : p.chips,
+            chips: p.id === winner.id ? p.chips + finalPot : p.chips,
             cards: [],
             currentBet: 0,
             isActive: true,
-            isTurn: false
+            isTurn: false,
+            isDealer: false
           })),
           pot: 0,
+          rake: 0,
           communityCards: [],
           currentBet: 0
         };

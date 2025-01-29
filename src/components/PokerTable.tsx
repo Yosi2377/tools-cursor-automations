@@ -16,12 +16,13 @@ const PokerTable = () => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [gameContext, setGameContext] = useState<GameContext>({
     players: [
-      { id: 1, name: "You", chips: 1000, cards: [], position: "bottom", isActive: true, currentBet: 0, isTurn: false, score: 0 },
+      { id: 1, name: "You", chips: 1000, cards: [], position: "bottom", isActive: true, currentBet: 0, isTurn: false, score: 0, isDealer: true },
       { id: 2, name: "John", chips: 1500, cards: [], position: "left", isActive: true, currentBet: 0, isTurn: false, score: 120 },
       { id: 3, name: "Alice", chips: 2000, cards: [], position: "top", isActive: true, currentBet: 0, isTurn: false, score: 350 },
       { id: 4, name: "Bob", chips: 800, cards: [], position: "right", isActive: true, currentBet: 0, isTurn: false, score: 80 },
     ],
     pot: 0,
+    rake: 0,
     communityCards: [],
     currentPlayer: 0,
     gameState: "waiting",
@@ -64,7 +65,7 @@ const PokerTable = () => {
 
       <div className="absolute inset-8 bg-poker-table rounded-full border-8 border-poker-accent/20 shadow-2xl">
         <TableFelt />
-        <PotDisplay amount={gameContext.pot} />
+        <PotDisplay amount={gameContext.pot} rake={gameContext.rake} />
         <CommunityCards cards={gameContext.communityCards} />
         
         {gameContext.players.map((player) => (
