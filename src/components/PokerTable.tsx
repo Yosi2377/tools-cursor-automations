@@ -82,10 +82,22 @@ const PokerTable = () => {
       // Deal community cards based on current state
       if (updatedContext.communityCards.length === 0) {
         dealCommunityCards(3); // Deal the flop
+        toast({
+          title: "Flop dealt",
+          description: "Three community cards have been dealt",
+        });
       } else if (updatedContext.communityCards.length === 3) {
         dealCommunityCards(1); // Deal the turn
+        toast({
+          title: "Turn dealt",
+          description: "Fourth community card has been dealt",
+        });
       } else if (updatedContext.communityCards.length === 4) {
         dealCommunityCards(1); // Deal the river
+        toast({
+          title: "River dealt",
+          description: "Final community card has been dealt",
+        });
       }
 
       // Reset player bets for the next betting round
@@ -113,18 +125,6 @@ const PokerTable = () => {
       players: prev.players.map(p => ({ ...p, currentBet: 0 })),
       currentBet: prev.minimumBet
     }));
-
-    if (count === 3) {
-      toast({
-        title: "Flop dealt",
-        description: "Three community cards have been dealt",
-      });
-    } else if (count === 1) {
-      toast({
-        title: count === 1 ? "Turn dealt" : "River dealt",
-        description: `The ${count === 1 ? "fourth" : "fifth"} community card has been dealt`,
-      });
-    }
   };
 
   const handleFold = () => {
