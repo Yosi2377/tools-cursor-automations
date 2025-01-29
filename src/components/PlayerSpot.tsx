@@ -38,6 +38,9 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
     return ['hearts', 'diamonds'].includes(suit.toLowerCase()) ? 'text-red-500' : 'text-gray-900';
   };
 
+  // Only show face-up cards for the bottom player (current user)
+  const shouldShowFaceUp = player.position === 'bottom';
+
   return (
     <div className={`absolute ${getPositionClasses()} flex flex-col items-center gap-2`}>
       <div className={`relative p-4 rounded-lg ${
@@ -72,16 +75,16 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
               <div
                 key={index}
                 className={`w-10 h-14 rounded-md shadow-lg flex flex-col items-center justify-between p-1 animate-card-deal ${
-                  card.faceUp
+                  shouldShowFaceUp
                     ? 'bg-white'
                     : 'bg-poker-accent/20 border border-poker-accent/40'
                 }`}
                 style={{
                   animationDelay: `${index * 0.2}s`,
-                  backgroundImage: card.faceUp ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)' : 'none'
+                  backgroundImage: shouldShowFaceUp ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)' : 'none'
                 }}
               >
-                {card.faceUp ? (
+                {shouldShowFaceUp ? (
                   <>
                     <div className={`text-sm font-bold ${getSuitColor(card.suit)} self-start`}>
                       {card.rank}
