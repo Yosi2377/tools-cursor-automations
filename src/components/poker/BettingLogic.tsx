@@ -1,10 +1,8 @@
 import { GameContext, Card } from '@/types/poker';
-import { toast } from '@/components/ui/use-toast';
-import { placeBet, fold } from '@/utils/pokerLogic';
-import { calculateRake } from '@/utils/rakeCalculator';
-import { handleGameEnd } from '@/utils/gameEndHandler';
-import { handleOpponentAction } from '@/utils/opponentActions';
 import { checkAndDealCommunityCards } from '@/utils/communityCardHandler';
+import { handleOpponentAction } from '@/utils/opponentActions';
+import { placeBet } from '@/utils/betActions';
+import { handleFold } from '@/utils/foldActions';
 
 export const useBettingLogic = (
   gameContext: GameContext,
@@ -13,45 +11,28 @@ export const useBettingLogic = (
 ) => {
   const handleTimeout = () => {
     console.log('Timeout triggered for player:', gameContext.players[gameContext.currentPlayer].name);
-    handleFold();
+    handleBet(gameContext.currentBet);
   };
 
   const handleBet = (amount: number) => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
+    const updatedContext = placeBet(gameContext, currentPlayer, amount, setGameContext);
     
-    if (currentPlayer.chips < amount) {
-      toast({
-        title: "Invalid bet",
-        description: "You don't have enough chips",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!updatedContext) return;
 
-    const rake = calculateRake(amount);
-    const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
-    const updatedContext = placeBet(gameContext, currentPlayer.id, amount);
+    const nextPlayerIndex = updatedContext.currentPlayer;
     
     setGameContext(prev => ({
       ...updatedContext,
-      currentPlayer: nextPlayerIndex,
-      rake: (prev.rake || 0) + rake,
-      pot: updatedContext.pot - rake,
       players: updatedContext.players.map((p, i) => ({
         ...p,
         isTurn: i === nextPlayerIndex && p.isActive
       }))
     }));
-
-    toast({
-      title: "Bet placed",
-      description: `${currentPlayer.name} bet ${amount} chips (Rake: ${rake} chips)`,
-    });
     
     const shouldDealCards = checkAndDealCommunityCards(updatedContext, dealCommunityCards, setGameContext);
     console.log('Should deal cards:', shouldDealCards);
 
-    // If next player is not the bottom player (human) and we're not dealing cards, trigger opponent action
     if (!shouldDealCards && nextPlayerIndex !== 0) {
       const nextPlayer = updatedContext.players[nextPlayerIndex];
       if (nextPlayer.isActive) {
@@ -61,57 +42,37 @@ export const useBettingLogic = (
             nextPlayer,
             updatedContext,
             handleBet,
-            handleFold
+            handlePlayerFold
           );
         }, 1500);
       }
     }
   };
 
-  const handleFold = () => {
+  const handlePlayerFold = () => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
-    const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
+    const updatedContext = handleFold(gameContext, currentPlayer, setGameContext);
     
-    setGameContext(prev => {
-      const updatedContext = fold(prev, currentPlayer.id);
-      const activePlayers = updatedContext.players.filter(p => p.isActive);
+    const nextPlayerIndex = updatedContext.currentPlayer;
+    
+    setGameContext(prev => ({
+      ...updatedContext,
+      players: updatedContext.players.map((p, i) => ({
+        ...p,
+        isTurn: i === nextPlayerIndex && p.isActive
+      }))
+    }));
 
-      if (activePlayers.length === 1) {
-        return handleGameEnd(
-          activePlayers[0],
-          updatedContext.pot,
-          updatedContext.rake,
-          updatedContext.players,
-          prev.dealerPosition
-        );
-      }
-
-      return {
-        ...updatedContext,
-        currentPlayer: nextPlayerIndex,
-        players: updatedContext.players.map((p, i) => ({
-          ...p,
-          isTurn: i === nextPlayerIndex && p.isActive
-        }))
-      };
-    });
-
-    toast({
-      title: "Player folded",
-      description: `${currentPlayer.name} has folded`,
-    });
-
-    // If next player is not the bottom player (human), trigger opponent action
     if (nextPlayerIndex !== 0) {
-      const nextPlayer = gameContext.players[nextPlayerIndex];
+      const nextPlayer = updatedContext.players[nextPlayerIndex];
       if (nextPlayer.isActive) {
         console.log('Triggering opponent action after fold for:', nextPlayer.name);
         setTimeout(() => {
           handleOpponentAction(
             nextPlayer,
-            gameContext,
+            updatedContext,
             handleBet,
-            handleFold
+            handlePlayerFold
           );
         }, 1500);
       }
@@ -120,7 +81,7 @@ export const useBettingLogic = (
 
   return {
     handleBet,
-    handleFold,
+    handleFold: handlePlayerFold,
     handleTimeout,
   };
 };
