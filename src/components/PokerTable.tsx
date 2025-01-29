@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PlayerSpot from './PlayerSpot';
-import { GameContext } from '../types/poker';
+import { GameContext, Card, Suit, Rank } from '../types/poker';
 import { dealCards, placeBet, fold } from '../utils/pokerLogic';
 import { toast } from '@/components/ui/use-toast';
 import GameControls from './poker/GameControls';
