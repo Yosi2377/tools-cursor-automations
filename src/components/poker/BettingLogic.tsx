@@ -30,9 +30,10 @@ export const useBettingLogic = (
       }))
     }));
     
+    // Check if we should deal community cards
     const shouldDealCards = checkAndDealCommunityCards(updatedContext, dealCommunityCards, setGameContext);
-    console.log('Should deal cards:', shouldDealCards);
-
+    
+    // If we didn't deal cards and it's not the human player's turn, trigger opponent action
     if (!shouldDealCards && nextPlayerIndex !== 0) {
       const nextPlayer = updatedContext.players[nextPlayerIndex];
       if (nextPlayer.isActive) {

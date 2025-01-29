@@ -1,5 +1,5 @@
 import { GameContext, Card } from '@/types/poker';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 export const checkAndDealCommunityCards = (
   gameContext: GameContext,
@@ -7,14 +7,18 @@ export const checkAndDealCommunityCards = (
   setGameContext: React.Dispatch<React.SetStateAction<GameContext>>
 ): boolean => {
   const activePlayers = gameContext.players.filter(p => p.isActive);
+  
+  // Check if all active players have matched the current bet
   const allPlayersActed = activePlayers.every(p => 
-    p.currentBet === gameContext.currentBet
+    p.currentBet === gameContext.currentBet || !p.isActive
   );
 
   console.log('Checking community cards:', {
     activePlayers: activePlayers.length,
     allPlayersActed,
-    currentCommunityCards: gameContext.communityCards.length
+    currentCommunityCards: gameContext.communityCards.length,
+    playerBets: activePlayers.map(p => ({ name: p.name, bet: p.currentBet })),
+    currentBet: gameContext.currentBet
   });
 
   if (allPlayersActed && activePlayers.length > 1) {
@@ -39,14 +43,11 @@ export const checkAndDealCommunityCards = (
         ...prev,
         communityCards: [...prev.communityCards, ...newCards],
         players: prev.players.map(p => ({ ...p, currentBet: 0 })),
-        currentBet: prev.minimumBet
+        currentBet: prev.minimumBet,
+        currentPlayer: (prev.dealerPosition + 1) % prev.players.length // Reset to first player after dealer
       }));
 
-      toast({
-        title: `${stage} dealt!`,
-        description: `${cardsToDeal} new community card${cardsToDeal > 1 ? 's are' : ' is'} now on the table`,
-      });
-
+      toast(`${stage} dealt!`);
       return true;
     }
   }

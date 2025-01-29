@@ -9,12 +9,17 @@ export const handleOpponentAction = (
   console.log('Opponent action for:', player.name);
   
   // Randomly decide to bet or fold with 70% chance to bet
-  const shouldFold = Math.random() < 0.3;
+  const shouldBet = Math.random() < 0.7;
   
-  if (shouldFold) {
-    handleFold();
+  if (shouldBet && player.chips >= gameContext.currentBet) {
+    // Match the current bet
+    setTimeout(() => {
+      handleBet(gameContext.currentBet);
+    }, 1000);
   } else {
-    const minBet = Math.max(gameContext.minimumBet, gameContext.currentBet);
-    handleBet(minBet);
+    // Fold if can't match bet or randomly decided to fold
+    setTimeout(() => {
+      handleFold();
+    }, 1000);
   }
 };
