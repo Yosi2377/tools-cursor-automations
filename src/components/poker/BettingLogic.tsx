@@ -38,7 +38,7 @@ export const useBettingLogic = (
     const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
     const updatedContext = placeBet(gameContext, currentPlayer.id, amount);
     
-    // First update the game context with the new bet
+    // Update game context immediately with the new bet
     setGameContext(prev => ({
       ...updatedContext,
       currentPlayer: nextPlayerIndex,
@@ -61,45 +61,41 @@ export const useBettingLogic = (
       description: `${currentPlayer.name} bet ${amount} chips (Rake: ${rake} chips)`,
     });
     
+    // If all players have acted and there are still active players
     if (allPlayersActed && activePlayers.length > 1) {
-      // Delay the dealing of community cards for better visual feedback
+      // Immediately show dealing toast
+      toast({
+        title: "Dealing cards...",
+        description: "Get ready for the next round!",
+      });
+
+      // Deal community cards after a short delay
       setTimeout(() => {
         setGameContext(prev => {
           let newCards: Card[] = [];
-          let description = "";
-          let delay = 0;
-
+          
+          // Determine which cards to deal based on current state
           if (prev.communityCards.length === 0) {
-            newCards = dealCommunityCards(3); // Deal the flop
-            description = "Dealing the flop...";
-            delay = 500; // Shorter delay for flop animation
-          } else if (prev.communityCards.length === 3) {
-            newCards = dealCommunityCards(1); // Deal the turn
-            description = "Dealing the turn...";
-            delay = 300; // Quick delay for turn
-          } else if (prev.communityCards.length === 4) {
-            newCards = dealCommunityCards(1); // Deal the river
-            description = "Dealing the river...";
-            delay = 300; // Quick delay for river
-          }
-
-          if (newCards.length > 0) {
-            // Show toast for dealing animation
+            newCards = dealCommunityCards(3); // Deal flop
             toast({
-              title: "Dealing Cards",
-              description: description,
+              title: "Flop dealt!",
+              description: "Three community cards are now on the table",
             });
-
-            // After cards are dealt, show the result
-            setTimeout(() => {
-              toast({
-                title: "Community Cards",
-                description: `${newCards.length === 3 ? "Flop" : newCards.length === 1 ? (prev.communityCards.length === 3 ? "Turn" : "River") : ""} has been dealt!`,
-              });
-            }, delay);
+          } else if (prev.communityCards.length === 3) {
+            newCards = dealCommunityCards(1); // Deal turn
+            toast({
+              title: "Turn dealt!",
+              description: "Fourth community card is now on the table",
+            });
+          } else if (prev.communityCards.length === 4) {
+            newCards = dealCommunityCards(1); // Deal river
+            toast({
+              title: "River dealt!",
+              description: "Final community card is now on the table",
+            });
           }
 
-          // Reset all player bets after dealing community cards
+          // Reset betting for the next round
           return {
             ...prev,
             communityCards: [...prev.communityCards, ...newCards],
@@ -107,7 +103,7 @@ export const useBettingLogic = (
             currentBet: prev.minimumBet
           };
         });
-      }, 1000); // Initial delay before dealing animation starts
+      }, 500); // Shorter delay for more responsive dealing
     }
   };
 
@@ -121,7 +117,7 @@ export const useBettingLogic = (
 
       if (activePlayers.length === 1) {
         const winner = activePlayers[0];
-        const finalPot = updatedContext.pot; // Pot after rake
+        const finalPot = updatedContext.pot;
         toast({
           title: "Game Over",
           description: `${winner.name} wins ${finalPot} chips! (Total rake: ${updatedContext.rake} chips)`,
