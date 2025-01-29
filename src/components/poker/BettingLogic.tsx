@@ -3,7 +3,8 @@ import { toast } from '@/components/ui/use-toast';
 import { placeBet, fold } from '@/utils/pokerLogic';
 import { calculateRake } from '@/utils/rakeCalculator';
 import { handleGameEnd } from '@/utils/gameEndHandler';
-import { dealCommunityCardsForStage } from '@/utils/communityCardDealer';
+import { handleOpponentAction } from '@/utils/opponentActions';
+import { checkAndDealCommunityCards } from '@/utils/communityCardHandler';
 
 export const useBettingLogic = (
   gameContext: GameContext,
@@ -17,55 +18,6 @@ export const useBettingLogic = (
       description: `${gameContext.players[gameContext.currentPlayer].name} took too long and folded`,
       variant: "destructive",
     });
-  };
-
-  const handleOpponentAction = () => {
-    const currentPlayer = gameContext.players[gameContext.currentPlayer];
-    
-    // Randomly decide to bet or fold
-    const shouldFold = Math.random() < 0.3; // 30% chance to fold
-    
-    if (shouldFold) {
-      handleFold();
-      toast({
-        title: "Player action",
-        description: `${currentPlayer.name} folds`,
-      });
-    } else {
-      const minBet = Math.max(gameContext.minimumBet, gameContext.currentBet);
-      handleBet(minBet);
-    }
-  };
-
-  const checkAndDealCommunityCards = (updatedContext: GameContext) => {
-    const activePlayers = updatedContext.players.filter(p => p.isActive);
-    const allPlayersActed = activePlayers.every(p => 
-      !p.isActive || p.currentBet === updatedContext.currentBet
-    );
-
-    if (allPlayersActed && activePlayers.length > 1) {
-      toast({
-        title: "Dealing cards...",
-        description: "Get ready for the next round!",
-      });
-
-      setTimeout(() => {
-        setGameContext(prev => {
-          const { newCards, updatedContext } = dealCommunityCardsForStage(prev, dealCommunityCards);
-          return {
-            ...prev,
-            ...updatedContext,
-            players: prev.players.map(p => ({
-              ...p,
-              currentBet: 0
-            })),
-            currentBet: prev.minimumBet
-          };
-        });
-      }, 500);
-      return true;
-    }
-    return false;
   };
 
   const handleBet = (amount: number) => {
@@ -100,13 +52,18 @@ export const useBettingLogic = (
       description: `${currentPlayer.name} bet ${amount} chips (Rake: ${rake} chips)`,
     });
     
-    const shouldDealCards = checkAndDealCommunityCards(updatedContext);
+    const shouldDealCards = checkAndDealCommunityCards(updatedContext, dealCommunityCards, setGameContext);
 
     // If next player is not the bottom player (human), trigger opponent action
     const activePlayers = updatedContext.players.filter(p => p.isActive);
     if (!shouldDealCards && nextPlayerIndex !== 0 && activePlayers.length > 1) {
       setTimeout(() => {
-        handleOpponentAction();
+        handleOpponentAction(
+          gameContext.players[nextPlayerIndex],
+          gameContext,
+          handleBet,
+          handleFold
+        );
       }, 1500); // Add delay for more natural gameplay
     }
   };
@@ -148,7 +105,12 @@ export const useBettingLogic = (
     const activePlayers = gameContext.players.filter(p => p.isActive);
     if (nextPlayerIndex !== 0 && activePlayers.length > 1) {
       setTimeout(() => {
-        handleOpponentAction();
+        handleOpponentAction(
+          gameContext.players[nextPlayerIndex],
+          gameContext,
+          handleBet,
+          handleFold
+        );
       }, 1500); // Add delay for more natural gameplay
     }
   };
