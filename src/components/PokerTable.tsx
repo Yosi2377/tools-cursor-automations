@@ -28,7 +28,7 @@ const PokerTable = () => {
     gameState: "waiting",
     minimumBet: 20,
     currentBet: 0,
-    dealerPosition: 0, // Track dealer position separately
+    dealerPosition: 0,
   });
 
   const { dealCommunityCards } = useCardDealing();
@@ -64,9 +64,9 @@ const PokerTable = () => {
         <PotDisplay amount={gameContext.pot} rake={gameContext.rake} />
         <CommunityCards cards={gameContext.communityCards} />
         
-        {/* Dealer Button */}
+        {/* Dealer Button - Hidden but still tracking position */}
         <div 
-          className="absolute w-8 h-8 rounded-full bg-white text-black flex items-center justify-center text-sm font-bold border-2 border-poker-accent shadow-lg"
+          className="hidden"
           style={{
             left: `${50 + 35 * Math.cos(2 * Math.PI * gameContext.dealerPosition / gameContext.players.length)}%`,
             top: `${50 + 35 * Math.sin(2 * Math.PI * gameContext.dealerPosition / gameContext.players.length)}%`,
