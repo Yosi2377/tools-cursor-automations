@@ -19,6 +19,24 @@ export const useBettingLogic = (
     });
   };
 
+  const handleOpponentAction = () => {
+    const currentPlayer = gameContext.players[gameContext.currentPlayer];
+    
+    // Randomly decide to bet or fold
+    const shouldFold = Math.random() < 0.3; // 30% chance to fold
+    
+    if (shouldFold) {
+      handleFold();
+      toast({
+        title: "Player action",
+        description: `${currentPlayer.name} folds`,
+      });
+    } else {
+      const minBet = Math.max(gameContext.minimumBet, gameContext.currentBet);
+      handleBet(minBet);
+    }
+  };
+
   const handleBet = (amount: number) => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     
@@ -72,6 +90,13 @@ export const useBettingLogic = (
         });
       }, 500);
     }
+
+    // If next player is not the bottom player (human), trigger opponent action
+    if (nextPlayerIndex !== 0 && activePlayers.length > 1) {
+      setTimeout(() => {
+        handleOpponentAction();
+      }, 1500); // Add delay for more natural gameplay
+    }
   };
 
   const handleFold = () => {
@@ -106,6 +131,14 @@ export const useBettingLogic = (
       title: "Player folded",
       description: `${currentPlayer.name} has folded`,
     });
+
+    // If next player is not the bottom player (human), trigger opponent action
+    const activePlayers = gameContext.players.filter(p => p.isActive);
+    if (nextPlayerIndex !== 0 && activePlayers.length > 1) {
+      setTimeout(() => {
+        handleOpponentAction();
+      }, 1500); // Add delay for more natural gameplay
+    }
   };
 
   return {
