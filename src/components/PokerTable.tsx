@@ -7,14 +7,18 @@ import GameControls from './poker/GameControls';
 import CommunityCards from './poker/CommunityCards';
 import PotDisplay from './poker/PotDisplay';
 import TableFelt from './poker/TableFelt';
+import { Button } from './ui/button';
+import { Menu } from 'lucide-react';
+import LeaderBoard from './poker/LeaderBoard';
 
 const PokerTable = () => {
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [gameContext, setGameContext] = useState<GameContext>({
     players: [
-      { id: 1, name: "Player 1", chips: 1000, cards: [], position: "bottom", isActive: true, currentBet: 0, isTurn: false },
-      { id: 2, name: "Player 2", chips: 1500, cards: [], position: "left", isActive: true, currentBet: 0, isTurn: false },
-      { id: 3, name: "Player 3", chips: 2000, cards: [], position: "top", isActive: true, currentBet: 0, isTurn: false },
-      { id: 4, name: "Player 4", chips: 800, cards: [], position: "right", isActive: true, currentBet: 0, isTurn: false },
+      { id: 1, name: "You", chips: 1000, cards: [], position: "bottom", isActive: true, currentBet: 0, isTurn: false, score: 0 },
+      { id: 2, name: "John", chips: 1500, cards: [], position: "left", isActive: true, currentBet: 0, isTurn: false, score: 120 },
+      { id: 3, name: "Alice", chips: 2000, cards: [], position: "top", isActive: true, currentBet: 0, isTurn: false, score: 350 },
+      { id: 4, name: "Bob", chips: 800, cards: [], position: "right", isActive: true, currentBet: 0, isTurn: false, score: 80 },
     ],
     pot: 0,
     communityCards: [],
@@ -102,10 +106,17 @@ const PokerTable = () => {
       currentBet: prev.minimumBet
     }));
 
-    toast({
-      title: "Community cards dealt",
-      description: `${count} new card${count > 1 ? 's' : ''} dealt to the table`,
-    });
+    if (count === 3) {
+      toast({
+        title: "Flop dealt",
+        description: "Three community cards have been dealt",
+      });
+    } else if (count === 1) {
+      toast({
+        title: count === 1 ? "Turn dealt" : "River dealt",
+        description: `The ${count === 1 ? "fourth" : "fifth"} community card has been dealt`,
+      });
+    }
   };
 
   const handleFold = () => {
@@ -158,6 +169,21 @@ const PokerTable = () => {
 
   return (
     <div className="relative w-full h-screen bg-poker-background p-4 overflow-hidden">
+      <Button 
+        variant="outline" 
+        className="absolute top-4 right-4 z-50"
+        onClick={() => setShowLeaderboard(!showLeaderboard)}
+      >
+        <Menu className="w-6 h-6" />
+      </Button>
+
+      {showLeaderboard && (
+        <LeaderBoard 
+          players={gameContext.players}
+          onClose={() => setShowLeaderboard(false)}
+        />
+      )}
+
       <div className="absolute inset-8 bg-poker-table rounded-full border-8 border-poker-accent/20 shadow-2xl">
         <TableFelt />
         <PotDisplay amount={gameContext.pot} />

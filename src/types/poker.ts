@@ -16,6 +16,7 @@ export interface Player {
   isActive: boolean;
   currentBet: number;
   isTurn: boolean;
+  score?: number;
 }
 
 export type GameState = "waiting" | "dealing" | "betting" | "showdown";
