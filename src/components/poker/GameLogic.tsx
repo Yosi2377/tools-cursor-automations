@@ -13,10 +13,10 @@ export const useGameLogic = (
       const nextDealerIndex = (currentDealerIndex + 1) % gameContext.players.length;
       const activePlayers = gameContext.players.filter(p => p.isActive);
       
-      console.log('Starting new hand, active players:', activePlayers.length);
+      console.log('Starting new hand, active players:', activePlayers);
       
       if (activePlayers.length < 1) {
-        toast.error("Need at least 1 player to start a hand");
+        toast.error("Need at least 1 player to start a hand. Click an empty seat to join!");
         return;
       }
       
@@ -49,7 +49,7 @@ export const useGameLogic = (
       const playerUpdates = updatedPlayers.map((p, index) => ({
         game_id: gameContext.gameId,
         position: index.toString(),
-        cards: JSON.stringify(p.cards),
+        cards: p.isActive ? JSON.stringify(p.cards) : [],
         is_turn: index === firstPlayerIndex,
         is_active: p.isActive,
         current_bet: 0,
@@ -82,7 +82,7 @@ export const useGameLogic = (
 
     } catch (error) {
       console.error('Error starting new hand:', error);
-      toast.error("Failed to start new hand");
+      toast.error("Failed to start new hand. Make sure you've joined a seat first!");
     }
   };
 
