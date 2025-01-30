@@ -1,10 +1,10 @@
 import { GameContext, Card } from '@/types/poker';
 import { checkAndDealCommunityCards } from '@/utils/communityCardHandler';
-import { handleOpponentAction } from '@/utils/opponentActions';
 import { placeBet } from '@/utils/betActions';
 import { handleFold } from '@/utils/foldActions';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { updatePlayerBet, updateGameState, handlePlayerFoldUpdate, updateGameStateAfterFold } from '@/utils/betHandlers';
+import { simulateOpponentAction } from '@/utils/opponentBehavior';
 
 export const useBettingLogic = (
   gameContext: GameContext,
@@ -32,32 +32,8 @@ export const useBettingLogic = (
     }
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
-
-      // Update player's bet in Supabase
-      const { error: playerError } = await supabase
-        .from('game_players')
-        .update({
-          chips: currentPlayer.chips - actualBetAmount,
-          current_bet: currentPlayer.currentBet + actualBetAmount,
-          is_turn: false
-        })
-        .eq('id', currentPlayer.id.toString());
-
-      if (playerError) throw playerError;
-
-      // Update game state in Supabase
-      const { error: gameError } = await supabase
-        .from('games')
-        .update({
-          pot: gameContext.pot + actualBetAmount,
-          current_bet: Math.max(gameContext.currentBet, currentPlayer.currentBet + actualBetAmount),
-          current_player_index: (gameContext.currentPlayer + 1) % gameContext.players.length
-        })
-        .eq('status', 'betting');
-
-      if (gameError) throw gameError;
+      await updatePlayerBet(currentPlayer, actualBetAmount);
+      await updateGameState(gameContext, actualBetAmount, currentPlayer);
 
       const updatedContext = placeBet(gameContext, currentPlayer, actualBetAmount, setGameContext);
       if (!updatedContext) return;
@@ -91,14 +67,7 @@ export const useBettingLogic = (
         const nextPlayer = updatedContext.players[nextPlayerIndex];
         if (nextPlayer.isActive) {
           setTimeout(() => {
-            const nextAmountToCall = updatedContext.currentBet - nextPlayer.currentBet;
-            console.log(`${nextPlayer.name}'s turn - Current bet: ${updatedContext.currentBet}, Amount to call: ${nextAmountToCall}`);
-            
-            if (Math.random() < 0.7 && nextPlayer.chips >= nextAmountToCall) {
-              handleBet(nextAmountToCall);
-            } else {
-              handlePlayerFold();
-            }
+            simulateOpponentAction(updatedContext, nextPlayer, handleBet, handlePlayerFold);
           }, 1500);
         }
       }
@@ -117,16 +86,7 @@ export const useBettingLogic = (
     console.log(`${currentPlayer.name} folding`);
     
     try {
-      // Update player state in Supabase
-      const { error: playerError } = await supabase
-        .from('game_players')
-        .update({
-          is_active: false,
-          is_turn: false
-        })
-        .eq('id', currentPlayer.id.toString());  // Convert ID to string here as well
-
-      if (playerError) throw playerError;
+      await handlePlayerFoldUpdate(currentPlayer);
 
       const updatedContext = handleFold(gameContext, currentPlayer, setGameContext);
       if (!updatedContext) return;
@@ -137,15 +97,7 @@ export const useBettingLogic = (
         if (nextPlayerIndex === gameContext.currentPlayer) break;
       }
       
-      // Update game state in Supabase
-      const { error: gameError } = await supabase
-        .from('games')
-        .update({
-          current_player_index: nextPlayerIndex
-        })
-        .eq('status', 'betting');
-
-      if (gameError) throw gameError;
+      await updateGameStateAfterFold(nextPlayerIndex);
 
       setGameContext(prev => ({
         ...prev,
@@ -161,12 +113,7 @@ export const useBettingLogic = (
         const nextPlayer = updatedContext.players[nextPlayerIndex];
         if (nextPlayer.isActive) {
           setTimeout(() => {
-            const amountToCall = updatedContext.currentBet - nextPlayer.currentBet;
-            if (Math.random() < 0.7 && nextPlayer.chips >= amountToCall) {
-              handleBet(amountToCall);
-            } else {
-              handlePlayerFold();
-            }
+            simulateOpponentAction(updatedContext, nextPlayer, handleBet, handlePlayerFold);
           }, 1500);
         }
       }
