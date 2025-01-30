@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, Bot, BotOff } from 'lucide-react';
+import { Plus, Users, Bot, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import GameHistory from './GameHistory';
@@ -36,7 +36,7 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
   const [playerCount, setPlayerCount] = useState('2');
   const [withBots, setWithBots] = useState(false);
 
-  const { data: rooms, isLoading, error } = useQuery({
+  const { data: rooms, isLoading, error, refetch } = useQuery({
     queryKey: ['rooms'],
     queryFn: async () => {
       console.log('Fetching rooms...');
@@ -98,9 +98,27 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
       setNewRoomName('');
       setPlayerCount('2');
       setWithBots(false);
+      refetch();
     } catch (error) {
       console.error('Error creating room:', error);
       toast.error('Failed to create room');
+    }
+  };
+
+  const deleteRoom = async (roomId: string) => {
+    try {
+      const { error } = await supabase
+        .from('rooms')
+        .delete()
+        .eq('id', roomId);
+
+      if (error) throw error;
+
+      toast.success('Room deleted successfully');
+      refetch();
+    } catch (error) {
+      console.error('Error deleting room:', error);
+      toast.error('Failed to delete room');
     }
   };
 
@@ -221,7 +239,18 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-500">Min bet: ${room.min_bet}</span>
-                <Button onClick={() => joinRoom(room.id)}>Join</Button>
+                <div className="flex gap-2">
+                  <Button onClick={() => joinRoom(room.id)}>Join</Button>
+                  {isAdmin && (
+                    <Button 
+                      variant="destructive" 
+                      size="icon"
+                      onClick={() => deleteRoom(room.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           ))}
