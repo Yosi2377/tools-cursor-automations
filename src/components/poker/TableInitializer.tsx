@@ -117,11 +117,11 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                     (player.is_active ? "Player" : "Empty Seat"),
                   position: getPositionForIndex(index),
                   chips: player.chips || 1000,
-                  cards: (player.cards as any[] || []).map(card => ({
-                    suit: card.suit,
-                    rank: card.rank,
-                    faceUp: card.faceUp
-                  })) as Card[],
+                  cards: Array.isArray(player.cards) ? player.cards.map(card => ({
+                    suit: (card as any).suit,
+                    rank: (card as any).rank,
+                    faceUp: (card as any).faceUp
+                  })) : [] as Card[],
                   isActive: player.is_active || false,
                   currentBet: player.current_bet || 0,
                   isTurn: player.is_turn || false,
