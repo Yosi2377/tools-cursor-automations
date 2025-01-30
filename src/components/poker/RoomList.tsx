@@ -14,7 +14,11 @@ interface Room {
   is_active: boolean;
 }
 
-const RoomList = () => {
+interface RoomListProps {
+  onJoinRoom: (roomId: string) => void;
+}
+
+const RoomList = ({ onJoinRoom }: RoomListProps) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
 
@@ -70,6 +74,7 @@ const RoomList = () => {
 
       if (error) throw error;
 
+      onJoinRoom(roomId);
       toast.success('Joined room successfully');
     } catch (error) {
       toast.error('Failed to join room');
