@@ -16,7 +16,7 @@ const UserList = () => {
   const [loading, setLoading] = useState(false);
 
   // Fetch users using the Edge Function
-  const { data: users, isLoading: isLoadingUsers, error: usersError } = useQuery({
+  const { data: users, isLoading: isLoadingUsers, error: usersError, refetch: refetchUsers } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession()
