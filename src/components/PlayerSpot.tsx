@@ -51,19 +51,19 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       
       // Left group (overlapping)
       case 'left':
-        return `${isMobile ? 'left-32' : 'left-48'} top-1/2 -translate-y-1/2`;
+        return `${isMobile ? 'left-32' : 'left-48'} top-1/2 -translate-y-1/2 -translate-x-8`;
       case 'topLeft':
-        return `${isMobile ? 'left-32' : 'left-48'} top-1/2 -translate-y-[65%]`;
+        return `${isMobile ? 'left-32' : 'left-48'} top-1/2 -translate-y-[60%] -translate-x-8`;
       case 'leftTop':
-        return `${isMobile ? 'left-32' : 'left-48'} top-1/2 -translate-y-[35%]`;
+        return `${isMobile ? 'left-32' : 'left-48'} top-1/2 -translate-y-[40%] -translate-x-8`;
       
       // Right group (overlapping)
       case 'right':
-        return `${isMobile ? 'right-32' : 'right-48'} top-1/2 -translate-y-1/2`;
+        return `${isMobile ? 'right-32' : 'right-48'} top-1/2 -translate-y-1/2 translate-x-8`;
       case 'topRight':
-        return `${isMobile ? 'right-32' : 'right-48'} top-1/2 -translate-y-[65%]`;
+        return `${isMobile ? 'right-32' : 'right-48'} top-1/2 -translate-y-[60%] translate-x-8`;
       case 'bottomRight':
-        return `${isMobile ? 'right-32' : 'right-48'} top-1/2 -translate-y-[35%]`;
+        return `${isMobile ? 'right-32' : 'right-48'} top-1/2 -translate-y-[40%] translate-x-8`;
       
       default:
         return '';
