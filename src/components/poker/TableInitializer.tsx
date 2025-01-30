@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { GameContext } from '@/types/poker';
+import { GameContext, PlayerPosition, Card } from '@/types/poker';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -86,7 +86,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                 name: room.with_bots && index > 0 ? `Bot ${index}` : "Empty Seat",
                 position: getPositionForIndex(index),
                 chips: seat.chips,
-                cards: [],
+                cards: [] as Card[],
                 isActive: seat.is_active,
                 currentBet: 0,
                 isTurn: false,
@@ -117,7 +117,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                     (player.is_active ? "Player" : "Empty Seat"),
                   position: getPositionForIndex(index),
                   chips: player.chips || 1000,
-                  cards: player.cards || [],
+                  cards: (player.cards || []) as Card[],
                   isActive: player.is_active || false,
                   currentBet: player.current_bet || 0,
                   isTurn: player.is_turn || false,
