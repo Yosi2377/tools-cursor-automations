@@ -81,7 +81,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             // Initialize game context with seats and bots
             setGameContext(prev => ({
               ...prev,
-              players: emptySeats.map((seat, index) => ({
+              players: emptySeats.map((seat, index) => ({ 
                 id: index,
                 name: room.with_bots && index > 0 ? `Bot ${index}` : "Empty Seat",
                 position: getPositionForIndex(index),
@@ -117,7 +117,11 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                     (player.is_active ? "Player" : "Empty Seat"),
                   position: getPositionForIndex(index),
                   chips: player.chips || 1000,
-                  cards: (player.cards || []) as Card[],
+                  cards: (player.cards as any[] || []).map(card => ({
+                    suit: card.suit,
+                    rank: card.rank,
+                    faceUp: card.faceUp
+                  })) as Card[],
                   isActive: player.is_active || false,
                   currentBet: player.current_bet || 0,
                   isTurn: player.is_turn || false,
