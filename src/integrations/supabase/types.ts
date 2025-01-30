@@ -56,40 +56,52 @@ export type Database = {
       }
       game_players: {
         Row: {
+          biggest_win: number | null
           cards: Json | null
           chips: number | null
           created_at: string | null
           current_bet: number | null
+          default_chips: number | null
           game_id: string | null
+          games_played: number | null
           id: string
           is_active: boolean | null
           is_turn: boolean | null
+          lifetime_winnings: number | null
           position: string | null
           score: number | null
           user_id: string
         }
         Insert: {
+          biggest_win?: number | null
           cards?: Json | null
           chips?: number | null
           created_at?: string | null
           current_bet?: number | null
+          default_chips?: number | null
           game_id?: string | null
+          games_played?: number | null
           id?: string
           is_active?: boolean | null
           is_turn?: boolean | null
+          lifetime_winnings?: number | null
           position?: string | null
           score?: number | null
           user_id: string
         }
         Update: {
+          biggest_win?: number | null
           cards?: Json | null
           chips?: number | null
           created_at?: string | null
           current_bet?: number | null
+          default_chips?: number | null
           game_id?: string | null
+          games_played?: number | null
           id?: string
           is_active?: boolean | null
           is_turn?: boolean | null
+          lifetime_winnings?: number | null
           position?: string | null
           score?: number | null
           user_id?: string

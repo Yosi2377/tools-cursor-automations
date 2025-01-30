@@ -1,5 +1,6 @@
 import PokerTable from "@/components/PokerTable";
 import RoomList from "@/components/poker/RoomList";
+import AdminPanel from "@/components/admin/AdminPanel";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut, Plus } from "lucide-react";
@@ -10,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 const Index = () => {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
 
   const { data: isAdmin } = useQuery({
     queryKey: ['isAdmin'],
@@ -56,17 +58,33 @@ const Index = () => {
           Logout
         </Button>
         {isAdmin && (
-          <Button
-            onClick={() => setIsCreating(true)}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Create Room
-          </Button>
+          <>
+            <Button
+              onClick={() => setIsCreating(true)}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Create Room
+            </Button>
+            <Button
+              onClick={() => setShowAdminPanel(!showAdminPanel)}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              {showAdminPanel ? 'Hide Admin Panel' : 'Show Admin Panel'}
+            </Button>
+          </>
         )}
       </div>
+      
+      {isAdmin && showAdminPanel && (
+        <div className="p-4 mb-8">
+          <AdminPanel />
+        </div>
+      )}
       
       {selectedRoom ? (
         <PokerTable roomId={selectedRoom} onLeaveRoom={() => setSelectedRoom(null)} />
