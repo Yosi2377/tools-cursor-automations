@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Trash2, Key, Coins } from 'lucide-react';
-import { Dialog } from "@/components/ui/dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import PasswordDialog from './dialogs/PasswordDialog';
 import BalanceDialog from './dialogs/BalanceDialog';
 import { useState } from 'react';
@@ -30,6 +30,21 @@ const UserCard = ({ user, onDelete, onPasswordChange, onBalanceUpdate, loading }
           setIsPasswordDialogOpen(open);
           if (!open) setSelectedUserId(null);
         }}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedUserId(user.id);
+                setIsPasswordDialogOpen(true);
+              }}
+              disabled={loading}
+              className="flex items-center gap-2"
+            >
+              <Key className="h-4 w-4" />
+              Password
+            </Button>
+          </DialogTrigger>
           <PasswordDialog
             user={user}
             onPasswordChange={(newPassword) => onPasswordChange(user.id, newPassword)}
@@ -41,40 +56,27 @@ const UserCard = ({ user, onDelete, onPasswordChange, onBalanceUpdate, loading }
           setIsBalanceDialogOpen(open);
           if (!open) setSelectedUserId(null);
         }}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedUserId(user.id);
+                setIsBalanceDialogOpen(true);
+              }}
+              disabled={loading}
+              className="flex items-center gap-2"
+            >
+              <Coins className="h-4 w-4" />
+              Balance
+            </Button>
+          </DialogTrigger>
           <BalanceDialog
             user={user}
             onBalanceUpdate={(newBalance) => onBalanceUpdate(user.id, newBalance)}
             loading={loading}
           />
         </Dialog>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setSelectedUserId(user.id);
-            setIsPasswordDialogOpen(true);
-          }}
-          disabled={loading}
-          className="flex items-center gap-2"
-        >
-          <Key className="h-4 w-4" />
-          Password
-        </Button>
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setSelectedUserId(user.id);
-            setIsBalanceDialogOpen(true);
-          }}
-          disabled={loading}
-          className="flex items-center gap-2"
-        >
-          <Coins className="h-4 w-4" />
-          Balance
-        </Button>
 
         <Button
           variant="destructive"
