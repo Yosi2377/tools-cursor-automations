@@ -17,23 +17,23 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       case 'bottom':
         return 'bottom-8 left-1/2 -translate-x-1/2 transform';
       case 'bottomLeft':
-        return 'bottom-1/4 left-8';
+        return `${isMobile ? 'bottom-1/4' : 'bottom-1/3'} left-8`;
       case 'left':
-        return `${isMobile ? 'left-4' : 'left-4'} top-1/2 -translate-y-1/2 transform`;
+        return `${isMobile ? 'left-4' : 'left-16'} top-1/2 -translate-y-1/2 transform`;
       case 'topLeft':
-        return 'top-1/4 left-8';
+        return `${isMobile ? 'top-1/4' : 'top-1/3'} left-8`;
       case 'top':
         return 'top-8 left-1/2 -translate-x-1/2 transform';
       case 'topRight':
-        return 'top-1/4 right-8';
+        return `${isMobile ? 'top-1/4' : 'top-1/3'} right-8`;
       case 'right':
-        return `${isMobile ? 'right-4' : 'right-4'} top-1/2 -translate-y-1/2 transform`;
+        return `${isMobile ? 'right-4' : 'right-16'} top-1/2 -translate-y-1/2 transform`;
       case 'bottomRight':
-        return 'bottom-1/4 right-8';
+        return `${isMobile ? 'bottom-1/4' : 'bottom-1/3'} right-8`;
       case 'leftTop':
-        return `${isMobile ? 'left-8' : 'left-16'} top-1/3`;
+        return `${isMobile ? 'left-8 top-1/3' : 'left-24 top-1/4'}`;
       case 'leftBottom':
-        return `${isMobile ? 'left-8' : 'left-16'} bottom-1/3`;
+        return `${isMobile ? 'left-8 bottom-1/3' : 'left-24 bottom-1/4'}`;
       default:
         return '';
     }
@@ -41,9 +41,9 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
 
   const getCardPositionClasses = () => {
     if (player.position === 'bottom') {
-      return 'top-full mt-2'; // Cards appear below the player avatar
+      return 'top-full mt-2';
     }
-    return 'top-0 -translate-y-full'; // Keep original positioning for other players
+    return 'top-0 -translate-y-full';
   };
 
   const shouldShowFaceUp = player.position === 'bottom';
