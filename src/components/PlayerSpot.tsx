@@ -36,24 +36,24 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       }
     }
 
-    // Position active players in an oval shape around the table
+    // Position active players in a perfect oval around the table
     switch (player.position) {
       case 'bottom':
-        return 'bottom-8 left-1/2 -translate-x-1/2';
+        return 'bottom-4 left-1/2 -translate-x-1/2';
       case 'bottomLeft':
-        return `${isMobile ? 'left-16 bottom-24' : 'left-24 bottom-32'} -translate-x-1/2`;
+        return `${isMobile ? 'left-12 bottom-16' : 'left-32 bottom-24'} -translate-x-1/2`;
       case 'left':
-        return `${isMobile ? 'left-8' : 'left-12'} top-1/2 -translate-y-1/2`;
+        return `${isMobile ? 'left-4' : 'left-8'} top-1/2 -translate-y-1/2`;
       case 'topLeft':
-        return `${isMobile ? 'left-16 top-24' : 'left-24 top-32'} -translate-x-1/2`;
+        return `${isMobile ? 'left-12 top-16' : 'left-32 top-24'} -translate-x-1/2`;
       case 'top':
-        return 'top-8 left-1/2 -translate-x-1/2';
+        return 'top-4 left-1/2 -translate-x-1/2';
       case 'topRight':
-        return `${isMobile ? 'right-16 top-24' : 'right-24 top-32'} translate-x-1/2`;
+        return `${isMobile ? 'right-12 top-16' : 'right-32 top-24'} translate-x-1/2`;
       case 'right':
-        return `${isMobile ? 'right-8' : 'right-12'} top-1/2 -translate-y-1/2`;
+        return `${isMobile ? 'right-4' : 'right-8'} top-1/2 -translate-y-1/2`;
       case 'bottomRight':
-        return `${isMobile ? 'right-16 bottom-24' : 'right-24 bottom-32'} translate-x-1/2`;
+        return `${isMobile ? 'right-12 bottom-16' : 'right-32 bottom-24'} translate-x-1/2`;
       default:
         return '';
     }
