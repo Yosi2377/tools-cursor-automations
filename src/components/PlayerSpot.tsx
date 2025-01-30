@@ -96,14 +96,20 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
   };
 
   const shouldShowFaceUp = player.position === 'bottom';
-  const inactiveStyles = !player.isActive ? 'opacity-50 grayscale hover:opacity-100 hover:grayscale-0 cursor-pointer' : '';
+  const inactiveStyles = !player.isActive ? 'opacity-100 hover:opacity-80 cursor-pointer' : '';
 
   return (
     <div 
       className={`absolute ${getPositionClasses()} flex flex-col items-center gap-2 transition-all duration-500 ${inactiveStyles}`}
       onClick={!player.isActive ? handleSeatClick : undefined}
     >
-      <PlayerInfo player={player} onTimeout={onTimeout} />
+      {!player.isActive ? (
+        <div className="w-16 h-16 rounded-full bg-poker-background border-2 border-white/20 flex items-center justify-center text-white/50 hover:text-white/80 transition-colors">
+          Seat
+        </div>
+      ) : (
+        <PlayerInfo player={player} onTimeout={onTimeout} />
+      )}
       
       {player.cards.length > 0 && (
         <div className={`absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-1 ${getCardPositionClasses()}`}>

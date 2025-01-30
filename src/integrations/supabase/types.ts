@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      daily_stats: {
+        Row: {
+          created_at: string | null
+          date: string
+          games_played: number | null
+          id: string
+          total_losses: number | null
+          total_purchases: number | null
+          total_winnings: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string
+          games_played?: number | null
+          id?: string
+          total_losses?: number | null
+          total_purchases?: number | null
+          total_winnings?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          games_played?: number | null
+          id?: string
+          total_losses?: number | null
+          total_purchases?: number | null
+          total_winnings?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       game_history: {
         Row: {
           created_at: string | null
@@ -168,6 +204,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      purchase_history: {
+        Row: {
+          admin_id: string
+          amount: number
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          admin_id: string
+          amount: number
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          admin_id?: string
+          amount?: number
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       rooms: {
         Row: {
