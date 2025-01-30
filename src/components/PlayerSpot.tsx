@@ -3,7 +3,6 @@ import { Player } from '@/types/poker';
 import PlayerCard from './poker/PlayerCard';
 import PlayerInfo from './poker/PlayerInfo';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Button } from './ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -24,13 +23,16 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
           return;
         }
 
+        const positionIndex = ['bottom', 'bottomRight', 'right', 'topRight', 'top', 'topLeft', 'left', 'bottomLeft']
+          .indexOf(player.position);
+
         const { error } = await supabase
           .from('game_players')
           .update({
             is_active: true,
             user_id: user.id,
           })
-          .eq('position', player.position);
+          .eq('position', positionIndex.toString());
 
         if (error) throw error;
         toast.success('Successfully joined the game');
@@ -65,7 +67,7 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       }
     }
 
-    // Position active players in a perfect oval around the table, with bottom position having higher z-index
+    // Position active players in a perfect oval around the table
     const zIndex = player.position === 'bottom' ? 'z-50' : 'z-10';
     switch (player.position) {
       case 'bottom':
@@ -107,7 +109,7 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       {!player.isActive ? (
         <div className="w-16 h-16 rounded-full bg-poker-background border-2 border-white/20 flex flex-col items-center justify-center text-white/50 hover:text-white/80 transition-colors">
           <span>Empty</span>
-          <span className="text-xs">Waiting...</span>
+          <span className="text-xs">Click to join</span>
         </div>
       ) : (
         <PlayerInfo player={player} onTimeout={onTimeout} />

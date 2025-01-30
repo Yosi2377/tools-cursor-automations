@@ -108,7 +108,8 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             const { data: existingPlayers } = await supabase
               .from('game_players')
               .select('*')
-              .eq('game_id', gameId);
+              .eq('game_id', gameId)
+              .order('position');
 
             if (existingPlayers) {
               setGameContext(prev => ({
@@ -147,7 +148,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                   rake: newGameState.rake || 0,
                   communityCards: (newGameState.community_cards as unknown as Card[]) || [],
                   currentPlayer: newGameState.current_player_index || 0,
-                  gameState: (newGameState.status || 'waiting') as GameState,
+                  gameState: (newGameState.status as GameState) || 'waiting',
                   currentBet: newGameState.current_bet || 0,
                   dealerPosition: newGameState.dealer_position || 0,
                 }));
@@ -164,10 +165,12 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
               (payload: PlayerUpdatePayload) => {
                 console.log('Player updated:', payload);
                 const updatedPlayer = payload.new;
+                const positionIndex = parseInt(updatedPlayer.position || '0');
+                
                 setGameContext(prev => ({
                   ...prev,
                   players: prev.players.map((p, index) => 
-                    index === Number(updatedPlayer.position)
+                    index === positionIndex
                       ? {
                           ...p,
                           chips: updatedPlayer.chips || 0,
