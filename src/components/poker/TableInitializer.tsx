@@ -59,7 +59,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             gameId = newGame.id;
 
             // Initialize empty seats and bots
-            const emptySeats = Array(room.actual_players).fill(null).map((_, index) => ({
+            const positions = Array(room.actual_players).fill(null).map((_, index) => ({
               game_id: gameId,
               user_id: room.with_bots && index > 0 ? `bot-${index}` : null,
               position: index.toString(),
@@ -74,37 +74,37 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             // Create game_players entries
             const { error: playersError } = await supabase
               .from('game_players')
-              .insert(emptySeats);
+              .insert(positions);
 
             if (playersError) throw playersError;
 
-            // Initialize game context with seats and bots
+            // Initialize game context with positions and bots
             setGameContext(prev => ({
               ...prev,
-              players: emptySeats.map((seat, index) => ({ 
+              players: positions.map((seat, index) => ({
                 id: index,
-                name: room.with_bots && index > 0 ? `Bot ${index}` : "Empty Seat",
+                name: room.with_bots && index > 0 ? `Bot ${index}` : 'Empty Seat',
                 position: getPositionForIndex(index),
                 chips: seat.chips,
-                cards: [] as Card[],
+                cards: [],
                 isActive: seat.is_active,
                 currentBet: 0,
                 isTurn: false,
                 score: 0
               }))
             }));
+
+            console.log('Initialized players:', positions);
           } else {
             // Use existing game
             gameId = existingGames[0].id;
 
             // Get existing players
-            const { data: existingPlayers, error: playersError } = await supabase
+            const { data: existingPlayers } = await supabase
               .from('game_players')
               .select('*')
               .eq('game_id', gameId)
               .order('position');
-
-            if (playersError) throw playersError;
 
             if (existingPlayers) {
               console.log('Existing players:', existingPlayers);
@@ -114,14 +114,10 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                   id: index,
                   name: player.user_id?.startsWith('bot-') ? 
                     `Bot ${index}` : 
-                    (player.is_active ? "Player" : "Empty Seat"),
+                    (player.is_active ? 'Player' : 'Empty Seat'),
                   position: getPositionForIndex(index),
                   chips: player.chips || 1000,
-                  cards: Array.isArray(player.cards) ? player.cards.map(card => ({
-                    suit: (card as any).suit,
-                    rank: (card as any).rank,
-                    faceUp: (card as any).faceUp
-                  })) : [] as Card[],
+                  cards: player.cards as Card[] || [],
                   isActive: player.is_active || false,
                   currentBet: player.current_bet || 0,
                   isTurn: player.is_turn || false,
