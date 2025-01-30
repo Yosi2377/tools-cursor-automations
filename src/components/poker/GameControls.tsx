@@ -15,6 +15,7 @@ const GameControls: React.FC<GameControlsProps> = ({
   onBet,
   onFold,
 }) => {
+  // Check if we're in waiting state
   if (gameContext.gameState === "waiting") {
     return (
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
@@ -28,8 +29,11 @@ const GameControls: React.FC<GameControlsProps> = ({
     );
   }
 
+  // Check if we're in betting state AND have a valid current player
+  const currentPlayer = gameContext.players[gameContext.currentPlayer];
   if (gameContext.gameState === "betting" && 
-      gameContext.players[gameContext.currentPlayer].position === "bottom") {
+      currentPlayer && 
+      currentPlayer.position === "bottom") {
     return (
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
         <Button 
