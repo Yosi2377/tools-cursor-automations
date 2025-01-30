@@ -15,25 +15,25 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
   const getPositionClasses = () => {
     switch (player.position) {
       case 'bottom':
-        return 'bottom-0 left-1/2 -translate-x-1/2 transform';
+        return 'bottom-8 left-1/2 -translate-x-1/2 transform';
       case 'bottomLeft':
-        return 'bottom-4 left-4';
+        return 'bottom-1/4 left-8';
       case 'left':
-        return `${isMobile ? 'left-4' : 'left-0'} top-1/2 -translate-y-1/2 transform`;
+        return `${isMobile ? 'left-4' : 'left-4'} top-1/2 -translate-y-1/2 transform`;
       case 'topLeft':
-        return 'top-4 left-4';
+        return 'top-1/4 left-8';
       case 'top':
-        return 'top-0 left-1/2 -translate-x-1/2 transform';
+        return 'top-8 left-1/2 -translate-x-1/2 transform';
       case 'topRight':
-        return 'top-4 right-4';
+        return 'top-1/4 right-8';
       case 'right':
-        return `${isMobile ? 'right-4' : 'right-0'} top-1/2 -translate-y-1/2 transform`;
+        return `${isMobile ? 'right-4' : 'right-4'} top-1/2 -translate-y-1/2 transform`;
       case 'bottomRight':
-        return 'bottom-4 right-4';
+        return 'bottom-1/4 right-8';
       case 'leftTop':
-        return `${isMobile ? 'left-4' : 'left-8'} top-1/4`;
+        return `${isMobile ? 'left-8' : 'left-16'} top-1/3`;
       case 'leftBottom':
-        return `${isMobile ? 'left-4' : 'left-8'} bottom-1/4`;
+        return `${isMobile ? 'left-8' : 'left-16'} bottom-1/3`;
       default:
         return '';
     }
@@ -41,7 +41,7 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
 
   const getCardPositionClasses = () => {
     if (player.position === 'bottom') {
-      return 'top-[80%]'; // Removed translate-x-4 to center the cards
+      return 'top-full mt-2'; // Cards appear below the player avatar
     }
     return 'top-0 -translate-y-full'; // Keep original positioning for other players
   };
