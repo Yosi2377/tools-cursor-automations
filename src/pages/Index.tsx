@@ -19,6 +19,10 @@ const Index = () => {
     }
   };
 
+  const handleJoinRoom = (roomId: string) => {
+    setSelectedRoom(roomId);
+  };
+
   return (
     <div className="relative min-h-screen">
       <Button
@@ -34,7 +38,7 @@ const Index = () => {
       {selectedRoom ? (
         <PokerTable roomId={selectedRoom} onLeaveRoom={() => setSelectedRoom(null)} />
       ) : (
-        <RoomList onJoinRoom={setSelectedRoom} />
+        <RoomList onJoinRoom={handleJoinRoom} />
       )}
     </div>
   );
