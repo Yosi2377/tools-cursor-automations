@@ -32,12 +32,18 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
         }
 
         // Check if the user is already seated at another position
-        const { data: existingPlayer } = await supabase
+        const { data: existingPlayer, error: existingPlayerError } = await supabase
           .from('game_players')
           .select('*')
           .eq('user_id', user.id)
           .eq('is_active', true)
-          .single();
+          .maybeSingle();
+
+        if (existingPlayerError) {
+          console.error('Error checking existing player:', existingPlayerError);
+          toast.error('Failed to check player status');
+          return;
+        }
 
         if (existingPlayer) {
           toast.error('You are already seated at another position');
@@ -45,27 +51,42 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
         }
 
         // Check if the seat is truly available
-        const { data: currentSeat } = await supabase
+        const { data: currentSeat, error: currentSeatError } = await supabase
           .from('game_players')
           .select('*')
           .eq('position', positionIndex.toString())
           .eq('is_active', true)
-          .single();
+          .maybeSingle();
+
+        if (currentSeatError) {
+          console.error('Error checking seat availability:', currentSeatError);
+          toast.error('Failed to check seat availability');
+          return;
+        }
 
         if (currentSeat) {
           toast.error('This seat is no longer available');
           return;
         }
 
-        const { error } = await supabase
+        const { error: updateError } = await supabase
           .from('game_players')
           .update({
             is_active: true,
             user_id: user.id,
+            chips: 1000, // Set initial chips
+            cards: [],
+            current_bet: 0,
+            is_turn: false
           })
           .eq('position', positionIndex.toString());
 
-        if (error) throw error;
+        if (updateError) {
+          console.error('Error joining game:', updateError);
+          toast.error('Failed to join the game');
+          return;
+        }
+
         toast.success('Successfully joined the game');
       } catch (error) {
         console.error('Error joining game:', error);
@@ -154,7 +175,7 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
         />
       )}
       
-      {player.cards.length > 0 && (
+      {player.cards && player.cards.length > 0 && (
         <div className={`absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-2 ${getCardPositionClasses()}`}>
           {player.cards.map((card, index) => (
             <PlayerCard
