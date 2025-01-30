@@ -1,68 +1,85 @@
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const Auth = () => {
+  const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
-  const validateUsername = (username: string) => {
-    // Only allow alphanumeric characters and underscores, 3-20 characters
-    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
-    return usernameRegex.test(username);
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleAuth = async (isLogin: boolean) => {
+    if (!username || !password) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (username.length < 3) {
+      toast.error('Username must be at least 3 characters long');
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
     try {
-      if (!username || !password) {
-        toast.error('Please enter both username and password');
-        return;
-      }
-
-      if (!validateUsername(username)) {
-        toast.error('Username must be 3-20 characters long and can only contain letters, numbers, and underscores');
-        return;
-      }
-
-      if (password.length < 6) {
-        toast.error('Password must be at least 6 characters long');
-        return;
-      }
-
       setLoading(true);
       
       // Generate a valid email format that's consistent between login and signup
-      const sanitizedUsername = username.toLowerCase().trim();
+      const sanitizedUsername = username.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
       const email = `${sanitizedUsername}@poker-game.com`;
 
-      const { data, error } = isLogin 
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password });
+      if (!isLogin) {
+        // Handle signup
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              username: sanitizedUsername
+            }
+          }
+        });
 
-      if (error) {
-        if (error.message.includes('Email not confirmed')) {
-          toast.error('Please check your email for the confirmation link');
-        } else if (error.message.includes('Invalid login credentials')) {
-          toast.error('Invalid username or password');
-        } else if (error.message.includes('User already registered')) {
-          toast.error('This username is already taken. Please try another one or log in');
-        } else {
-          toast.error(error.message);
+        if (signUpError) {
+          if (signUpError.message.includes('User already registered')) {
+            toast.error('This username is already taken. Please try another one or log in');
+          } else {
+            toast.error(signUpError.message);
+          }
+          console.error('Signup error:', signUpError);
+          return;
         }
-        console.error('Auth error:', error);
-        return;
-      }
 
-      if (!isLogin && data?.user) {
-        toast.success('Signed up successfully! You can now log in');
-      } else if (isLogin && data?.user) {
-        toast.success('Logged in successfully!');
-        navigate('/');
+        if (signUpData.user) {
+          toast.success('Signed up successfully! You can now log in');
+          setIsLogin(true);
+        }
+      } else {
+        // Handle login
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (signInError) {
+          toast.error('Invalid username or password');
+          console.error('Login error:', signInError);
+          return;
+        }
+
+        if (signInData.user) {
+          toast.success('Logged in successfully!');
+          navigate('/');
+        }
       }
     } catch (error: any) {
       toast.error('An unexpected error occurred. Please try again');
@@ -74,44 +91,60 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-poker-background p-4">
-      <div className="w-full max-w-md space-y-8 bg-white p-8 rounded-lg shadow-xl">
+      <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-900">Welcome to Poker</h2>
-          <p className="mt-2 text-gray-600">Please sign in or create an account</p>
+          <h2 className="text-3xl font-bold text-poker-accent">
+            {isLogin ? 'Welcome Back!' : 'Create Account'}
+          </h2>
+          <p className="mt-2 text-sm text-gray-400">
+            {isLogin ? 'Please log in to continue' : 'Sign up to start playing'}
+          </p>
         </div>
-        <div className="space-y-4">
-          <Input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value.trim())}
-            disabled={loading}
-          />
-          <Input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
-          />
-          <div className="flex gap-4">
+
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+          <div className="space-y-4">
+            <div>
+              <Input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                disabled={loading}
+                className="w-full px-4 py-2"
+              />
+            </div>
+            <div>
+              <Input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                className="w-full px-4 py-2"
+              />
+            </div>
+          </div>
+
+          <div>
             <Button
-              className="flex-1"
-              onClick={() => handleAuth(true)}
+              type="submit"
               disabled={loading}
+              className="w-full bg-poker-accent text-black hover:bg-poker-accent/90"
             >
-              Sign In
-            </Button>
-            <Button
-              className="flex-1"
-              variant="outline"
-              onClick={() => handleAuth(false)}
-              disabled={loading}
-            >
-              Sign Up
+              {loading ? 'Processing...' : isLogin ? 'Log In' : 'Sign Up'}
             </Button>
           </div>
-        </div>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-poker-accent hover:underline"
+            >
+              {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Log in'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
