@@ -50,7 +50,8 @@ export const useGameLogic = (
         cards: JSON.stringify(p.cards),
         is_turn: index === firstPlayerIndex,
         is_active: p.isActive,
-        current_bet: 0
+        current_bet: 0,
+        user_id: p.name.startsWith('Bot') ? `bot-${index}` : user.id
       }));
 
       const { error: playersError } = await supabase

@@ -114,8 +114,8 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       onClick={!player.isActive ? handleSeatClick : undefined}
     >
       {!player.isActive ? (
-        <div className="w-32 h-32 rounded-full bg-poker-accent/30 border-4 border-poker-accent/60 flex flex-col items-center justify-center text-poker-accent hover:bg-poker-accent/40 hover:border-poker-accent/80 transition-all shadow-xl animate-pulse">
-          <span className="text-base font-semibold">Empty Seat</span>
+        <div className="w-40 h-40 rounded-full bg-poker-accent/30 border-4 border-poker-accent/60 flex flex-col items-center justify-center text-poker-accent hover:bg-poker-accent/40 hover:border-poker-accent/80 transition-all shadow-xl animate-pulse">
+          <span className="text-lg font-semibold">Empty Seat</span>
           <span className="text-sm mt-1">Click to join</span>
         </div>
       ) : (
