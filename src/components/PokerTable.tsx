@@ -22,9 +22,15 @@ const PokerTable = () => {
   const [gameContext, setGameContext] = useState<GameContext>({
     players: [
       { id: 1, name: "You", chips: 1000, cards: [], position: "bottom", isActive: true, currentBet: 0, isTurn: false, score: 0 },
-      { id: 2, name: "John", chips: 1500, cards: [], position: "left", isActive: true, currentBet: 0, isTurn: false, score: 120 },
-      { id: 3, name: "Alice", chips: 2000, cards: [], position: "top", isActive: true, currentBet: 0, isTurn: false, score: 350 },
-      { id: 4, name: "Bob", chips: 800, cards: [], position: "right", isActive: true, currentBet: 0, isTurn: false, score: 80 },
+      { id: 2, name: "John", chips: 1500, cards: [], position: "bottomLeft", isActive: true, currentBet: 0, isTurn: false, score: 120 },
+      { id: 3, name: "Alice", chips: 2000, cards: [], position: "left", isActive: true, currentBet: 0, isTurn: false, score: 350 },
+      { id: 4, name: "Bob", chips: 800, cards: [], position: "topLeft", isActive: true, currentBet: 0, isTurn: false, score: 80 },
+      { id: 5, name: "Carol", chips: 1200, cards: [], position: "top", isActive: true, currentBet: 0, isTurn: false, score: 200 },
+      { id: 6, name: "Dave", chips: 1800, cards: [], position: "topRight", isActive: true, currentBet: 0, isTurn: false, score: 150 },
+      { id: 7, name: "Eve", chips: 900, cards: [], position: "right", isActive: true, currentBet: 0, isTurn: false, score: 90 },
+      { id: 8, name: "Frank", chips: 1600, cards: [], position: "bottomRight", isActive: true, currentBet: 0, isTurn: false, score: 180 },
+      { id: 9, name: "Grace", chips: 1300, cards: [], position: "leftTop", isActive: true, currentBet: 0, isTurn: false, score: 220 },
+      { id: 10, name: "Henry", chips: 1100, cards: [], position: "leftBottom", isActive: true, currentBet: 0, isTurn: false, score: 130 },
     ],
     pot: 0,
     rake: 0,

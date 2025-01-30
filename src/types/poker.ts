@@ -12,7 +12,7 @@ export interface Player {
   name: string;
   chips: number;
   cards: Card[];
-  position: "bottom" | "left" | "top" | "right";
+  position: "bottom" | "bottomLeft" | "left" | "topLeft" | "top" | "topRight" | "right" | "bottomRight" | "leftTop" | "leftBottom";
   isActive: boolean;
   currentBet: number;
   isTurn: boolean;
