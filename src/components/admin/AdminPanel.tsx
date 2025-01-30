@@ -20,13 +20,26 @@ const AdminPanel = () => {
   const [loading, setLoading] = useState(false);
   const [showCreateUser, setShowCreateUser] = useState(true);
 
-  // Fetch users
+  // Fetch users using the Edge Function
   const { data: users, refetch: refetchUsers } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      const { data: { users }, error } = await supabase.auth.admin.listUsers();
-      if (error) throw error;
-      return users;
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error('No session')
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-users`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to fetch users')
+      }
+      
+      const { users } = await response.json()
+      return users
     }
   });
 
@@ -109,17 +122,27 @@ const AdminPanel = () => {
   const handleDeleteUser = async (userId: string) => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.admin.deleteUser(userId);
-      
-      if (error) {
-        toast.error('Failed to delete user');
-        return;
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) throw new Error('No session')
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-users`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Failed to delete user')
       }
 
       toast.success('User deleted successfully');
       refetchUsers();
-    } catch (error) {
-      toast.error('Failed to delete user');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete user');
       console.error('Error deleting user:', error);
     } finally {
       setLoading(false);
