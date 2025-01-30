@@ -19,12 +19,13 @@ Deno.serve(async (req) => {
       throw new Error('No authorization header')
     }
 
-    // Verify the user is authenticated and is an admin
+    // Create a client with the user's JWT
     const userClient = createClient(
       supabaseUrl,
       authHeader.replace('Bearer ', ''),
     )
     
+    // Verify the user is authenticated
     const { data: { user }, error: authError } = await userClient.auth.getUser()
     if (authError || !user) {
       console.error('Auth error:', authError)
@@ -40,52 +41,51 @@ Deno.serve(async (req) => {
       throw new Error('Not authorized as admin')
     }
 
-    // Handle different operations based on the request method
-    if (req.method === 'GET') {
-      const { data: { users }, error } = await supabase.auth.admin.listUsers()
-      if (error) {
-        console.error('Error fetching users:', error)
-        throw error
+    // Handle different HTTP methods
+    switch (req.method) {
+      case 'GET': {
+        const { data: { users }, error } = await supabase.auth.admin.listUsers()
+        if (error) throw error
+        
+        console.log('Successfully fetched users:', users.length)
+        return new Response(
+          JSON.stringify({ users }), 
+          { 
+            headers: { 
+              ...corsHeaders, 
+              'Content-Type': 'application/json' 
+            } 
+          }
+        )
       }
-      console.log('Successfully fetched users:', users.length)
-      return new Response(
-        JSON.stringify({ users }), 
-        { 
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json' 
-          },
-          status: 200,
-        }
-      )
-    }
 
-    if (req.method === 'DELETE') {
-      const { userId } = await req.json()
-      const { error } = await supabase.auth.admin.deleteUser(userId)
-      if (error) {
-        console.error('Error deleting user:', error)
-        throw error
+      case 'DELETE': {
+        const { userId } = await req.json()
+        const { error } = await supabase.auth.admin.deleteUser(userId)
+        if (error) throw error
+        
+        console.log('Successfully deleted user:', userId)
+        return new Response(
+          JSON.stringify({ success: true }), 
+          { 
+            headers: { 
+              ...corsHeaders, 
+              'Content-Type': 'application/json' 
+            } 
+          }
+        )
       }
-      console.log('Successfully deleted user:', userId)
-      return new Response(
-        JSON.stringify({ success: true }), 
-        { 
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json' 
-          },
-          status: 200,
-        }
-      )
-    }
 
-    throw new Error('Method not allowed')
+      default:
+        throw new Error(`Method ${req.method} not allowed`)
+    }
   } catch (error) {
     console.error('Edge function error:', error)
+    
+    // Ensure we always return a JSON response, even for errors
     return new Response(
       JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'An unexpected error occurred'
+        error: error instanceof Error ? error.message : 'An unexpected error occurred' 
       }), 
       {
         headers: { 
