@@ -67,33 +67,34 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             if (gameError) throw gameError;
             gameId = newGame.id;
 
-            // Initialize empty seats based on actual_players count
+            // Initialize empty seats and bots based on actual_players count
             const emptySeats = Array(room.actual_players).fill(null).map((_, index) => ({
               game_id: gameId,
-              user_id: user.id,
+              user_id: room.with_bots && index > 0 ? `bot-${index}` : user.id,
               position: index.toString(),
-              is_active: false,
+              is_active: room.with_bots && index > 0,
               chips: 1000,
-              cards: []
+              cards: [],
+              name: room.with_bots && index > 0 ? `Bot ${index}` : "Empty Seat"
             }));
 
-            // Create game_players entries for empty seats
+            // Create game_players entries
             const { error: playersError } = await supabase
               .from('game_players')
               .insert(emptySeats);
 
             if (playersError) throw playersError;
 
-            // Initialize game context with empty seats
+            // Initialize game context with seats and bots
             setGameContext(prev => ({
               ...prev,
               players: emptySeats.map((seat, index) => ({
                 id: index,
-                name: "Empty Seat",
+                name: seat.name,
                 position: getPositionForIndex(index),
                 chips: seat.chips,
                 cards: [] as Card[],
-                isActive: false,
+                isActive: seat.is_active,
                 currentBet: 0,
                 isTurn: false,
                 score: 0
@@ -101,8 +102,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             }));
           } else {
             // Use existing game
-            const game = existingGames[0];
-            gameId = game.id;
+            gameId = existingGames[0].id;
 
             // Get existing players
             const { data: existingPlayers } = await supabase
@@ -116,7 +116,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                 ...prev,
                 players: existingPlayers.map((player, index) => ({
                   id: index,
-                  name: player.is_active ? "Player" : "Empty Seat",
+                  name: player.is_active ? (player.user_id?.startsWith('bot-') ? `Bot ${index}` : "Player") : "Empty Seat",
                   position: getPositionForIndex(index),
                   chips: player.chips || 0,
                   cards: (player.cards as unknown as Card[]) || [],
@@ -129,7 +129,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             }
           }
 
-          // Subscribe to real-time updates for the game
+          // Subscribe to real-time updates
           const channel = supabase.channel('game-updates')
             .on(
               'postgres_changes',
@@ -178,7 +178,9 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                           isActive: updatedPlayer.is_active || false,
                           currentBet: updatedPlayer.current_bet || 0,
                           isTurn: updatedPlayer.is_turn || false,
-                          name: updatedPlayer.is_active ? "Player" : "Empty Seat"
+                          name: updatedPlayer.is_active 
+                            ? (updatedPlayer.user_id?.startsWith('bot-') ? `Bot ${index}` : "Player")
+                            : "Empty Seat"
                         }
                       : p
                   ),
