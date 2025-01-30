@@ -11,8 +11,23 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleAuth = async (isLogin: boolean) => {
     try {
+      if (!email || !password) {
+        toast.error('Please enter both email and password');
+        return;
+      }
+
+      if (!validateEmail(email)) {
+        toast.error('Please enter a valid email address');
+        return;
+      }
+
       setLoading(true);
       const { error } = isLogin 
         ? await supabase.auth.signInWithPassword({ email, password })
@@ -21,13 +36,18 @@ const Auth = () => {
       if (error) throw error;
       
       if (!isLogin) {
-        toast('Signed up successfully! Please check your email for verification.');
+        toast.success('Signed up successfully! Please check your email for verification.');
       } else {
-        toast('Logged in successfully!');
+        toast.success('Logged in successfully!');
         navigate('/');
       }
     } catch (error: any) {
-      toast.error(error.message);
+      let errorMessage = error.message;
+      // Handle specific error cases
+      if (error.message.includes('email_address_invalid')) {
+        errorMessage = 'Please enter a valid email address';
+      }
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
