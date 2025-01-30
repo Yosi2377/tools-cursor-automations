@@ -45,21 +45,21 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
     if (!player.isActive) {
       switch (player.position) {
         case 'bottom':
-          return 'bottom-0 left-1/2 -translate-x-1/2 translate-y-[150%]';
+          return 'bottom-0 left-1/2 -translate-x-1/2 translate-y-[100%]';
         case 'bottomLeft':
-          return 'bottom-0 left-0 -translate-x-[150%] translate-y-[150%]';
+          return 'bottom-0 left-0 -translate-x-[100%] translate-y-[100%]';
         case 'left':
-          return 'left-0 top-1/2 -translate-y-1/2 -translate-x-[150%]';
+          return 'left-0 top-1/2 -translate-y-1/2 -translate-x-[100%]';
         case 'topLeft':
-          return 'top-0 left-0 -translate-x-[150%] -translate-y-[150%]';
+          return 'top-0 left-0 -translate-x-[100%] -translate-y-[100%]';
         case 'top':
-          return 'top-0 left-1/2 -translate-x-1/2 -translate-y-[150%]';
+          return 'top-0 left-1/2 -translate-x-1/2 -translate-y-[100%]';
         case 'topRight':
-          return 'top-0 right-0 translate-x-[150%] -translate-y-[150%]';
+          return 'top-0 right-0 translate-x-[100%] -translate-y-[100%]';
         case 'right':
-          return 'right-0 top-1/2 -translate-y-1/2 translate-x-[150%]';
+          return 'right-0 top-1/2 -translate-y-1/2 translate-x-[100%]';
         case 'bottomRight':
-          return 'bottom-0 right-0 translate-x-[150%] translate-y-[150%]';
+          return 'bottom-0 right-0 translate-x-[100%] translate-y-[100%]';
         default:
           return '';
       }
