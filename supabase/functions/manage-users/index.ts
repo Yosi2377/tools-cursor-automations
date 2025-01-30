@@ -20,16 +20,24 @@ Deno.serve(async (req) => {
       throw new Error('No authorization header')
     }
 
-    console.log('Auth header present:', !!authHeader) // Debug log
+    console.log('Auth header:', authHeader) // Debug log
 
     // Create a client with the user's JWT
     const userClient = createClient(
       supabaseUrl,
-      authHeader.replace('Bearer ', ''),
+      supabaseServiceRole, // Use service role key for admin operations
+      {
+        auth: {
+          persistSession: false,
+        },
+      }
     )
     
-    // Verify the user is authenticated
-    const { data: { user }, error: authError } = await userClient.auth.getUser()
+    // Get the JWT token from the Authorization header
+    const token = authHeader.replace('Bearer ', '')
+    
+    // Verify the user is authenticated using the token
+    const { data: { user }, error: authError } = await userClient.auth.getUser(token)
     if (authError || !user) {
       console.error('Auth error:', authError)
       throw new Error('Unauthorized')
@@ -95,7 +103,6 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Edge function error:', error)
     
-    // Ensure we always return a JSON response, even for errors
     return new Response(
       JSON.stringify({ 
         error: error instanceof Error ? error.message : 'An unexpected error occurred' 

@@ -25,7 +25,7 @@ const UserList = () => {
         if (sessionError) throw sessionError;
         if (!session) throw new Error('No active session');
 
-        console.log('Current session:', session.access_token); // Debug log
+        console.log('Fetching users with session token...'); // Debug log
 
         const { data, error } = await supabase.functions.invoke('manage-users', {
           method: 'GET',
@@ -37,6 +37,10 @@ const UserList = () => {
         if (error) {
           console.error('Error from Edge Function:', error);
           throw error;
+        }
+
+        if (!data?.users) {
+          throw new Error('Invalid response format');
         }
 
         console.log('Fetched users:', data.users); // Debug log
