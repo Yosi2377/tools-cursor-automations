@@ -1,9 +1,6 @@
 import { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Trash2, Key, Coins } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -12,22 +9,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useQuery } from '@tanstack/react-query';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import UserCard from './UserCard';
 
 const UserList = () => {
   const [loading, setLoading] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [newBalance, setNewBalance] = useState('');
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
-  const [isBalanceDialogOpen, setIsBalanceDialogOpen] = useState(false);
 
   // Fetch users and their balances
   const { data: users, isLoading: isLoadingUsers, error: usersError, refetch: refetchUsers } = useQuery({
@@ -75,8 +60,6 @@ const UserList = () => {
   const handleDeleteUser = async (userId: string) => {
     try {
       setLoading(true);
-
-      // Get the current session
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError) throw sessionError;
       if (!session) throw new Error('No active session');
@@ -101,9 +84,7 @@ const UserList = () => {
     }
   };
 
-  const handlePasswordChange = async () => {
-    if (!selectedUserId || !newPassword) return;
-
+  const handlePasswordChange = async (userId: string, newPassword: string) => {
     try {
       setLoading(true);
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -116,7 +97,7 @@ const UserList = () => {
           Authorization: `Bearer ${session.access_token}`,
         },
         body: { 
-          userId: selectedUserId,
+          userId,
           password: newPassword,
           action: 'update_password'
         }
@@ -125,8 +106,6 @@ const UserList = () => {
       if (error) throw error;
 
       toast.success('Password updated successfully');
-      setNewPassword('');
-      setIsPasswordDialogOpen(false);
     } catch (error: any) {
       toast.error(error.message || 'Failed to update password');
       console.error('Error updating password:', error);
@@ -135,9 +114,7 @@ const UserList = () => {
     }
   };
 
-  const handleBalanceUpdate = async () => {
-    if (!selectedUserId || !newBalance) return;
-
+  const handleBalanceUpdate = async (userId: string, newBalance: string) => {
     try {
       setLoading(true);
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -146,13 +123,11 @@ const UserList = () => {
 
       const { error } = await supabase.from('game_players')
         .update({ chips: parseInt(newBalance), default_chips: parseInt(newBalance) })
-        .eq('user_id', selectedUserId);
+        .eq('user_id', userId);
 
       if (error) throw error;
 
       toast.success('Balance updated successfully');
-      setNewBalance('');
-      setIsBalanceDialogOpen(false);
       refetchUsers();
     } catch (error: any) {
       toast.error(error.message || 'Failed to update balance');
@@ -198,109 +173,14 @@ const UserList = () => {
         <div className="space-y-4">
           {users && users.length > 0 ? (
             users.map((user) => (
-              <div
+              <UserCard
                 key={user.id}
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
-                <div>
-                  <p className="font-medium">{user.user_metadata?.username || user.email}</p>
-                  <p className="text-sm text-gray-500">Created: {new Date(user.created_at).toLocaleDateString()}</p>
-                  <p className="text-sm text-emerald-600">Balance: ${user.balance}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Dialog open={isPasswordDialogOpen && selectedUserId === user.id} onOpenChange={(open) => {
-                    setIsPasswordDialogOpen(open);
-                    if (!open) setSelectedUserId(null);
-                  }}>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedUserId(user.id)}
-                        disabled={loading}
-                        className="flex items-center gap-2"
-                      >
-                        <Key className="h-4 w-4" />
-                        Password
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Change Password</DialogTitle>
-                        <DialogDescription>
-                          Enter a new password for {user.user_metadata?.username || user.email}
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-4">
-                        <Input
-                          type="password"
-                          placeholder="New password"
-                          value={newPassword}
-                          onChange={(e) => setNewPassword(e.target.value)}
-                        />
-                        <Button 
-                          onClick={handlePasswordChange}
-                          disabled={!newPassword || loading}
-                        >
-                          Update Password
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-
-                  <Dialog open={isBalanceDialogOpen && selectedUserId === user.id} onOpenChange={(open) => {
-                    setIsBalanceDialogOpen(open);
-                    if (!open) setSelectedUserId(null);
-                  }}>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedUserId(user.id)}
-                        disabled={loading}
-                        className="flex items-center gap-2"
-                      >
-                        <Coins className="h-4 w-4" />
-                        Balance
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Update Balance</DialogTitle>
-                        <DialogDescription>
-                          Set new balance for {user.user_metadata?.username || user.email}
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4 pt-4">
-                        <Input
-                          type="number"
-                          placeholder="New balance"
-                          value={newBalance}
-                          onChange={(e) => setNewBalance(e.target.value)}
-                          min="0"
-                        />
-                        <Button 
-                          onClick={handleBalanceUpdate}
-                          disabled={!newBalance || loading}
-                        >
-                          Update Balance
-                        </Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteUser(user.id)}
-                    disabled={loading}
-                    className="flex items-center gap-2"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Delete
-                  </Button>
-                </div>
-              </div>
+                user={user}
+                onDelete={handleDeleteUser}
+                onPasswordChange={handlePasswordChange}
+                onBalanceUpdate={handleBalanceUpdate}
+                loading={loading}
+              />
             ))
           ) : (
             <p className="text-center text-gray-500">No users found</p>
