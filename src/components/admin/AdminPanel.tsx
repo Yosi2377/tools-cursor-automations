@@ -25,6 +25,18 @@ const AdminPanel = () => {
       return;
     }
 
+    // Validate username length
+    if (username.length < 3) {
+      toast.error('Username must be at least 3 characters long');
+      return;
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -92,7 +104,7 @@ const AdminPanel = () => {
         <form onSubmit={handleCreateUser} className="space-y-4">
           <div>
             <Input
-              placeholder="Username"
+              placeholder="Username (min. 3 characters)"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               disabled={loading}
@@ -101,7 +113,7 @@ const AdminPanel = () => {
           <div>
             <Input
               type="password"
-              placeholder="Password"
+              placeholder="Password (min. 6 characters)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
