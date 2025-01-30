@@ -24,6 +24,13 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
     }
   };
 
+  const getCardPositionClasses = () => {
+    if (player.position === 'bottom') {
+      return 'top-[80%]'; // Adjusted specifically for bottom player's cards
+    }
+    return 'top-0 -translate-y-full'; // Keep original positioning for other players
+  };
+
   const shouldShowFaceUp = player.position === 'bottom';
 
   return (
@@ -31,7 +38,7 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       <PlayerInfo player={player} onTimeout={onTimeout} />
       
       {player.cards.length > 0 && (
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mt-2 flex gap-1">
+        <div className={`absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-1 ${getCardPositionClasses()}`}>
           {player.cards.map((card, index) => (
             <PlayerCard
               key={index}
