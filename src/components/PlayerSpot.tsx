@@ -14,55 +14,57 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
 
   const getPositionClasses = () => {
     if (!player.isActive) {
-      // Position inactive players off the table
+      // Position inactive players completely off the table
       switch (player.position) {
         case 'bottom':
-          return 'bottom-0 left-1/2 -translate-x-1/2 transform translate-y-full';
+          return 'bottom-0 left-1/2 -translate-x-1/2 transform translate-y-[200%]';
         case 'bottomLeft':
-          return 'bottom-0 left-0';
+          return 'bottom-0 left-0 -translate-x-[200%] translate-y-[200%]';
         case 'left':
-          return 'left-0 top-1/2 -translate-y-1/2 -translate-x-full';
+          return 'left-0 top-1/2 -translate-y-1/2 -translate-x-[200%]';
         case 'topLeft':
-          return 'top-0 left-0';
+          return 'top-0 left-0 -translate-x-[200%] -translate-y-[200%]';
         case 'top':
-          return 'top-0 left-1/2 -translate-x-1/2 -translate-y-full';
+          return 'top-0 left-1/2 -translate-x-1/2 -translate-y-[200%]';
         case 'topRight':
-          return 'top-0 right-0';
+          return 'top-0 right-0 translate-x-[200%] -translate-y-[200%]';
         case 'right':
-          return 'right-0 top-1/2 -translate-y-1/2 translate-x-full';
+          return 'right-0 top-1/2 -translate-y-1/2 translate-x-[200%]';
         case 'bottomRight':
-          return 'bottom-0 right-0';
+          return 'bottom-0 right-0 translate-x-[200%] translate-y-[200%]';
         case 'leftTop':
-          return 'left-0 top-1/4 -translate-x-full';
+          return 'left-0 top-1/4 -translate-x-[200%]';
         case 'leftBottom':
-          return 'left-0 bottom-1/4 -translate-x-full';
+          return 'left-0 bottom-1/4 -translate-x-[200%]';
         default:
           return '';
       }
     }
 
-    // Position active players on the table in a more spread out pattern
+    // Position active players in overlapping groups as shown in the image
     switch (player.position) {
+      // Center positions
       case 'bottom':
-        return 'bottom-32 left-1/2 -translate-x-1/2 transform';
+        return 'bottom-24 left-1/2 -translate-x-1/2';
       case 'top':
-        return 'top-32 left-1/2 -translate-x-1/2 transform';
+        return 'top-24 left-1/2 -translate-x-1/2';
+      
+      // Left group (overlapping)
       case 'left':
-        return `${isMobile ? 'left-24' : 'left-48'} top-1/2 -translate-y-1/2`;
-      case 'right':
-        return `${isMobile ? 'right-24' : 'right-48'} top-1/2 -translate-y-1/2`;
+        return `${isMobile ? 'left-32' : 'left-48'} top-1/2 -translate-y-1/2 -translate-x-8`;
       case 'topLeft':
-        return `${isMobile ? 'left-32 top-48' : 'left-64 top-48'}`;
-      case 'topRight':
-        return `${isMobile ? 'right-32 top-48' : 'right-64 top-48'}`;
-      case 'bottomLeft':
-        return `${isMobile ? 'left-32 bottom-48' : 'left-64 bottom-48'}`;
-      case 'bottomRight':
-        return `${isMobile ? 'right-32 bottom-48' : 'right-64 bottom-48'}`;
+        return `${isMobile ? 'left-32' : 'left-48'} top-1/2 -translate-y-[60%]`;
       case 'leftTop':
-        return `${isMobile ? 'left-48 top-1/3' : 'left-72 top-1/3'}`;
-      case 'leftBottom':
-        return `${isMobile ? 'left-48 bottom-1/3' : 'left-72 bottom-1/3'}`;
+        return `${isMobile ? 'left-32' : 'left-48'} top-1/2 -translate-y-[40%]`;
+      
+      // Right group (overlapping)
+      case 'right':
+        return `${isMobile ? 'right-32' : 'right-48'} top-1/2 -translate-y-1/2 translate-x-8`;
+      case 'topRight':
+        return `${isMobile ? 'right-32' : 'right-48'} top-1/2 -translate-y-[60%]`;
+      case 'bottomRight':
+        return `${isMobile ? 'right-32' : 'right-48'} top-1/2 -translate-y-[40%]`;
+      
       default:
         return '';
     }
