@@ -2,12 +2,31 @@ import PokerTable from "@/components/PokerTable";
 import RoomList from "@/components/poker/RoomList";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut } from "lucide-react";
+import { LogOut, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 const Index = () => {
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const { data: isAdmin } = useQuery({
+    queryKey: ['isAdmin'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+      
+      const { data, error } = await supabase
+        .rpc('is_admin', { user_id: user.id });
+      
+      if (error) {
+        console.error('Error checking admin status:', error);
+        throw error;
+      }
+      return data as boolean;
+    }
+  });
 
   const handleLogout = async () => {
     try {
@@ -26,20 +45,37 @@ const Index = () => {
 
   return (
     <div className="relative min-h-screen">
-      <Button
-        onClick={handleLogout}
-        variant="outline"
-        size="sm"
-        className="absolute top-4 right-4 z-50"
-      >
-        <LogOut className="mr-2 h-4 w-4" />
-        Logout
-      </Button>
+      <div className="absolute top-4 right-4 z-50 flex flex-col gap-2">
+        <Button
+          onClick={handleLogout}
+          variant="outline"
+          size="sm"
+          className="flex items-center gap-2"
+        >
+          <LogOut className="h-4 w-4" />
+          Logout
+        </Button>
+        {isAdmin && (
+          <Button
+            onClick={() => setIsCreating(true)}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Create Room
+          </Button>
+        )}
+      </div>
       
       {selectedRoom ? (
         <PokerTable roomId={selectedRoom} onLeaveRoom={() => setSelectedRoom(null)} />
       ) : (
-        <RoomList onJoinRoom={handleJoinRoom} />
+        <RoomList 
+          onJoinRoom={handleJoinRoom} 
+          isCreating={isCreating}
+          setIsCreating={setIsCreating}
+        />
       )}
     </div>
   );
