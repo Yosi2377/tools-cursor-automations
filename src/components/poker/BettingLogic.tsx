@@ -12,11 +12,13 @@ export const useBettingLogic = (
     console.log(`${currentPlayer.name} attempting to bet ${amount}`);
 
     try {
-      // Get the current game
+      // Get the most recent active game
       const { data: game } = await supabase
         .from('games')
         .select('*')
         .eq('status', 'betting')
+        .order('created_at', { ascending: false })
+        .limit(1)
         .single();
 
       if (!game) {
@@ -86,11 +88,13 @@ export const useBettingLogic = (
   const handleFold = async () => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     try {
-      // Get the current game
+      // Get the most recent active game
       const { data: game } = await supabase
         .from('games')
         .select('*')
         .eq('status', 'betting')
+        .order('created_at', { ascending: false })
+        .limit(1)
         .single();
 
       if (!game) {
