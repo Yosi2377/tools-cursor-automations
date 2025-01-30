@@ -33,7 +33,7 @@ const Auth = () => {
     try {
       setLoading(true);
       
-      // Generate a valid email format that's consistent between login and signup
+      // Generate a valid email format
       const sanitizedUsername = username.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
       const email = `${sanitizedUsername}@poker-game.com`;
 
@@ -45,19 +45,20 @@ const Auth = () => {
           options: {
             data: {
               username: sanitizedUsername
-            }
+            },
+            emailRedirectTo: window.location.origin
           }
         });
 
         if (signUpError) {
+          console.error('Signup error:', signUpError);
           if (signUpError.message.includes('email_provider_disabled')) {
             toast.error('Email signups are currently disabled. Please contact the administrator.');
           } else if (signUpError.message.includes('User already registered')) {
             toast.error('This username is already taken. Please try another one or log in');
           } else {
-            toast.error(signUpError.message);
+            toast.error(signUpError.message || 'An error occurred during signup');
           }
-          console.error('Signup error:', signUpError);
           return;
         }
 
@@ -73,8 +74,8 @@ const Auth = () => {
         });
 
         if (signInError) {
-          toast.error('Invalid username or password');
           console.error('Login error:', signInError);
+          toast.error(signInError.message || 'Invalid username or password');
           return;
         }
 
@@ -84,8 +85,8 @@ const Auth = () => {
         }
       }
     } catch (error: any) {
-      toast.error('An unexpected error occurred. Please try again');
       console.error('Auth error:', error);
+      toast.error('An unexpected error occurred. Please try again');
     } finally {
       setLoading(false);
     }
