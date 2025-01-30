@@ -15,6 +15,9 @@ export const useGameLogic = (
     const firstPlayerIndex = (nextDealerIndex + 1) % gameContext.players.length;
     
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
       // Update game state in Supabase
       const { error: gameError } = await supabase
         .from('games')
@@ -35,9 +38,10 @@ export const useGameLogic = (
       const { error: playersError } = await supabase
         .from('game_players')
         .upsert(
-          updatedPlayers.map((p, i) => ({
-            cards: p.cards,
-            is_turn: i === firstPlayerIndex,
+          updatedPlayers.map(p => ({
+            user_id: user.id,
+            cards: JSON.stringify(p.cards),
+            is_turn: p.isTurn,
             is_active: true,
             current_bet: 0
           }))
@@ -66,6 +70,7 @@ export const useGameLogic = (
         title: "New hand started",
         description: "Cards have been dealt to all players",
       });
+
     } catch (error) {
       console.error('Error starting new hand:', error);
       toast({

@@ -32,6 +32,9 @@ export const useBettingLogic = (
     }
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
       // Update player's bet in Supabase
       const { error: playerError } = await supabase
         .from('game_players')
@@ -40,7 +43,7 @@ export const useBettingLogic = (
           current_bet: currentPlayer.currentBet + actualBetAmount,
           is_turn: false
         })
-        .eq('id', currentPlayer.id);
+        .eq('id', currentPlayer.id.toString());
 
       if (playerError) throw playerError;
 

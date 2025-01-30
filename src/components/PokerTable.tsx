@@ -51,7 +51,6 @@ const PokerTable = () => {
         { event: 'UPDATE', schema: 'public', table: 'games' },
         (payload) => {
           console.log('Game updated:', payload);
-          // Update game state based on database changes
           const newGameState = payload.new;
           setGameContext(prev => ({
             ...prev,
@@ -70,7 +69,6 @@ const PokerTable = () => {
         { event: 'UPDATE', schema: 'public', table: 'game_players' },
         (payload) => {
           console.log('Player updated:', payload);
-          // Update player state based on database changes
           const updatedPlayer = payload.new;
           setGameContext(prev => ({
             ...prev,
@@ -96,10 +94,12 @@ const PokerTable = () => {
     };
   }, []);
 
-  // Initialize game in Supabase when component mounts
   useEffect(() => {
     const initializeGame = async () => {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No user found');
+
         const { data: game, error: gameError } = await supabase
           .from('games')
           .insert([{
@@ -122,10 +122,10 @@ const PokerTable = () => {
           .insert(
             gameContext.players.map(player => ({
               game_id: game.id,
-              user_id: supabase.auth.getUser().then(({ data }) => data.user?.id),
+              user_id: user.id,
               position: player.position,
               chips: player.chips,
-              cards: player.cards,
+              cards: JSON.stringify(player.cards),
               is_active: player.isActive,
               current_bet: player.currentBet,
               is_turn: player.isTurn,
