@@ -48,10 +48,16 @@ Deno.serve(async (req) => {
         throw error
       }
       console.log('Successfully fetched users:', users.length)
-      return new Response(JSON.stringify({ users }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      })
+      return new Response(
+        JSON.stringify({ users }), 
+        { 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          },
+          status: 200,
+        }
+      )
     }
 
     if (req.method === 'DELETE') {
@@ -62,10 +68,16 @@ Deno.serve(async (req) => {
         throw error
       }
       console.log('Successfully deleted user:', userId)
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      })
+      return new Response(
+        JSON.stringify({ success: true }), 
+        { 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json' 
+          },
+          status: 200,
+        }
+      )
     }
 
     throw new Error('Method not allowed')
@@ -73,10 +85,14 @@ Deno.serve(async (req) => {
     console.error('Edge function error:', error)
     return new Response(
       JSON.stringify({ 
-        error: error.message || 'An unexpected error occurred'
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: error.message === 'Unauthorized' ? 401 : 400,
+        error: error instanceof Error ? error.message : 'An unexpected error occurred'
+      }), 
+      {
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        },
+        status: error instanceof Error && error.message === 'Unauthorized' ? 401 : 400,
       }
     )
   }
