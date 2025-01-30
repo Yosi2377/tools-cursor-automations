@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PlayerSpot from './PlayerSpot';
-import { GameContext } from '../types/poker';
+import { GameContext, Player, PlayerPosition } from '../types/poker';
 import GameControls from './poker/GameControls';
 import CommunityCards from './poker/CommunityCards';
 import PotDisplay from './poker/PotDisplay';
@@ -48,6 +48,14 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     }
   );
 
+  const getPositionForIndex = (index: number, totalPlayers: number): PlayerPosition => {
+    const positions: PlayerPosition[] = [
+      'bottom', 'bottomRight', 'right', 'topRight',
+      'top', 'topLeft', 'left', 'bottomLeft'
+    ];
+    return positions[index % positions.length];
+  };
+
   useEffect(() => {
     const initializeGame = async () => {
       try {
@@ -60,7 +68,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
         if (room) {
           setWithBots(room.with_bots);
           // Initialize empty seats based on actual_players count
-          const emptySeats = Array(room.actual_players).fill(null).map((_, index) => ({
+          const emptySeats: Player[] = Array(room.actual_players).fill(null).map((_, index) => ({
             id: index + 1,
             name: "Empty Seat",
             chips: 1000,
@@ -133,14 +141,6 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
       supabase.removeChannel(channel);
     };
   }, [roomId]);
-
-  const getPositionForIndex = (index: number, totalPlayers: number) => {
-    const positions = [
-      'bottom', 'bottomRight', 'right', 'topRight',
-      'top', 'topLeft', 'left', 'bottomLeft'
-    ];
-    return positions[index % positions.length];
-  };
 
   return (
     <div className="relative w-full h-screen bg-poker-background p-4 overflow-hidden">

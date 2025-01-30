@@ -7,12 +7,14 @@ export interface Card {
   faceUp: boolean;
 }
 
+export type PlayerPosition = "bottom" | "bottomLeft" | "left" | "topLeft" | "top" | "topRight" | "right" | "bottomRight" | "leftTop" | "leftBottom";
+
 export interface Player {
   id: number;
   name: string;
   chips: number;
   cards: Card[];
-  position: "bottom" | "bottomLeft" | "left" | "topLeft" | "top" | "topRight" | "right" | "bottomRight" | "leftTop" | "leftBottom";
+  position: PlayerPosition;
   isActive: boolean;
   currentBet: number;
   isTurn: boolean;
