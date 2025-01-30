@@ -3,6 +3,9 @@ import { Player } from '@/types/poker';
 import PlayerCard from './poker/PlayerCard';
 import PlayerInfo from './poker/PlayerInfo';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from './ui/button';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface PlayerSpotProps {
   player: Player;
@@ -11,6 +14,32 @@ interface PlayerSpotProps {
 
 const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
   const isMobile = useIsMobile();
+
+  const handleSeatClick = async () => {
+    if (!player.isActive) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          toast.error('Please login to join the game');
+          return;
+        }
+
+        const { error } = await supabase
+          .from('game_players')
+          .update({
+            is_active: true,
+            user_id: user.id,
+          })
+          .eq('position', player.position);
+
+        if (error) throw error;
+        toast.success('Successfully joined the game');
+      } catch (error) {
+        console.error('Error joining game:', error);
+        toast.error('Failed to join the game');
+      }
+    }
+  };
 
   const getPositionClasses = () => {
     if (!player.isActive) {
@@ -67,11 +96,12 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
   };
 
   const shouldShowFaceUp = player.position === 'bottom';
-  const inactiveStyles = !player.isActive ? 'opacity-50 grayscale' : '';
+  const inactiveStyles = !player.isActive ? 'opacity-50 grayscale hover:opacity-100 hover:grayscale-0 cursor-pointer' : '';
 
   return (
     <div 
       className={`absolute ${getPositionClasses()} flex flex-col items-center gap-2 transition-all duration-500 ${inactiveStyles}`}
+      onClick={!player.isActive ? handleSeatClick : undefined}
     >
       <PlayerInfo player={player} onTimeout={onTimeout} />
       

@@ -22,21 +22,11 @@ interface PokerTableProps {
 
 const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [withBots, setWithBots] = useState(true);
   const isMobile = useIsMobile();
   
   const [gameContext, setGameContext] = useState<GameContext>({
-    players: [
-      { id: 1, name: "You", chips: 1000, cards: [], position: "bottom", isActive: true, currentBet: 0, isTurn: false, score: 0 },
-      { id: 2, name: "John", chips: 1500, cards: [], position: "bottomLeft", isActive: true, currentBet: 0, isTurn: false, score: 120 },
-      { id: 3, name: "Alice", chips: 2000, cards: [], position: "left", isActive: true, currentBet: 0, isTurn: false, score: 350 },
-      { id: 4, name: "Bob", chips: 800, cards: [], position: "topLeft", isActive: true, currentBet: 0, isTurn: false, score: 80 },
-      { id: 5, name: "Carol", chips: 1200, cards: [], position: "top", isActive: true, currentBet: 0, isTurn: false, score: 200 },
-      { id: 6, name: "Dave", chips: 1800, cards: [], position: "topRight", isActive: true, currentBet: 0, isTurn: false, score: 150 },
-      { id: 7, name: "Eve", chips: 900, cards: [], position: "right", isActive: true, currentBet: 0, isTurn: false, score: 90 },
-      { id: 8, name: "Frank", chips: 1600, cards: [], position: "bottomRight", isActive: true, currentBet: 0, isTurn: false, score: 180 },
-      { id: 9, name: "Grace", chips: 1300, cards: [], position: "leftTop", isActive: true, currentBet: 0, isTurn: false, score: 220 },
-      { id: 10, name: "Henry", chips: 1100, cards: [], position: "leftBottom", isActive: true, currentBet: 0, isTurn: false, score: 130 },
-    ],
+    players: [],
     pot: 0,
     rake: 0,
     communityCards: [],
@@ -59,6 +49,42 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
   );
 
   useEffect(() => {
+    const initializeGame = async () => {
+      try {
+        const { data: room } = await supabase
+          .from('rooms')
+          .select('*')
+          .eq('id', roomId)
+          .single();
+
+        if (room) {
+          setWithBots(room.with_bots);
+          // Initialize empty seats based on actual_players count
+          const emptySeats = Array(room.actual_players).fill(null).map((_, index) => ({
+            id: index + 1,
+            name: "Empty Seat",
+            chips: 1000,
+            cards: [],
+            position: getPositionForIndex(index, room.actual_players),
+            isActive: false,
+            currentBet: 0,
+            isTurn: false,
+            score: 0
+          }));
+
+          setGameContext(prev => ({
+            ...prev,
+            players: emptySeats
+          }));
+        }
+      } catch (error) {
+        console.error('Error initializing game:', error);
+        toast.error('Failed to initialize game');
+      }
+    };
+
+    initializeGame();
+
     const channel = supabase.channel('game-updates')
       .on(
         'postgres_changes',
@@ -106,59 +132,15 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
-
-  useEffect(() => {
-    const initializeGame = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('No user found');
-
-        const { data: game, error: gameError } = await supabase
-          .from('games')
-          .insert([{
-            room_id: roomId,
-            status: 'waiting',
-            pot: 0,
-            rake: 0,
-            current_bet: 0,
-            dealer_position: 0,
-            community_cards: [],
-            minimum_bet: 20,
-          }])
-          .select()
-          .single();
-
-        if (gameError) throw gameError;
-
-        // Add players to the game
-        const { error: playersError } = await supabase
-          .from('game_players')
-          .insert(
-            gameContext.players.map(player => ({
-              game_id: game.id,
-              user_id: user.id,
-              position: player.position,
-              chips: player.chips,
-              cards: JSON.stringify(player.cards),
-              is_active: player.isActive,
-              current_bet: player.currentBet,
-              is_turn: player.isTurn,
-              score: player.score,
-            }))
-          );
-
-        if (playersError) throw playersError;
-
-        toast.success('Game initialized successfully!');
-      } catch (error) {
-        console.error('Error initializing game:', error);
-        toast.error('Failed to initialize game');
-      }
-    };
-
-    initializeGame();
   }, [roomId]);
+
+  const getPositionForIndex = (index: number, totalPlayers: number) => {
+    const positions = [
+      'bottom', 'bottomRight', 'right', 'topRight',
+      'top', 'topLeft', 'left', 'bottomLeft'
+    ];
+    return positions[index % positions.length];
+  };
 
   return (
     <div className="relative w-full h-screen bg-poker-background p-4 overflow-hidden">
