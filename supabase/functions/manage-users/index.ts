@@ -97,6 +97,35 @@ Deno.serve(async (req) => {
         )
       }
 
+      case 'PATCH': {
+        const { userId, password, action } = await req.json()
+        
+        if (action === 'update_password') {
+          const { error } = await supabase.auth.admin.updateUserById(
+            userId,
+            { password: password }
+          )
+          
+          if (error) {
+            console.error('Error updating password:', error)
+            throw error
+          }
+          
+          console.log('Successfully updated password for user:', userId)
+          return new Response(
+            JSON.stringify({ success: true }), 
+            { 
+              headers: { 
+                ...corsHeaders, 
+                'Content-Type': 'application/json' 
+              } 
+            }
+          )
+        }
+        
+        throw new Error(`Invalid action: ${action}`)
+      }
+
       default:
         throw new Error(`Method ${req.method} not allowed`)
     }
