@@ -6,16 +6,19 @@ import CommunityCards from './poker/CommunityCards';
 import PotDisplay from './poker/PotDisplay';
 import TableFelt from './poker/TableFelt';
 import { Button } from './ui/button';
-import { Menu } from 'lucide-react';
+import { Menu, LogOut } from 'lucide-react';
 import LeaderBoard from './poker/LeaderBoard';
 import { useGameLogic } from './poker/GameLogic';
 import { useBettingLogic } from './poker/BettingLogic';
 import { useCardDealing } from './poker/CardDealing';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const PokerTable = () => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const isMobile = useIsMobile();
+  
   const [gameContext, setGameContext] = useState<GameContext>({
     players: [
       { id: 1, name: "You", chips: 1000, cards: [], position: "bottom", isActive: true, currentBet: 0, isTurn: false, score: 0 },
@@ -145,15 +148,36 @@ const PokerTable = () => {
     initializeGame();
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success('Logged out successfully');
+    } catch (error) {
+      toast.error('Error logging out');
+    }
+  };
+
   return (
     <div className="relative w-full h-screen bg-poker-background p-4 overflow-hidden">
-      <Button 
-        variant="outline" 
-        className="absolute top-4 right-4 z-50"
-        onClick={() => setShowLeaderboard(!showLeaderboard)}
-      >
-        <Menu className="w-6 h-6" />
-      </Button>
+      <div className="flex justify-between items-center absolute top-4 left-4 right-4 z-50">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handleLogout}
+          className="flex items-center gap-2"
+        >
+          <LogOut className="w-4 h-4" />
+          Logout
+        </Button>
+
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => setShowLeaderboard(!showLeaderboard)}
+        >
+          <Menu className="w-4 h-4" />
+        </Button>
+      </div>
 
       {showLeaderboard && (
         <LeaderBoard 
@@ -162,7 +186,7 @@ const PokerTable = () => {
         />
       )}
 
-      <div className="absolute inset-8 bg-poker-table rounded-full border-8 border-poker-accent/20 shadow-2xl">
+      <div className={`absolute ${isMobile ? 'inset-4' : 'inset-8'} bg-poker-table rounded-full border-8 border-poker-accent/20 shadow-2xl`}>
         <TableFelt />
         <PotDisplay amount={gameContext.pot} rake={gameContext.rake} />
         <CommunityCards cards={gameContext.communityCards} />

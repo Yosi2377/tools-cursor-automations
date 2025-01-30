@@ -2,6 +2,7 @@ import React from 'react';
 import { Player } from '@/types/poker';
 import { Trophy, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface LeaderBoardProps {
   players: Player[];
@@ -9,10 +10,11 @@ interface LeaderBoardProps {
 }
 
 const LeaderBoard: React.FC<LeaderBoardProps> = ({ players, onClose }) => {
+  const isMobile = useIsMobile();
   const sortedPlayers = [...players].sort((a, b) => (b.score || 0) - (a.score || 0));
   
   return (
-    <div className="absolute top-16 right-4 bg-black/90 backdrop-blur-sm rounded-lg p-6 w-80 z-50 border border-poker-accent/30">
+    <div className={`absolute ${isMobile ? 'top-16 right-2 w-[calc(100%-1rem)]' : 'top-16 right-4 w-80'} bg-black/90 backdrop-blur-sm rounded-lg p-6 z-50 border border-poker-accent/30`}>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-poker-accent flex items-center gap-2">
           <Trophy className="w-5 h-5" />
