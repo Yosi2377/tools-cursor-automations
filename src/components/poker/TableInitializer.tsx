@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { GameContext, PlayerPosition, Card } from '@/types/poker';
+import { GameContext, PlayerPosition, Card, GameState } from '@/types/poker';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -98,7 +98,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
               rake: 0,
               communityCards: [],
               currentPlayer: 0,
-              gameState: 'waiting',
+              gameState: 'waiting' as GameState,
               currentBet: 0,
               dealerPosition: 0
             }));
@@ -138,7 +138,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                 rake: existingGames[0].rake || 0,
                 communityCards: (existingGames[0].community_cards as Card[]) || [],
                 currentPlayer: existingGames[0].current_player_index || 0,
-                gameState: existingGames[0].status || 'waiting',
+                gameState: (existingGames[0].status || 'waiting') as GameState,
                 currentBet: existingGames[0].current_bet || 0,
                 dealerPosition: existingGames[0].dealer_position || 0
               }));
