@@ -1,21 +1,14 @@
 import { useEffect, useState } from 'react';
-import { GameContext, Player, PlayerPosition } from '@/types/poker';
+import { GameContext, PlayerPosition } from '@/types/poker';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getPositionForIndex } from './TableLayout';
 
 interface TableInitializerProps {
   roomId: string;
   setGameContext: React.Dispatch<React.SetStateAction<GameContext>>;
   setWithBots: React.Dispatch<React.SetStateAction<boolean>>;
 }
-
-export const getPositionForIndex = (index: number): PlayerPosition => {
-  const positions: PlayerPosition[] = [
-    'bottom', 'bottomRight', 'right', 'topRight',
-    'top', 'topLeft', 'left', 'bottomLeft'
-  ];
-  return positions[index];
-};
 
 const TableInitializer: React.FC<TableInitializerProps> = ({ 
   roomId, 
@@ -42,7 +35,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
           // Check for existing active game
           const { data: existingGames } = await supabase
             .from('games')
-            .select('id')
+            .select('*')
             .eq('room_id', roomId)
             .eq('status', 'waiting');
 
@@ -52,7 +45,13 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             // Create a new game if none exists
             const { data: newGame, error: gameError } = await supabase
               .from('games')
-              .insert([{ room_id: roomId }])
+              .insert([{ 
+                room_id: roomId,
+                status: 'waiting',
+                current_player_index: 0,
+                dealer_position: 0,
+                minimum_bet: room.min_bet
+              }])
               .select()
               .single();
 
@@ -60,41 +59,64 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             gameId = newGame.id;
 
             // Initialize empty seats based on actual_players count
-            const emptySeats: Player[] = Array(room.actual_players).fill(null).map((_, index) => ({
-              id: index + 1,
-              name: "Empty Seat",
-              chips: 1000,
-              cards: [],
+            const emptySeats = Array(room.actual_players).fill(null).map((_, index) => ({
+              game_id: gameId,
+              user_id: user.id,
               position: getPositionForIndex(index),
-              isActive: false,
-              currentBet: 0,
-              isTurn: false,
-              score: 0
+              is_active: false,
+              chips: 1000,
+              cards: []
             }));
 
             // Create game_players entries for empty seats
             const { error: playersError } = await supabase
               .from('game_players')
-              .insert(
-                emptySeats.map(seat => ({
-                  game_id: newGame.id,
-                  user_id: user.id,
-                  position: seat.position,
-                  is_active: false,
-                  chips: 1000,
-                  cards: []
-                }))
-              );
+              .insert(emptySeats);
 
             if (playersError) throw playersError;
 
+            // Initialize game context with empty seats
             setGameContext(prev => ({
               ...prev,
-              players: emptySeats
+              players: emptySeats.map((seat, index) => ({
+                id: index.toString(),
+                name: "Empty Seat",
+                position: seat.position,
+                chips: seat.chips,
+                cards: [],
+                isActive: false,
+                currentBet: 0,
+                isTurn: false,
+                score: 0
+              }))
             }));
           } else {
-            // Use the most recent waiting game
-            gameId = existingGames[0].id;
+            // Use existing game
+            const game = existingGames[0];
+            gameId = game.id;
+
+            // Get existing players
+            const { data: existingPlayers } = await supabase
+              .from('game_players')
+              .select('*')
+              .eq('game_id', gameId);
+
+            if (existingPlayers) {
+              setGameContext(prev => ({
+                ...prev,
+                players: existingPlayers.map(player => ({
+                  id: player.id,
+                  name: player.is_active ? "Player" : "Empty Seat",
+                  position: player.position,
+                  chips: player.chips,
+                  cards: player.cards || [],
+                  isActive: player.is_active,
+                  currentBet: player.current_bet,
+                  isTurn: player.is_turn,
+                  score: player.score || 0
+                }))
+              }));
+            }
           }
         }
       } catch (error) {
