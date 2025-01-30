@@ -192,7 +192,7 @@ const PokerTable = () => {
         />
       )}
 
-      <div className={`absolute ${isMobile ? 'inset-4' : 'inset-8'} bg-poker-table rounded-full border-8 border-poker-accent/20 shadow-2xl`}>
+      <div className={`absolute ${isMobile ? 'inset-4' : 'inset-16'} bg-transparent`}>
         <TableFelt />
         <PotDisplay amount={gameContext.pot} rake={gameContext.rake} />
         <CommunityCards cards={gameContext.communityCards} />

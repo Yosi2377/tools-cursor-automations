@@ -4,13 +4,13 @@ const TableFelt: React.FC = () => {
   return (
     <>
       {/* Navy blue outer border */}
-      <div className="absolute inset-0 rounded-[120px] bg-[#1A1F2C]" />
+      <div className="absolute inset-0 rounded-[300px] bg-poker-background" />
       
       {/* Golden trim */}
-      <div className="absolute inset-2 rounded-[110px] bg-poker-accent/80" />
+      <div className="absolute inset-2 rounded-[280px] bg-poker-accent" />
       
       {/* Green felt */}
-      <div className="absolute inset-4 rounded-[100px] bg-poker-table overflow-hidden">
+      <div className="absolute inset-4 rounded-[260px] bg-poker-table overflow-hidden">
         {/* Felt texture overlay */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.1)_0%,transparent_70%)]" />
         <div 

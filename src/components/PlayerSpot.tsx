@@ -15,25 +15,25 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
   const getPositionClasses = () => {
     switch (player.position) {
       case 'bottom':
-        return 'bottom-4 left-1/2 -translate-x-1/2 transform';
+        return 'bottom-8 left-1/2 -translate-x-1/2 transform';
       case 'bottomLeft':
-        return `${isMobile ? 'bottom-16' : 'bottom-24'} left-16`;
+        return `${isMobile ? 'bottom-32' : 'bottom-40'} left-24`;
       case 'left':
-        return `${isMobile ? 'left-4' : 'left-8'} top-1/2 -translate-y-1/2 transform`;
+        return `${isMobile ? 'left-8' : 'left-12'} top-1/2 -translate-y-1/2 transform`;
       case 'topLeft':
-        return `${isMobile ? 'top-16' : 'top-24'} left-16`;
+        return `${isMobile ? 'top-32' : 'top-40'} left-24`;
       case 'top':
-        return 'top-4 left-1/2 -translate-x-1/2 transform';
+        return 'top-8 left-1/2 -translate-x-1/2 transform';
       case 'topRight':
-        return `${isMobile ? 'top-16' : 'top-24'} right-16`;
+        return `${isMobile ? 'top-32' : 'top-40'} right-24`;
       case 'right':
-        return `${isMobile ? 'right-4' : 'right-8'} top-1/2 -translate-y-1/2 transform`;
+        return `${isMobile ? 'right-8' : 'right-12'} top-1/2 -translate-y-1/2 transform`;
       case 'bottomRight':
-        return `${isMobile ? 'bottom-16' : 'bottom-24'} right-16`;
+        return `${isMobile ? 'bottom-32' : 'bottom-40'} right-24`;
       case 'leftTop':
-        return `${isMobile ? 'left-16 top-1/4' : 'left-32 top-1/4'}`;
+        return `${isMobile ? 'left-24 top-1/3' : 'left-40 top-1/3'}`;
       case 'leftBottom':
-        return `${isMobile ? 'left-16 bottom-1/4' : 'left-32 bottom-1/4'}`;
+        return `${isMobile ? 'left-24 bottom-1/3' : 'left-40 bottom-1/3'}`;
       default:
         return '';
     }
