@@ -16,8 +16,11 @@ Deno.serve(async (req) => {
     // Get the authorization header from the request
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
+      console.error('No authorization header provided')
       throw new Error('No authorization header')
     }
+
+    console.log('Auth header present:', !!authHeader) // Debug log
 
     // Create a client with the user's JWT
     const userClient = createClient(
@@ -32,6 +35,8 @@ Deno.serve(async (req) => {
       throw new Error('Unauthorized')
     }
 
+    console.log('User authenticated:', user.id) // Debug log
+
     // Check if user is admin
     const { data: isAdmin, error: adminCheckError } = await supabase
       .rpc('is_admin_secure', { user_id: user.id })
@@ -41,11 +46,16 @@ Deno.serve(async (req) => {
       throw new Error('Not authorized as admin')
     }
 
+    console.log('Admin status confirmed') // Debug log
+
     // Handle different HTTP methods
     switch (req.method) {
       case 'GET': {
         const { data: { users }, error } = await supabase.auth.admin.listUsers()
-        if (error) throw error
+        if (error) {
+          console.error('Error fetching users:', error)
+          throw error
+        }
         
         console.log('Successfully fetched users:', users.length)
         return new Response(
@@ -62,7 +72,10 @@ Deno.serve(async (req) => {
       case 'DELETE': {
         const { userId } = await req.json()
         const { error } = await supabase.auth.admin.deleteUser(userId)
-        if (error) throw error
+        if (error) {
+          console.error('Error deleting user:', error)
+          throw error
+        }
         
         console.log('Successfully deleted user:', userId)
         return new Response(

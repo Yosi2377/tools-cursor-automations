@@ -20,16 +20,30 @@ const UserList = () => {
     queryKey: ['users'],
     queryFn: async () => {
       try {
+        // Get the current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!session) throw new Error('No active session');
+
+        console.log('Current session:', session.access_token); // Debug log
+
         const { data, error } = await supabase.functions.invoke('manage-users', {
           method: 'GET',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
         });
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error from Edge Function:', error);
+          throw error;
+        }
+
         console.log('Fetched users:', data.users); // Debug log
         return data.users;
       } catch (error: any) {
         console.error('Error in queryFn:', error);
-        throw error;
+        throw new Error(error.message || 'Failed to fetch users');
       }
     },
     retry: 1,
@@ -38,8 +52,17 @@ const UserList = () => {
   const handleDeleteUser = async (userId: string) => {
     try {
       setLoading(true);
+
+      // Get the current session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+      if (!session) throw new Error('No active session');
+
       const { error } = await supabase.functions.invoke('manage-users', {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
         body: { userId }
       });
 
