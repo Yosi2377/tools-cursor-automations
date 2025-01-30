@@ -11,10 +11,21 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const validateUsername = (username: string) => {
+    // Only allow alphanumeric characters and underscores, 3-20 characters
+    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+    return usernameRegex.test(username);
+  };
+
   const handleAuth = async (isLogin: boolean) => {
     try {
       if (!username || !password) {
         toast.error('Please enter both username and password');
+        return;
+      }
+
+      if (!validateUsername(username)) {
+        toast.error('Username must be 3-20 characters long and can only contain letters, numbers, and underscores');
         return;
       }
 
@@ -24,7 +35,8 @@ const Auth = () => {
       }
 
       setLoading(true);
-      const email = `${username.toLowerCase()}@user.poker`;
+      // Use a more reliable email format with a real domain
+      const email = `${username.toLowerCase()}.user@poker-game.com`;
       
       const { error } = isLogin 
         ? await supabase.auth.signInWithPassword({ email, password })
