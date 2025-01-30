@@ -25,12 +25,17 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
   const { data: rooms, refetch } = useQuery({
     queryKey: ['rooms'],
     queryFn: async () => {
+      console.log('Fetching rooms...');
       const { data, error } = await supabase
         .from('rooms')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching rooms:', error);
+        throw error;
+      }
+      console.log('Fetched rooms:', data);
       return data as Room[];
     }
   });
@@ -62,12 +67,14 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
       setNewRoomName('');
       refetch();
     } catch (error) {
+      console.error('Error creating room:', error);
       toast.error('Failed to create room');
     }
   };
 
   const joinRoom = async (roomId: string) => {
     try {
+      console.log('Attempting to join room:', roomId);
       const { error } = await supabase
         .from('games')
         .insert([{ room_id: roomId }]);
@@ -77,6 +84,7 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
       onJoinRoom(roomId);
       toast.success('Joined room successfully');
     } catch (error) {
+      console.error('Error joining room:', error);
       toast.error('Failed to join room');
     }
   };

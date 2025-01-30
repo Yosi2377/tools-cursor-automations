@@ -20,6 +20,7 @@ const Index = () => {
   };
 
   const handleJoinRoom = (roomId: string) => {
+    console.log('Joining room:', roomId);
     setSelectedRoom(roomId);
   };
 
