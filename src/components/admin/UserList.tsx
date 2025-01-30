@@ -29,36 +29,41 @@ const UserList = () => {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isBalanceDialogOpen, setIsBalanceDialogOpen] = useState(false);
 
-  // Fetch users using Supabase Functions client
+  // Fetch users and their balances
   const { data: users, isLoading: isLoadingUsers, error: usersError, refetch: refetchUsers } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
       try {
-        // Get the current session
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (sessionError) throw sessionError;
         if (!session) throw new Error('No active session');
 
-        console.log('Fetching users with session token...'); // Debug log
-
-        const { data, error } = await supabase.functions.invoke('manage-users', {
+        // Fetch users from Edge Function
+        const { data: usersData, error } = await supabase.functions.invoke('manage-users', {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
         });
         
-        if (error) {
-          console.error('Error from Edge Function:', error);
-          throw error;
-        }
+        if (error) throw error;
+        if (!usersData?.users) throw new Error('Invalid response format');
 
-        if (!data?.users) {
-          throw new Error('Invalid response format');
-        }
+        // Fetch balances for all users
+        const { data: balances, error: balancesError } = await supabase
+          .from('game_players')
+          .select('user_id, chips')
+          .is('game_id', null);
 
-        console.log('Fetched users:', data.users); // Debug log
-        return data.users;
+        if (balancesError) throw balancesError;
+
+        // Combine user data with balances
+        const usersWithBalances = usersData.users.map((user: any) => ({
+          ...user,
+          balance: balances?.find((b: any) => b.user_id === user.id)?.chips || 0
+        }));
+
+        return usersWithBalances;
       } catch (error: any) {
         console.error('Error in queryFn:', error);
         throw new Error(error.message || 'Failed to fetch users');
@@ -200,6 +205,7 @@ const UserList = () => {
                 <div>
                   <p className="font-medium">{user.user_metadata?.username || user.email}</p>
                   <p className="text-sm text-gray-500">Created: {new Date(user.created_at).toLocaleDateString()}</p>
+                  <p className="text-sm text-emerald-600">Balance: ${user.balance}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Dialog open={isPasswordDialogOpen && selectedUserId === user.id} onOpenChange={(open) => {
