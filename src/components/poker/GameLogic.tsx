@@ -13,8 +13,8 @@ export const useGameLogic = (
       const nextDealerIndex = (currentDealerIndex + 1) % gameContext.players.length;
       const activePlayers = gameContext.players.filter(p => p.isActive);
       
-      if (activePlayers.length < 2) {
-        toast.error("Need at least 2 players to start a hand");
+      if (activePlayers.length < 1) {
+        toast.error("Need at least 1 player to start a hand");
         return;
       }
       
