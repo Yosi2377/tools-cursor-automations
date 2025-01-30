@@ -132,7 +132,12 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
           const channel = supabase.channel('game-updates')
             .on(
               'postgres_changes',
-              { event: '*', schema: 'public', table: 'games', filter: `id=eq.${gameId}` },
+              { 
+                event: 'UPDATE', 
+                schema: 'public', 
+                table: 'games', 
+                filter: `id=eq.${gameId}` 
+              },
               (payload: GameUpdatePayload) => {
                 console.log('Game updated:', payload);
                 const newGameState = payload.new;
@@ -150,7 +155,12 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             )
             .on(
               'postgres_changes',
-              { event: '*', schema: 'public', table: 'game_players', filter: `game_id=eq.${gameId}` },
+              { 
+                event: 'UPDATE', 
+                schema: 'public', 
+                table: 'game_players', 
+                filter: `game_id=eq.${gameId}` 
+              },
               (payload: PlayerUpdatePayload) => {
                 console.log('Player updated:', payload);
                 const updatedPlayer = payload.new;
