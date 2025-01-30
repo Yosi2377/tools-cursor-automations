@@ -9,12 +9,12 @@ interface TableInitializerProps {
   setWithBots: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export const getPositionForIndex = (index: number, totalPlayers: number): PlayerPosition => {
+export const getPositionForIndex = (index: number): PlayerPosition => {
   const positions: PlayerPosition[] = [
     'bottom', 'bottomRight', 'right', 'topRight',
     'top', 'topLeft', 'left', 'bottomLeft'
   ];
-  return positions[index % positions.length];
+  return positions[index];
 };
 
 const TableInitializer: React.FC<TableInitializerProps> = ({ 
@@ -25,6 +25,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
   useEffect(() => {
     const initializeGame = async () => {
       try {
+        // Get room configuration
         const { data: room } = await supabase
           .from('rooms')
           .select('*')
@@ -33,23 +34,56 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
 
         if (room) {
           setWithBots(room.with_bots);
-          // Initialize empty seats based on actual_players count
-          const emptySeats: Player[] = Array(room.actual_players).fill(null).map((_, index) => ({
-            id: index + 1,
-            name: "Empty Seat",
-            chips: 1000,
-            cards: [],
-            position: getPositionForIndex(index, room.actual_players),
-            isActive: false,
-            currentBet: 0,
-            isTurn: false,
-            score: 0
-          }));
 
-          setGameContext(prev => ({
-            ...prev,
-            players: emptySeats
-          }));
+          // Create a new game if one doesn't exist
+          const { data: existingGame } = await supabase
+            .from('games')
+            .select('id')
+            .eq('room_id', roomId)
+            .single();
+
+          if (!existingGame) {
+            const { data: newGame, error: gameError } = await supabase
+              .from('games')
+              .insert([{ room_id: roomId }])
+              .select()
+              .single();
+
+            if (gameError) throw gameError;
+
+            // Initialize empty seats based on actual_players count
+            const emptySeats: Player[] = Array(room.actual_players).fill(null).map((_, index) => ({
+              id: index + 1,
+              name: "Empty Seat",
+              chips: 1000,
+              cards: [],
+              position: getPositionForIndex(index),
+              isActive: false,
+              currentBet: 0,
+              isTurn: false,
+              score: 0
+            }));
+
+            // Create game_players entries for empty seats
+            const { error: playersError } = await supabase
+              .from('game_players')
+              .insert(
+                emptySeats.map(seat => ({
+                  game_id: newGame.id,
+                  position: seat.position,
+                  is_active: false,
+                  chips: 1000,
+                  cards: []
+                }))
+              );
+
+            if (playersError) throw playersError;
+
+            setGameContext(prev => ({
+              ...prev,
+              players: emptySeats
+            }));
+          }
         }
       } catch (error) {
         console.error('Error initializing game:', error);
