@@ -31,6 +31,32 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
           return;
         }
 
+        // Check if the user is already seated at another position
+        const { data: existingPlayer } = await supabase
+          .from('game_players')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .single();
+
+        if (existingPlayer) {
+          toast.error('You are already seated at another position');
+          return;
+        }
+
+        // Check if the seat is truly available
+        const { data: currentSeat } = await supabase
+          .from('game_players')
+          .select('*')
+          .eq('position', positionIndex.toString())
+          .eq('is_active', true)
+          .single();
+
+        if (currentSeat) {
+          toast.error('This seat is no longer available');
+          return;
+        }
+
         const { error } = await supabase
           .from('game_players')
           .update({
