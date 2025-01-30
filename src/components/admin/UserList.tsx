@@ -15,32 +15,21 @@ import { useQuery } from '@tanstack/react-query';
 const UserList = () => {
   const [loading, setLoading] = useState(false);
 
-  // Fetch users using the Edge Function
+  // Fetch users using Supabase Functions client
   const { data: users, isLoading: isLoadingUsers, error: usersError, refetch: refetchUsers } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session?.access_token) throw new Error('No session')
-
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-users`, {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-        })
+        const { data, error } = await supabase.functions.invoke('manage-users', {
+          method: 'GET',
+        });
         
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || 'Failed to fetch users')
-        }
-        
-        const data = await response.json()
-        console.log('Fetched users:', data.users) // Debug log
-        return data.users
+        if (error) throw error;
+        console.log('Fetched users:', data.users); // Debug log
+        return data.users;
       } catch (error: any) {
-        console.error('Error in queryFn:', error)
-        throw error
+        console.error('Error in queryFn:', error);
+        throw error;
       }
     },
     retry: 1,
@@ -49,22 +38,12 @@ const UserList = () => {
   const handleDeleteUser = async (userId: string) => {
     try {
       setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) throw new Error('No session')
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-users`, {
+      const { error } = await supabase.functions.invoke('manage-users', {
         method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId }),
-      })
+        body: { userId }
+      });
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to delete user')
-      }
+      if (error) throw error;
 
       toast.success('User deleted successfully');
       refetchUsers();
