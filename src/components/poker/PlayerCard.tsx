@@ -24,7 +24,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ card, index, shouldShowFaceUp }
 
   return (
     <div
-      className={`w-10 h-14 rounded-md shadow-lg flex flex-col items-center justify-between p-1 animate-card-deal z-0 ${
+      className={`w-10 h-14 rounded-md shadow-lg flex flex-col items-center justify-between p-1 animate-card-deal ${
         shouldShowFaceUp
           ? 'bg-white'
           : 'bg-poker-accent/20 border border-poker-accent/40'

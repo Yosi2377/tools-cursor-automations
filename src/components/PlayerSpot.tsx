@@ -28,8 +28,10 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
 
   return (
     <div className={`absolute ${getPositionClasses()} flex flex-col items-center gap-2`}>
+      <PlayerInfo player={player} onTimeout={onTimeout} />
+      
       {player.cards.length > 0 && (
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mt-2 flex gap-1 z-0">
+        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mt-2 flex gap-1">
           {player.cards.map((card, index) => (
             <PlayerCard
               key={index}
@@ -40,9 +42,6 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
           ))}
         </div>
       )}
-      <div className="relative z-10">
-        <PlayerInfo player={player} onTimeout={onTimeout} />
-      </div>
     </div>
   );
 };
