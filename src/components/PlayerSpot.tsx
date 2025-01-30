@@ -31,7 +31,7 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       <PlayerInfo player={player} onTimeout={onTimeout} />
       
       {player.cards.length > 0 && (
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-full mt-2 flex gap-1">
+        <div className="absolute top-[120%] left-1/2 transform -translate-x-1/2 flex gap-1">
           {player.cards.map((card, index) => (
             <PlayerCard
               key={index}
