@@ -48,8 +48,41 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
 
   const shouldShowFaceUp = player.position === 'bottom';
 
+  // Add opacity and grayscale for inactive players
+  const inactiveStyles = !player.isActive ? 'opacity-50 grayscale' : '';
+
+  // Move inactive players slightly away from the table
+  const getInactiveOffset = () => {
+    if (!player.isActive) {
+      switch (player.position) {
+        case 'bottom':
+          return 'translate-y-8';
+        case 'bottomLeft':
+        case 'bottomRight':
+          return 'translate-y-6 translate-x-6';
+        case 'left':
+          return '-translate-x-8';
+        case 'right':
+          return 'translate-x-8';
+        case 'topLeft':
+        case 'topRight':
+          return '-translate-y-6 translate-x-6';
+        case 'top':
+          return '-translate-y-8';
+        case 'leftTop':
+        case 'leftBottom':
+          return '-translate-x-6';
+        default:
+          return '';
+      }
+    }
+    return '';
+  };
+
   return (
-    <div className={`absolute ${getPositionClasses()} flex flex-col items-center gap-2`}>
+    <div 
+      className={`absolute ${getPositionClasses()} flex flex-col items-center gap-2 transition-all duration-300 ${inactiveStyles} ${getInactiveOffset()}`}
+    >
       <PlayerInfo player={player} onTimeout={onTimeout} />
       
       {player.cards.length > 0 && (
