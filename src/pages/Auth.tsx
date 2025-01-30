@@ -12,8 +12,23 @@ const Auth = () => {
   const navigate = useNavigate();
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    // More comprehensive email validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    
+    if (!emailRegex.test(email)) {
+      return false;
+    }
+
+    // Additional checks
+    if (email.length > 254) return false;
+    if (email.startsWith('.') || email.endsWith('.')) return false;
+    if (email.includes('..')) return false;
+
+    const [localPart, domain] = email.split('@');
+    if (localPart.length > 64) return false;
+    if (domain.length > 255) return false;
+
+    return true;
   };
 
   const handleAuth = async (isLogin: boolean) => {
@@ -24,7 +39,12 @@ const Auth = () => {
       }
 
       if (!validateEmail(email)) {
-        toast.error('Please enter a valid email address');
+        toast.error('Please enter a valid email address (e.g., user@example.com)');
+        return;
+      }
+
+      if (password.length < 6) {
+        toast.error('Password must be at least 6 characters long');
         return;
       }
 
@@ -45,9 +65,14 @@ const Auth = () => {
       let errorMessage = error.message;
       // Handle specific error cases
       if (error.message.includes('email_address_invalid')) {
-        errorMessage = 'Please enter a valid email address';
+        errorMessage = 'The email address format is invalid. Please use a valid email address.';
+      } else if (error.message.includes('User already registered')) {
+        errorMessage = 'An account with this email already exists. Please try logging in instead.';
+      } else if (error.message.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password. Please try again.';
       }
       toast.error(errorMessage);
+      console.error('Auth error:', error);
     } finally {
       setLoading(false);
     }
@@ -65,7 +90,7 @@ const Auth = () => {
             type="email"
             placeholder="Email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value.trim())}
             disabled={loading}
           />
           <Input
