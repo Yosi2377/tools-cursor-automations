@@ -1,5 +1,5 @@
 import { GameContext, Player } from '@/types/poker';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { dealCards } from '@/utils/pokerLogic';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -8,15 +8,24 @@ export const useGameLogic = (
   setGameContext: React.Dispatch<React.SetStateAction<GameContext>>
 ) => {
   const startNewHand = async () => {
-    const currentDealerIndex = gameContext.dealerPosition;
-    const nextDealerIndex = (currentDealerIndex + 1) % gameContext.players.length;
-    
-    const { updatedPlayers, remainingDeck } = dealCards(gameContext.players);
-    const firstPlayerIndex = (nextDealerIndex + 1) % gameContext.players.length;
-    
     try {
+      const currentDealerIndex = gameContext.dealerPosition;
+      const nextDealerIndex = (currentDealerIndex + 1) % gameContext.players.length;
+      const activePlayers = gameContext.players.filter(p => p.isActive);
+      
+      if (activePlayers.length < 2) {
+        toast.error("Need at least 2 players to start a hand");
+        return;
+      }
+      
+      const { updatedPlayers, remainingDeck } = dealCards(gameContext.players);
+      const firstPlayerIndex = (nextDealerIndex + 1) % gameContext.players.length;
+      
+      // Get the current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
+
+      console.log('Starting new hand with players:', updatedPlayers);
 
       // Update game state in Supabase
       const { error: gameError } = await supabase
@@ -30,22 +39,23 @@ export const useGameLogic = (
           current_bet: gameContext.minimumBet,
           dealer_position: nextDealerIndex
         })
-        .eq('status', 'waiting');
+        .eq('id', gameContext.gameId);
 
       if (gameError) throw gameError;
 
       // Update players in Supabase
+      const playerUpdates = updatedPlayers.map((p, index) => ({
+        game_id: gameContext.gameId,
+        position: index.toString(),
+        cards: JSON.stringify(p.cards),
+        is_turn: index === firstPlayerIndex,
+        is_active: p.isActive,
+        current_bet: 0
+      }));
+
       const { error: playersError } = await supabase
         .from('game_players')
-        .upsert(
-          updatedPlayers.map(p => ({
-            user_id: user.id,
-            cards: JSON.stringify(p.cards),
-            is_turn: p.isTurn,
-            is_active: true,
-            current_bet: 0
-          }))
-        );
+        .upsert(playerUpdates);
 
       if (playersError) throw playersError;
 
@@ -54,7 +64,6 @@ export const useGameLogic = (
         players: updatedPlayers.map((p, i) => ({ 
           ...p,
           isTurn: i === firstPlayerIndex,
-          isActive: true,
           currentBet: 0
         })),
         gameState: "betting",
@@ -66,18 +75,11 @@ export const useGameLogic = (
         dealerPosition: nextDealerIndex
       }));
 
-      toast({
-        title: "New hand started",
-        description: "Cards have been dealt to all players",
-      });
+      toast.success("New hand started - cards dealt!");
 
     } catch (error) {
       console.error('Error starting new hand:', error);
-      toast({
-        title: "Error",
-        description: "Failed to start new hand",
-        variant: "destructive"
-      });
+      toast.error("Failed to start new hand");
     }
   };
 
