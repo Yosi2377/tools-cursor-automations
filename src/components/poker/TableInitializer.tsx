@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { GameContext, PlayerPosition } from '@/types/poker';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -79,9 +79,9 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             setGameContext(prev => ({
               ...prev,
               players: emptySeats.map((seat, index) => ({
-                id: index.toString(),
+                id: index,
                 name: "Empty Seat",
-                position: seat.position,
+                position: seat.position as PlayerPosition,
                 chips: seat.chips,
                 cards: [],
                 isActive: false,
@@ -104,10 +104,10 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             if (existingPlayers) {
               setGameContext(prev => ({
                 ...prev,
-                players: existingPlayers.map(player => ({
-                  id: player.id,
+                players: existingPlayers.map((player, index) => ({
+                  id: index,
                   name: player.is_active ? "Player" : "Empty Seat",
-                  position: player.position,
+                  position: player.position as PlayerPosition,
                   chips: player.chips,
                   cards: player.cards || [],
                   isActive: player.is_active,
@@ -118,6 +118,56 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
               }));
             }
           }
+
+          // Subscribe to real-time updates for the game
+          const channel = supabase.channel('game-updates')
+            .on(
+              'postgres_changes',
+              { event: '*', schema: 'public', table: 'games', filter: `id=eq.${gameId}` },
+              (payload) => {
+                console.log('Game updated:', payload);
+                const newGameState = payload.new;
+                setGameContext(prev => ({
+                  ...prev,
+                  pot: newGameState.pot,
+                  rake: newGameState.rake,
+                  communityCards: newGameState.community_cards || [],
+                  currentPlayer: newGameState.current_player_index,
+                  gameState: newGameState.status,
+                  currentBet: newGameState.current_bet,
+                  dealerPosition: newGameState.dealer_position,
+                }));
+              }
+            )
+            .on(
+              'postgres_changes',
+              { event: '*', schema: 'public', table: 'game_players', filter: `game_id=eq.${gameId}` },
+              (payload) => {
+                console.log('Player updated:', payload);
+                const updatedPlayer = payload.new;
+                setGameContext(prev => ({
+                  ...prev,
+                  players: prev.players.map((p, index) => 
+                    index === updatedPlayer.position_index 
+                      ? {
+                          ...p,
+                          chips: updatedPlayer.chips,
+                          cards: updatedPlayer.cards || [],
+                          isActive: updatedPlayer.is_active,
+                          currentBet: updatedPlayer.current_bet,
+                          isTurn: updatedPlayer.is_turn,
+                          name: updatedPlayer.is_active ? "Player" : "Empty Seat"
+                        }
+                      : p
+                  ),
+                }));
+              }
+            )
+            .subscribe();
+
+          return () => {
+            supabase.removeChannel(channel);
+          };
         }
       } catch (error) {
         console.error('Error initializing game:', error);
