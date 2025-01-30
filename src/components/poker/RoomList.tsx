@@ -1,9 +1,19 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Plus, Users } from 'lucide-react';
+import { Plus, Users, Bot, BotOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
+import GameHistory from './GameHistory';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Room {
   id: string;
@@ -12,6 +22,8 @@ interface Room {
   min_bet: number;
   created_at: string;
   is_active: boolean;
+  with_bots: boolean;
+  actual_players: number;
 }
 
 interface RoomListProps {
@@ -21,6 +33,8 @@ interface RoomListProps {
 const RoomList = ({ onJoinRoom }: RoomListProps) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
+  const [playerCount, setPlayerCount] = useState('2');
+  const [withBots, setWithBots] = useState(false);
 
   const { data: rooms, isLoading, error } = useQuery({
     queryKey: ['rooms'],
@@ -72,7 +86,9 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
           name: newRoomName,
           is_active: true,
           min_bet: 20,
-          max_players: 8
+          max_players: 8,
+          actual_players: parseInt(playerCount),
+          with_bots: withBots
         }]);
 
       if (error) throw error;
@@ -80,6 +96,8 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
       toast.success('Room created successfully');
       setIsCreating(false);
       setNewRoomName('');
+      setPlayerCount('2');
+      setWithBots(false);
     } catch (error) {
       console.error('Error creating room:', error);
       toast.error('Failed to create room');
@@ -124,25 +142,57 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
     <div className="p-4 space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Poker Rooms</h2>
-        {isAdmin && (
-          <Button onClick={() => setIsCreating(true)} className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Create Room
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <GameHistory />
+          {isAdmin && (
+            <Button onClick={() => setIsCreating(true)} className="flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              Create Room
+            </Button>
+          )}
+        </div>
       </div>
 
       {isCreating && (
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={newRoomName}
-            onChange={(e) => setNewRoomName(e.target.value)}
-            className="px-3 py-2 border rounded flex-1"
-            placeholder="Room name"
-          />
-          <Button onClick={createRoom}>Create</Button>
-          <Button variant="outline" onClick={() => setIsCreating(false)}>Cancel</Button>
+        <div className="space-y-4 border rounded-lg p-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Room Name</label>
+            <Input
+              type="text"
+              value={newRoomName}
+              onChange={(e) => setNewRoomName(e.target.value)}
+              placeholder="Room name"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Number of Players</label>
+            <Select value={playerCount} onValueChange={setPlayerCount}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[2, 3, 4, 5, 6, 7, 8].map((num) => (
+                  <SelectItem key={num} value={num.toString()}>
+                    {num} Players
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium">Enable Bots</label>
+            <Switch
+              checked={withBots}
+              onCheckedChange={setWithBots}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <Button onClick={createRoom}>Create</Button>
+            <Button variant="outline" onClick={() => setIsCreating(false)}>Cancel</Button>
+          </div>
         </div>
       )}
 
@@ -159,9 +209,14 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
             <div key={room.id} className="p-4 border rounded-lg shadow">
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-semibold">{room.name}</h3>
-                <div className="flex items-center gap-1 text-sm text-gray-500">
-                  <Users className="w-4 h-4" />
-                  <span>{room.max_players}</span>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <Users className="w-4 h-4" />
+                    <span>{room.actual_players}</span>
+                  </div>
+                  {room.with_bots && (
+                    <Bot className="w-4 h-4 text-gray-500" />
+                  )}
                 </div>
               </div>
               <div className="flex justify-between items-center">

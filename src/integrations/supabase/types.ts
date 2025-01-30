@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      game_history: {
+        Row: {
+          created_at: string | null
+          final_pot: number | null
+          game_id: string | null
+          id: string
+          players: Json | null
+          room_id: string | null
+          winner_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          final_pot?: number | null
+          game_id?: string | null
+          id?: string
+          players?: Json | null
+          room_id?: string | null
+          winner_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          final_pot?: number | null
+          game_id?: string | null
+          id?: string
+          players?: Json | null
+          room_id?: string | null
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_history_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_history_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_players: {
         Row: {
           cards: Json | null
@@ -114,6 +159,7 @@ export type Database = {
       }
       rooms: {
         Row: {
+          actual_players: number | null
           created_at: string | null
           created_by: string | null
           id: string
@@ -121,8 +167,10 @@ export type Database = {
           max_players: number
           min_bet: number
           name: string
+          with_bots: boolean | null
         }
         Insert: {
+          actual_players?: number | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -130,8 +178,10 @@ export type Database = {
           max_players?: number
           min_bet?: number
           name: string
+          with_bots?: boolean | null
         }
         Update: {
+          actual_players?: number | null
           created_at?: string | null
           created_by?: string | null
           id?: string
@@ -139,6 +189,7 @@ export type Database = {
           max_players?: number
           min_bet?: number
           name?: string
+          with_bots?: boolean | null
         }
         Relationships: []
       }
