@@ -54,21 +54,21 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
     if (!player.isActive) {
       switch (player.position) {
         case 'bottom':
-          return `${baseClasses} bottom-16 left-1/2 -translate-x-1/2`;
+          return `${baseClasses} bottom-24 left-1/2 -translate-x-1/2`;
         case 'bottomLeft':
-          return `${baseClasses} bottom-24 left-24 -translate-x-1/2`;
+          return `${baseClasses} bottom-32 left-32 -translate-x-1/2`;
         case 'left':
-          return `${baseClasses} left-16 top-1/2 -translate-y-1/2`;
+          return `${baseClasses} left-24 top-1/2 -translate-y-1/2`;
         case 'topLeft':
-          return `${baseClasses} top-24 left-24 -translate-x-1/2`;
+          return `${baseClasses} top-32 left-32 -translate-x-1/2`;
         case 'top':
-          return `${baseClasses} top-16 left-1/2 -translate-x-1/2`;
+          return `${baseClasses} top-24 left-1/2 -translate-x-1/2`;
         case 'topRight':
-          return `${baseClasses} top-24 right-24 translate-x-1/2`;
+          return `${baseClasses} top-32 right-32 translate-x-1/2`;
         case 'right':
-          return `${baseClasses} right-16 top-1/2 -translate-y-1/2`;
+          return `${baseClasses} right-24 top-1/2 -translate-y-1/2`;
         case 'bottomRight':
-          return `${baseClasses} bottom-24 right-24 translate-x-1/2`;
+          return `${baseClasses} bottom-32 right-32 translate-x-1/2`;
         default:
           return baseClasses;
       }
@@ -77,21 +77,21 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
     const zIndex = player.position === 'bottom' ? 'z-50' : 'z-10';
     switch (player.position) {
       case 'bottom':
-        return `${baseClasses} bottom-12 left-1/2 -translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} bottom-20 left-1/2 -translate-x-1/2 ${zIndex}`;
       case 'bottomLeft':
-        return `${baseClasses} ${isMobile ? 'left-16 bottom-24' : 'left-48 bottom-32'} -translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${isMobile ? 'left-24 bottom-32' : 'left-64 bottom-48'} -translate-x-1/2 ${zIndex}`;
       case 'left':
-        return `${baseClasses} ${isMobile ? 'left-8' : 'left-16'} top-1/2 -translate-y-1/2 ${zIndex}`;
+        return `${baseClasses} ${isMobile ? 'left-16' : 'left-24'} top-1/2 -translate-y-1/2 ${zIndex}`;
       case 'topLeft':
-        return `${baseClasses} ${isMobile ? 'left-16 top-24' : 'left-48 top-32'} -translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${isMobile ? 'left-24 top-32' : 'left-64 top-48'} -translate-x-1/2 ${zIndex}`;
       case 'top':
-        return `${baseClasses} top-12 left-1/2 -translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} top-20 left-1/2 -translate-x-1/2 ${zIndex}`;
       case 'topRight':
-        return `${baseClasses} ${isMobile ? 'right-16 top-24' : 'right-48 top-32'} translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${isMobile ? 'right-24 top-32' : 'right-64 top-48'} translate-x-1/2 ${zIndex}`;
       case 'right':
-        return `${baseClasses} ${isMobile ? 'right-8' : 'right-16'} top-1/2 -translate-y-1/2 ${zIndex}`;
+        return `${baseClasses} ${isMobile ? 'right-16' : 'right-24'} top-1/2 -translate-y-1/2 ${zIndex}`;
       case 'bottomRight':
-        return `${baseClasses} ${isMobile ? 'right-16 bottom-24' : 'right-48 bottom-32'} translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${isMobile ? 'right-24 bottom-32' : 'right-64 bottom-48'} translate-x-1/2 ${zIndex}`;
       default:
         return baseClasses;
     }
@@ -99,9 +99,9 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
 
   const getCardPositionClasses = () => {
     if (player.position === 'bottom') {
-      return 'top-full mt-2';
+      return 'top-full mt-4';
     }
-    return 'top-0 -translate-y-full';
+    return 'top-0 -translate-y-full -mt-4';
   };
 
   const shouldShowFaceUp = player.position === 'bottom';
@@ -110,13 +110,13 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
 
   return (
     <div 
-      className={`${getPositionClasses()} flex flex-col items-center gap-2 ${inactiveStyles}`}
+      className={`${getPositionClasses()} flex flex-col items-center gap-4 ${inactiveStyles}`}
       onClick={!player.isActive ? handleSeatClick : undefined}
     >
       {!player.isActive ? (
-        <div className="w-24 h-24 rounded-full bg-poker-accent/20 border-4 border-poker-accent/40 flex flex-col items-center justify-center text-poker-accent hover:bg-poker-accent/30 hover:border-poker-accent/60 transition-all shadow-lg animate-pulse">
-          <span className="text-sm font-medium">Empty Seat</span>
-          <span className="text-xs">Click to join</span>
+        <div className="w-32 h-32 rounded-full bg-poker-accent/30 border-4 border-poker-accent/60 flex flex-col items-center justify-center text-poker-accent hover:bg-poker-accent/40 hover:border-poker-accent/80 transition-all shadow-xl animate-pulse">
+          <span className="text-base font-semibold">Empty Seat</span>
+          <span className="text-sm mt-1">Click to join</span>
         </div>
       ) : (
         <PlayerInfo 
@@ -129,7 +129,7 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       )}
       
       {player.cards.length > 0 && (
-        <div className={`absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-1 ${getCardPositionClasses()}`}>
+        <div className={`absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-2 ${getCardPositionClasses()}`}>
           {player.cards.map((card, index) => (
             <PlayerCard
               key={index}

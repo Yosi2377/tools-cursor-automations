@@ -21,24 +21,24 @@ const CommunityCards: React.FC<CommunityCardsProps> = ({ cards }) => {
   };
 
   return (
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-16 flex gap-3 z-20">
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -mt-16 flex gap-4 z-30">
       {cards.map((card, index) => (
         <div
           key={index}
-          className="w-20 h-28 bg-white rounded-lg shadow-xl flex flex-col items-center justify-between p-2 transform hover:scale-105 transition-transform border-2 border-poker-accent/20"
+          className="w-28 h-40 bg-white rounded-xl shadow-2xl flex flex-col items-center justify-between p-3 transform hover:scale-105 transition-transform border-2 border-poker-accent/40"
           style={{ 
             animation: `dealCard 0.5s ease-out ${index * 0.15}s both`,
             backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
-            boxShadow: '0 8px 16px -4px rgba(0,0,0,0.2), 0 4px 8px -2px rgba(0,0,0,0.1)'
+            boxShadow: '0 12px 24px -8px rgba(0,0,0,0.3), 0 8px 16px -4px rgba(0,0,0,0.2)'
           }}
         >
-          <div className={`text-xl font-bold ${getSuitColor(card.suit)} self-start`}>
+          <div className={`text-2xl font-bold ${getSuitColor(card.suit)} self-start`}>
             {card.rank}
           </div>
-          <div className={`text-4xl ${getSuitColor(card.suit)}`}>
+          <div className={`text-5xl ${getSuitColor(card.suit)}`}>
             {getSuitSymbol(card.suit)}
           </div>
-          <div className={`text-xl font-bold ${getSuitColor(card.suit)} self-end transform rotate-180`}>
+          <div className={`text-2xl font-bold ${getSuitColor(card.suit)} self-end transform rotate-180`}>
             {card.rank}
           </div>
         </div>
@@ -48,7 +48,7 @@ const CommunityCards: React.FC<CommunityCardsProps> = ({ cards }) => {
           @keyframes dealCard {
             0% {
               opacity: 0;
-              transform: translate(-50px, -100px) rotate(-20deg);
+              transform: translate(-100px, -100px) rotate(-30deg);
             }
             100% {
               opacity: 1;

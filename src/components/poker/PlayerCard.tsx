@@ -24,30 +24,31 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ card, index, shouldShowFaceUp }
 
   return (
     <div
-      className={`w-10 h-14 rounded-md shadow-lg flex flex-col items-center justify-between p-1 animate-card-deal ${
+      className={`w-16 h-24 rounded-lg shadow-xl flex flex-col items-center justify-between p-2 animate-card-deal ${
         shouldShowFaceUp
-          ? 'bg-white'
-          : 'bg-poker-accent/20 border border-poker-accent/40'
+          ? 'bg-white border-2 border-poker-accent/40'
+          : 'bg-poker-accent/30 border-2 border-poker-accent/60'
       }`}
       style={{
         animationDelay: `${index * 0.2}s`,
-        backgroundImage: shouldShowFaceUp ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)' : 'none'
+        backgroundImage: shouldShowFaceUp ? 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)' : 'none',
+        boxShadow: '0 8px 16px -4px rgba(0,0,0,0.2), 0 4px 8px -2px rgba(0,0,0,0.1)'
       }}
     >
       {shouldShowFaceUp ? (
         <>
-          <div className={`text-sm font-bold ${getSuitColor(card.suit)} self-start`}>
+          <div className={`text-lg font-bold ${getSuitColor(card.suit)} self-start`}>
             {card.rank}
           </div>
-          <div className={`text-lg ${getSuitColor(card.suit)}`}>
+          <div className={`text-2xl ${getSuitColor(card.suit)}`}>
             {getSuitSymbol(card.suit)}
           </div>
-          <div className={`text-sm font-bold ${getSuitColor(card.suit)} self-end transform rotate-180`}>
+          <div className={`text-lg font-bold ${getSuitColor(card.suit)} self-end transform rotate-180`}>
             {card.rank}
           </div>
         </>
       ) : (
-        <div className="w-full h-full rounded-md bg-gradient-to-br from-poker-accent/30 to-poker-accent/10" />
+        <div className="w-full h-full rounded-md bg-gradient-to-br from-poker-accent/40 to-poker-accent/20 border border-poker-accent/30" />
       )}
     </div>
   );
