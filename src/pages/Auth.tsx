@@ -35,30 +35,37 @@ const Auth = () => {
       }
 
       setLoading(true);
-      // Use a more reliable email format with a real domain
-      const email = `${username.toLowerCase()}.user@poker-game.com`;
       
-      const { error } = isLogin 
+      // Generate a valid email format that's consistent between login and signup
+      const sanitizedUsername = username.toLowerCase().trim();
+      const email = `${sanitizedUsername}@poker-game.com`;
+
+      const { data, error } = isLogin 
         ? await supabase.auth.signInWithPassword({ email, password })
         : await supabase.auth.signUp({ email, password });
 
-      if (error) throw error;
-      
-      if (!isLogin) {
-        toast.success('Signed up successfully! Please check your email for verification.');
-      } else {
+      if (error) {
+        if (error.message.includes('Email not confirmed')) {
+          toast.error('Please check your email for the confirmation link');
+        } else if (error.message.includes('Invalid login credentials')) {
+          toast.error('Invalid username or password');
+        } else if (error.message.includes('User already registered')) {
+          toast.error('This username is already taken. Please try another one or log in');
+        } else {
+          toast.error(error.message);
+        }
+        console.error('Auth error:', error);
+        return;
+      }
+
+      if (!isLogin && data?.user) {
+        toast.success('Signed up successfully! You can now log in');
+      } else if (isLogin && data?.user) {
         toast.success('Logged in successfully!');
         navigate('/');
       }
     } catch (error: any) {
-      let errorMessage = error.message;
-      // Handle specific error cases
-      if (error.message.includes('User already registered')) {
-        errorMessage = 'This username is already taken. Please try logging in instead.';
-      } else if (error.message.includes('Invalid login credentials')) {
-        errorMessage = 'Invalid username or password. Please try again.';
-      }
-      toast.error(errorMessage);
+      toast.error('An unexpected error occurred. Please try again');
       console.error('Auth error:', error);
     } finally {
       setLoading(false);
