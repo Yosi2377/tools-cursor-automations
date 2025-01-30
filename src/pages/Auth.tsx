@@ -6,40 +6,15 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 const Auth = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const validateEmail = (email: string) => {
-    // More comprehensive email validation
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    
-    if (!emailRegex.test(email)) {
-      return false;
-    }
-
-    // Additional checks
-    if (email.length > 254) return false;
-    if (email.startsWith('.') || email.endsWith('.')) return false;
-    if (email.includes('..')) return false;
-
-    const [localPart, domain] = email.split('@');
-    if (localPart.length > 64) return false;
-    if (domain.length > 255) return false;
-
-    return true;
-  };
-
   const handleAuth = async (isLogin: boolean) => {
     try {
-      if (!email || !password) {
-        toast.error('Please enter both email and password');
-        return;
-      }
-
-      if (!validateEmail(email)) {
-        toast.error('Please enter a valid email address (e.g., user@example.com)');
+      if (!username || !password) {
+        toast.error('Please enter both username and password');
         return;
       }
 
@@ -49,6 +24,8 @@ const Auth = () => {
       }
 
       setLoading(true);
+      const email = `${username.toLowerCase()}@user.poker`;
+      
       const { error } = isLogin 
         ? await supabase.auth.signInWithPassword({ email, password })
         : await supabase.auth.signUp({ email, password });
@@ -64,12 +41,10 @@ const Auth = () => {
     } catch (error: any) {
       let errorMessage = error.message;
       // Handle specific error cases
-      if (error.message.includes('email_address_invalid')) {
-        errorMessage = 'The email address format is invalid. Please use a valid email address.';
-      } else if (error.message.includes('User already registered')) {
-        errorMessage = 'An account with this email already exists. Please try logging in instead.';
+      if (error.message.includes('User already registered')) {
+        errorMessage = 'This username is already taken. Please try logging in instead.';
       } else if (error.message.includes('Invalid login credentials')) {
-        errorMessage = 'Invalid email or password. Please try again.';
+        errorMessage = 'Invalid username or password. Please try again.';
       }
       toast.error(errorMessage);
       console.error('Auth error:', error);
@@ -87,10 +62,10 @@ const Auth = () => {
         </div>
         <div className="space-y-4">
           <Input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value.trim())}
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value.trim())}
             disabled={loading}
           />
           <Input
