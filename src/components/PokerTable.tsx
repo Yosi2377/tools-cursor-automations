@@ -15,7 +15,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-const PokerTable = () => {
+interface PokerTableProps {
+  roomId: string;
+  onLeaveRoom: () => void;
+}
+
+const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const isMobile = useIsMobile();
   
@@ -112,6 +117,7 @@ const PokerTable = () => {
         const { data: game, error: gameError } = await supabase
           .from('games')
           .insert([{
+            room_id: roomId,
             status: 'waiting',
             pot: 0,
             rake: 0,
@@ -144,24 +150,15 @@ const PokerTable = () => {
 
         if (playersError) throw playersError;
 
-        toast('Game initialized successfully!');
+        toast.success('Game initialized successfully!');
       } catch (error) {
         console.error('Error initializing game:', error);
-        toast('Failed to initialize game');
+        toast.error('Failed to initialize game');
       }
     };
 
     initializeGame();
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      toast.success('Logged out successfully');
-    } catch (error) {
-      toast.error('Error logging out');
-    }
-  };
+  }, [roomId]);
 
   return (
     <div className="relative w-full h-screen bg-poker-background p-4 overflow-hidden">
@@ -169,11 +166,11 @@ const PokerTable = () => {
         <Button 
           variant="outline" 
           size="sm"
-          onClick={handleLogout}
+          onClick={onLeaveRoom}
           className="flex items-center gap-2"
         >
           <LogOut className="w-4 h-4" />
-          Logout
+          Leave Room
         </Button>
 
         <Button 

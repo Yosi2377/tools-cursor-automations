@@ -1,10 +1,14 @@
 import PokerTable from "@/components/PokerTable";
+import RoomList from "@/components/poker/RoomList";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { LogOut } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 const Index = () => {
+  const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
+
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
@@ -26,7 +30,12 @@ const Index = () => {
         <LogOut className="mr-2 h-4 w-4" />
         Logout
       </Button>
-      <PokerTable />
+      
+      {selectedRoom ? (
+        <PokerTable roomId={selectedRoom} onLeaveRoom={() => setSelectedRoom(null)} />
+      ) : (
+        <RoomList onJoinRoom={setSelectedRoom} />
+      )}
     </div>
   );
 };
