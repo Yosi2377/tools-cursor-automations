@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { GameContext, PlayerPosition, Card } from '@/types/poker';
+import { GameContext, PlayerPosition, Card, GameState } from '@/types/poker';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { getPositionForIndex } from './TableLayout';
@@ -71,7 +71,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             const emptySeats = Array(room.actual_players).fill(null).map((_, index) => ({
               game_id: gameId,
               user_id: user.id,
-              position: getPositionForIndex(index),
+              position: index.toString(),
               is_active: false,
               chips: 1000,
               cards: []
@@ -90,7 +90,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
               players: emptySeats.map((seat, index) => ({
                 id: index,
                 name: "Empty Seat",
-                position: seat.position as PlayerPosition,
+                position: getPositionForIndex(index),
                 chips: seat.chips,
                 cards: [] as Card[],
                 isActive: false,
@@ -116,9 +116,9 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                 players: existingPlayers.map((player, index) => ({
                   id: index,
                   name: player.is_active ? "Player" : "Empty Seat",
-                  position: player.position as PlayerPosition,
+                  position: getPositionForIndex(index),
                   chips: player.chips || 0,
-                  cards: (player.cards as Card[]) || [],
+                  cards: (player.cards as unknown as Card[]) || [],
                   isActive: player.is_active || false,
                   currentBet: player.current_bet || 0,
                   isTurn: player.is_turn || false,
@@ -140,9 +140,9 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                   ...prev,
                   pot: newGameState.pot || 0,
                   rake: newGameState.rake || 0,
-                  communityCards: (newGameState.community_cards as Card[]) || [],
+                  communityCards: (newGameState.community_cards as unknown as Card[]) || [],
                   currentPlayer: newGameState.current_player_index || 0,
-                  gameState: newGameState.status || 'waiting',
+                  gameState: (newGameState.status || 'waiting') as GameState,
                   currentBet: newGameState.current_bet || 0,
                   dealerPosition: newGameState.dealer_position || 0,
                 }));
@@ -161,7 +161,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                       ? {
                           ...p,
                           chips: updatedPlayer.chips || 0,
-                          cards: (updatedPlayer.cards as Card[]) || [],
+                          cards: (updatedPlayer.cards as unknown as Card[]) || [],
                           isActive: updatedPlayer.is_active || false,
                           currentBet: updatedPlayer.current_bet || 0,
                           isTurn: updatedPlayer.is_turn || false,
