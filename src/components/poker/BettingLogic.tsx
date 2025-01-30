@@ -19,14 +19,12 @@ export const useBettingLogic = (
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     console.log(`${currentPlayer.name} attempting to bet ${amount}`);
     
-    // Skip if player has already matched the current bet
-    if (currentPlayer.currentBet === gameContext.currentBet && amount === gameContext.currentBet) {
-      console.log('Player has already matched the current bet, skipping');
-      return;
-    }
+    // Calculate the actual amount needed to call
+    const amountToCall = gameContext.currentBet - currentPlayer.currentBet;
+    const actualBetAmount = Math.max(amountToCall, amount);
 
-    // Check if player can afford the bet
-    if (currentPlayer.chips < amount) {
+    // Validate bet amount
+    if (currentPlayer.chips < actualBetAmount) {
       toast({
         title: "Invalid bet",
         description: `${currentPlayer.name} doesn't have enough chips`,
@@ -34,14 +32,27 @@ export const useBettingLogic = (
       return;
     }
 
-    const updatedContext = placeBet(gameContext, currentPlayer, amount, setGameContext);
+    const updatedContext = placeBet(gameContext, currentPlayer, actualBetAmount, setGameContext);
     if (!updatedContext) return;
 
-    const nextPlayerIndex = updatedContext.currentPlayer;
+    // Find next active player
+    let nextPlayerIndex = updatedContext.currentPlayer;
+    while (
+      !updatedContext.players[nextPlayerIndex].isActive ||
+      updatedContext.players[nextPlayerIndex].currentBet === updatedContext.currentBet
+    ) {
+      nextPlayerIndex = (nextPlayerIndex + 1) % updatedContext.players.length;
+      
+      // If we've gone full circle, break
+      if (nextPlayerIndex === gameContext.currentPlayer) {
+        break;
+      }
+    }
     
     setGameContext(prev => ({
       ...prev,
       ...updatedContext,
+      currentPlayer: nextPlayerIndex,
       players: updatedContext.players.map((p, i) => ({
         ...p,
         isTurn: i === nextPlayerIndex && p.isActive
@@ -49,19 +60,23 @@ export const useBettingLogic = (
     }));
 
     // Check if we should deal community cards
-    const shouldDealCards = checkAndDealCommunityCards(updatedContext, dealCommunityCards, setGameContext);
+    const shouldDealCards = checkAndDealCommunityCards(
+      { ...updatedContext, currentPlayer: nextPlayerIndex },
+      dealCommunityCards,
+      setGameContext
+    );
     
     // If we didn't deal cards and it's not the human player's turn, trigger opponent action
     if (!shouldDealCards && nextPlayerIndex !== 0) {
       const nextPlayer = updatedContext.players[nextPlayerIndex];
       if (nextPlayer.isActive) {
         setTimeout(() => {
-          const amountToCall = updatedContext.currentBet - nextPlayer.currentBet;
-          console.log(`${nextPlayer.name}'s turn - Current bet: ${updatedContext.currentBet}, Amount to call: ${amountToCall}`);
+          const nextAmountToCall = updatedContext.currentBet - nextPlayer.currentBet;
+          console.log(`${nextPlayer.name}'s turn - Current bet: ${updatedContext.currentBet}, Amount to call: ${nextAmountToCall}`);
           
-          // Opponent decision logic
-          if (amountToCall > 0 && nextPlayer.chips >= amountToCall) {
-            handleBet(amountToCall);
+          // Opponent decision logic - 70% chance to call, 30% to fold
+          if (Math.random() < 0.7 && nextPlayer.chips >= nextAmountToCall) {
+            handleBet(nextAmountToCall);
           } else {
             handlePlayerFold();
           }
@@ -77,11 +92,21 @@ export const useBettingLogic = (
     const updatedContext = handleFold(gameContext, currentPlayer, setGameContext);
     if (!updatedContext) return;
 
-    const nextPlayerIndex = updatedContext.currentPlayer;
+    // Find next active player
+    let nextPlayerIndex = updatedContext.currentPlayer;
+    while (!updatedContext.players[nextPlayerIndex].isActive) {
+      nextPlayerIndex = (nextPlayerIndex + 1) % updatedContext.players.length;
+      
+      // If we've gone full circle, break
+      if (nextPlayerIndex === gameContext.currentPlayer) {
+        break;
+      }
+    }
     
     setGameContext(prev => ({
       ...prev,
       ...updatedContext,
+      currentPlayer: nextPlayerIndex,
       players: updatedContext.players.map((p, i) => ({
         ...p,
         isTurn: i === nextPlayerIndex && p.isActive
@@ -94,7 +119,7 @@ export const useBettingLogic = (
       if (nextPlayer.isActive) {
         setTimeout(() => {
           const amountToCall = updatedContext.currentBet - nextPlayer.currentBet;
-          if (amountToCall > 0 && nextPlayer.chips >= amountToCall) {
+          if (Math.random() < 0.7 && nextPlayer.chips >= amountToCall) {
             handleBet(amountToCall);
           } else {
             handlePlayerFold();
