@@ -9,7 +9,98 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      game_players: {
+        Row: {
+          cards: Json | null
+          chips: number | null
+          created_at: string | null
+          current_bet: number | null
+          game_id: string | null
+          id: string
+          is_active: boolean | null
+          is_turn: boolean | null
+          position: string | null
+          score: number | null
+          user_id: string
+        }
+        Insert: {
+          cards?: Json | null
+          chips?: number | null
+          created_at?: string | null
+          current_bet?: number | null
+          game_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_turn?: boolean | null
+          position?: string | null
+          score?: number | null
+          user_id: string
+        }
+        Update: {
+          cards?: Json | null
+          chips?: number | null
+          created_at?: string | null
+          current_bet?: number | null
+          game_id?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_turn?: boolean | null
+          position?: string | null
+          score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_players_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          community_cards: Json | null
+          created_at: string | null
+          current_bet: number | null
+          current_player_index: number | null
+          dealer_position: number | null
+          id: string
+          minimum_bet: number | null
+          pot: number | null
+          rake: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          community_cards?: Json | null
+          created_at?: string | null
+          current_bet?: number | null
+          current_player_index?: number | null
+          dealer_position?: number | null
+          id?: string
+          minimum_bet?: number | null
+          pot?: number | null
+          rake?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          community_cards?: Json | null
+          created_at?: string | null
+          current_bet?: number | null
+          current_player_index?: number | null
+          dealer_position?: number | null
+          id?: string
+          minimum_bet?: number | null
+          pot?: number | null
+          rake?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

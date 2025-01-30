@@ -4,6 +4,7 @@ import { handleOpponentAction } from '@/utils/opponentActions';
 import { placeBet } from '@/utils/betActions';
 import { handleFold } from '@/utils/foldActions';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useBettingLogic = (
   gameContext: GameContext,
@@ -15,15 +16,13 @@ export const useBettingLogic = (
     handleBet(gameContext.currentBet);
   };
 
-  const handleBet = (amount: number) => {
+  const handleBet = async (amount: number) => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     console.log(`${currentPlayer.name} attempting to bet ${amount}`);
     
-    // Calculate the actual amount needed to call
     const amountToCall = gameContext.currentBet - currentPlayer.currentBet;
     const actualBetAmount = Math.max(amountToCall, amount);
 
-    // Validate bet amount
     if (currentPlayer.chips < actualBetAmount) {
       toast({
         title: "Invalid bet",
@@ -32,100 +31,149 @@ export const useBettingLogic = (
       return;
     }
 
-    const updatedContext = placeBet(gameContext, currentPlayer, actualBetAmount, setGameContext);
-    if (!updatedContext) return;
+    try {
+      // Update player's bet in Supabase
+      const { error: playerError } = await supabase
+        .from('game_players')
+        .update({
+          chips: currentPlayer.chips - actualBetAmount,
+          current_bet: currentPlayer.currentBet + actualBetAmount,
+          is_turn: false
+        })
+        .eq('id', currentPlayer.id);
 
-    // Find next active player
-    let nextPlayerIndex = updatedContext.currentPlayer;
-    while (
-      !updatedContext.players[nextPlayerIndex].isActive ||
-      updatedContext.players[nextPlayerIndex].currentBet === updatedContext.currentBet
-    ) {
-      nextPlayerIndex = (nextPlayerIndex + 1) % updatedContext.players.length;
+      if (playerError) throw playerError;
+
+      // Update game state in Supabase
+      const { error: gameError } = await supabase
+        .from('games')
+        .update({
+          pot: gameContext.pot + actualBetAmount,
+          current_bet: Math.max(gameContext.currentBet, currentPlayer.currentBet + actualBetAmount),
+          current_player_index: (gameContext.currentPlayer + 1) % gameContext.players.length
+        })
+        .eq('status', 'betting');
+
+      if (gameError) throw gameError;
+
+      const updatedContext = placeBet(gameContext, currentPlayer, actualBetAmount, setGameContext);
+      if (!updatedContext) return;
+
+      let nextPlayerIndex = updatedContext.currentPlayer;
+      while (
+        !updatedContext.players[nextPlayerIndex].isActive ||
+        updatedContext.players[nextPlayerIndex].currentBet === updatedContext.currentBet
+      ) {
+        nextPlayerIndex = (nextPlayerIndex + 1) % updatedContext.players.length;
+        if (nextPlayerIndex === gameContext.currentPlayer) break;
+      }
       
-      // If we've gone full circle, break
-      if (nextPlayerIndex === gameContext.currentPlayer) {
-        break;
-      }
-    }
-    
-    setGameContext(prev => ({
-      ...prev,
-      ...updatedContext,
-      currentPlayer: nextPlayerIndex,
-      players: updatedContext.players.map((p, i) => ({
-        ...p,
-        isTurn: i === nextPlayerIndex && p.isActive
-      }))
-    }));
+      setGameContext(prev => ({
+        ...prev,
+        ...updatedContext,
+        currentPlayer: nextPlayerIndex,
+        players: updatedContext.players.map((p, i) => ({
+          ...p,
+          isTurn: i === nextPlayerIndex && p.isActive
+        }))
+      }));
 
-    // Check if we should deal community cards
-    const shouldDealCards = checkAndDealCommunityCards(
-      { ...updatedContext, currentPlayer: nextPlayerIndex },
-      dealCommunityCards,
-      setGameContext
-    );
-    
-    // If we didn't deal cards and it's not the human player's turn, trigger opponent action
-    if (!shouldDealCards && nextPlayerIndex !== 0) {
-      const nextPlayer = updatedContext.players[nextPlayerIndex];
-      if (nextPlayer.isActive) {
-        setTimeout(() => {
-          const nextAmountToCall = updatedContext.currentBet - nextPlayer.currentBet;
-          console.log(`${nextPlayer.name}'s turn - Current bet: ${updatedContext.currentBet}, Amount to call: ${nextAmountToCall}`);
-          
-          // Opponent decision logic - 70% chance to call, 30% to fold
-          if (Math.random() < 0.7 && nextPlayer.chips >= nextAmountToCall) {
-            handleBet(nextAmountToCall);
-          } else {
-            handlePlayerFold();
-          }
-        }, 1500);
+      const shouldDealCards = checkAndDealCommunityCards(
+        { ...updatedContext, currentPlayer: nextPlayerIndex },
+        dealCommunityCards,
+        setGameContext
+      );
+      
+      if (!shouldDealCards && nextPlayerIndex !== 0) {
+        const nextPlayer = updatedContext.players[nextPlayerIndex];
+        if (nextPlayer.isActive) {
+          setTimeout(() => {
+            const nextAmountToCall = updatedContext.currentBet - nextPlayer.currentBet;
+            console.log(`${nextPlayer.name}'s turn - Current bet: ${updatedContext.currentBet}, Amount to call: ${nextAmountToCall}`);
+            
+            if (Math.random() < 0.7 && nextPlayer.chips >= nextAmountToCall) {
+              handleBet(nextAmountToCall);
+            } else {
+              handlePlayerFold();
+            }
+          }, 1500);
+        }
       }
+    } catch (error) {
+      console.error('Error handling bet:', error);
+      toast({
+        title: "Error",
+        description: "Failed to place bet",
+        variant: "destructive"
+      });
     }
   };
 
-  const handlePlayerFold = () => {
+  const handlePlayerFold = async () => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     console.log(`${currentPlayer.name} folding`);
     
-    const updatedContext = handleFold(gameContext, currentPlayer, setGameContext);
-    if (!updatedContext) return;
+    try {
+      // Update player state in Supabase
+      const { error: playerError } = await supabase
+        .from('game_players')
+        .update({
+          is_active: false,
+          is_turn: false
+        })
+        .eq('id', currentPlayer.id);
 
-    // Find next active player
-    let nextPlayerIndex = updatedContext.currentPlayer;
-    while (!updatedContext.players[nextPlayerIndex].isActive) {
-      nextPlayerIndex = (nextPlayerIndex + 1) % updatedContext.players.length;
+      if (playerError) throw playerError;
+
+      const updatedContext = handleFold(gameContext, currentPlayer, setGameContext);
+      if (!updatedContext) return;
+
+      let nextPlayerIndex = updatedContext.currentPlayer;
+      while (!updatedContext.players[nextPlayerIndex].isActive) {
+        nextPlayerIndex = (nextPlayerIndex + 1) % updatedContext.players.length;
+        if (nextPlayerIndex === gameContext.currentPlayer) break;
+      }
       
-      // If we've gone full circle, break
-      if (nextPlayerIndex === gameContext.currentPlayer) {
-        break;
-      }
-    }
-    
-    setGameContext(prev => ({
-      ...prev,
-      ...updatedContext,
-      currentPlayer: nextPlayerIndex,
-      players: updatedContext.players.map((p, i) => ({
-        ...p,
-        isTurn: i === nextPlayerIndex && p.isActive
-      }))
-    }));
+      // Update game state in Supabase
+      const { error: gameError } = await supabase
+        .from('games')
+        .update({
+          current_player_index: nextPlayerIndex
+        })
+        .eq('status', 'betting');
 
-    // Trigger next opponent action if needed
-    if (nextPlayerIndex !== 0) {
-      const nextPlayer = updatedContext.players[nextPlayerIndex];
-      if (nextPlayer.isActive) {
-        setTimeout(() => {
-          const amountToCall = updatedContext.currentBet - nextPlayer.currentBet;
-          if (Math.random() < 0.7 && nextPlayer.chips >= amountToCall) {
-            handleBet(amountToCall);
-          } else {
-            handlePlayerFold();
-          }
-        }, 1500);
+      if (gameError) throw gameError;
+
+      setGameContext(prev => ({
+        ...prev,
+        ...updatedContext,
+        currentPlayer: nextPlayerIndex,
+        players: updatedContext.players.map((p, i) => ({
+          ...p,
+          isTurn: i === nextPlayerIndex && p.isActive
+        }))
+      }));
+
+      if (nextPlayerIndex !== 0) {
+        const nextPlayer = updatedContext.players[nextPlayerIndex];
+        if (nextPlayer.isActive) {
+          setTimeout(() => {
+            const amountToCall = updatedContext.currentBet - nextPlayer.currentBet;
+            if (Math.random() < 0.7 && nextPlayer.chips >= amountToCall) {
+              handleBet(amountToCall);
+            } else {
+              handlePlayerFold();
+            }
+          }, 1500);
+        }
       }
+    } catch (error) {
+      console.error('Error handling fold:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fold",
+        variant: "destructive"
+      });
     }
   };
 

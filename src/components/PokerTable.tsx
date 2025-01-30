@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PlayerSpot from './PlayerSpot';
 import { GameContext } from '../types/poker';
 import GameControls from './poker/GameControls';
@@ -11,6 +11,8 @@ import LeaderBoard from './poker/LeaderBoard';
 import { useGameLogic } from './poker/GameLogic';
 import { useBettingLogic } from './poker/BettingLogic';
 import { useCardDealing } from './poker/CardDealing';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const PokerTable = () => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
@@ -42,6 +44,107 @@ const PokerTable = () => {
     }
   );
 
+  useEffect(() => {
+    const channel = supabase.channel('game-updates')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'games' },
+        (payload) => {
+          console.log('Game updated:', payload);
+          // Update game state based on database changes
+          const newGameState = payload.new;
+          setGameContext(prev => ({
+            ...prev,
+            pot: newGameState.pot,
+            rake: newGameState.rake,
+            communityCards: newGameState.community_cards,
+            currentPlayer: newGameState.current_player_index,
+            gameState: newGameState.status,
+            currentBet: newGameState.current_bet,
+            dealerPosition: newGameState.dealer_position,
+          }));
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'game_players' },
+        (payload) => {
+          console.log('Player updated:', payload);
+          // Update player state based on database changes
+          const updatedPlayer = payload.new;
+          setGameContext(prev => ({
+            ...prev,
+            players: prev.players.map(p => 
+              p.id === updatedPlayer.id 
+                ? {
+                    ...p,
+                    chips: updatedPlayer.chips,
+                    cards: updatedPlayer.cards,
+                    isActive: updatedPlayer.is_active,
+                    currentBet: updatedPlayer.current_bet,
+                    isTurn: updatedPlayer.is_turn,
+                  }
+                : p
+            ),
+          }));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // Initialize game in Supabase when component mounts
+  useEffect(() => {
+    const initializeGame = async () => {
+      try {
+        const { data: game, error: gameError } = await supabase
+          .from('games')
+          .insert([{
+            status: 'waiting',
+            pot: 0,
+            rake: 0,
+            current_bet: 0,
+            dealer_position: 0,
+            community_cards: [],
+            minimum_bet: 20,
+          }])
+          .select()
+          .single();
+
+        if (gameError) throw gameError;
+
+        // Add players to the game
+        const { error: playersError } = await supabase
+          .from('game_players')
+          .insert(
+            gameContext.players.map(player => ({
+              game_id: game.id,
+              user_id: supabase.auth.getUser().then(({ data }) => data.user?.id),
+              position: player.position,
+              chips: player.chips,
+              cards: player.cards,
+              is_active: player.isActive,
+              current_bet: player.currentBet,
+              is_turn: player.isTurn,
+              score: player.score,
+            }))
+          );
+
+        if (playersError) throw playersError;
+
+        toast('Game initialized successfully!');
+      } catch (error) {
+        console.error('Error initializing game:', error);
+        toast('Failed to initialize game');
+      }
+    };
+
+    initializeGame();
+  }, []);
+
   return (
     <div className="relative w-full h-screen bg-poker-background p-4 overflow-hidden">
       <Button 
@@ -63,17 +166,6 @@ const PokerTable = () => {
         <TableFelt />
         <PotDisplay amount={gameContext.pot} rake={gameContext.rake} />
         <CommunityCards cards={gameContext.communityCards} />
-        
-        {/* Dealer Button - Hidden but still tracking position */}
-        <div 
-          className="hidden"
-          style={{
-            left: `${50 + 35 * Math.cos(2 * Math.PI * gameContext.dealerPosition / gameContext.players.length)}%`,
-            top: `${50 + 35 * Math.sin(2 * Math.PI * gameContext.dealerPosition / gameContext.players.length)}%`,
-          }}
-        >
-          D
-        </div>
         
         {gameContext.players.map((player) => (
           <PlayerSpot 
