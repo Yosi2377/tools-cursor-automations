@@ -50,7 +50,9 @@ const Auth = () => {
         });
 
         if (signUpError) {
-          if (signUpError.message.includes('User already registered')) {
+          if (signUpError.message.includes('email_provider_disabled')) {
+            toast.error('Email signups are currently disabled. Please contact the administrator.');
+          } else if (signUpError.message.includes('User already registered')) {
             toast.error('This username is already taken. Please try another one or log in');
           } else {
             toast.error(signUpError.message);
