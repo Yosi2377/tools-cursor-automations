@@ -23,7 +23,6 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
           return;
         }
 
-        // Convert position to a number between 0-7
         const positions = ['bottom', 'bottomRight', 'right', 'topRight', 'top', 'topLeft', 'left', 'bottomLeft'];
         const positionIndex = positions.indexOf(player.position);
         
@@ -75,7 +74,6 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       }
     }
 
-    // Position active players in a perfect oval
     const zIndex = player.position === 'bottom' ? 'z-50' : 'z-10';
     switch (player.position) {
       case 'bottom':
@@ -116,7 +114,7 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       onClick={!player.isActive ? handleSeatClick : undefined}
     >
       {!player.isActive ? (
-        <div className="w-20 h-20 rounded-full bg-poker-accent/20 border-2 border-poker-accent/40 flex flex-col items-center justify-center text-poker-accent hover:bg-poker-accent/30 hover:border-poker-accent/60 transition-all shadow-lg">
+        <div className="w-24 h-24 rounded-full bg-poker-accent/20 border-4 border-poker-accent/40 flex flex-col items-center justify-center text-poker-accent hover:bg-poker-accent/30 hover:border-poker-accent/60 transition-all shadow-lg animate-pulse">
           <span className="text-sm font-medium">Empty Seat</span>
           <span className="text-xs">Click to join</span>
         </div>
