@@ -63,7 +63,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
               game_id: gameId,
               user_id: room.with_bots && index > 0 ? `bot-${index}` : null,
               position: index.toString(),
-              is_active: room.with_bots && index > 0,
+              is_active: room.with_bots && index > 0, // Set bots as active
               chips: 1000,
               cards: [],
               current_bet: 0,
@@ -81,13 +81,14 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             // Initialize game context with positions and bots
             setGameContext(prev => ({
               ...prev,
+              gameId,
               players: positions.map((seat, index) => ({
                 id: index,
                 name: room.with_bots && index > 0 ? `Bot ${index}` : 'Empty Seat',
                 position: getPositionForIndex(index),
                 chips: seat.chips,
                 cards: [],
-                isActive: seat.is_active,
+                isActive: seat.is_active, // This will be true for bots
                 currentBet: 0,
                 isTurn: false,
                 score: 0
@@ -110,6 +111,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
               console.log('Existing players:', existingPlayers);
               setGameContext(prev => ({
                 ...prev,
+                gameId,
                 players: existingPlayers.map((player, index) => ({
                   id: index,
                   name: player.user_id?.startsWith('bot-') ? 
