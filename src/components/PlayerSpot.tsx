@@ -108,6 +108,7 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
 
   const shouldShowFaceUp = player.position === 'bottom';
   const inactiveStyles = !player.isActive ? 'opacity-100 hover:opacity-80 cursor-pointer' : '';
+  const isBot = player.name.startsWith('Bot');
 
   return (
     <div 
@@ -120,7 +121,13 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
           <span className="text-xs">Click to join</span>
         </div>
       ) : (
-        <PlayerInfo player={player} onTimeout={onTimeout} />
+        <PlayerInfo 
+          player={{
+            ...player,
+            name: isBot ? `Bot ${player.id}` : player.name
+          }} 
+          onTimeout={onTimeout}
+        />
       )}
       
       {player.cards.length > 0 && (

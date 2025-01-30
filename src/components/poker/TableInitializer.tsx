@@ -3,20 +3,11 @@ import { GameContext, PlayerPosition, Card, GameState } from '@/types/poker';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { getPositionForIndex } from './TableLayout';
-import { Database } from '@/integrations/supabase/types';
 
 interface TableInitializerProps {
   roomId: string;
   setGameContext: React.Dispatch<React.SetStateAction<GameContext>>;
   setWithBots: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-type GameUpdatePayload = {
-  new: Database['public']['Tables']['games']['Row'];
-}
-
-type PlayerUpdatePayload = {
-  new: Database['public']['Tables']['game_players']['Row'];
 }
 
 const TableInitializer: React.FC<TableInitializerProps> = ({ 
@@ -35,6 +26,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
           .single();
 
         if (room) {
+          console.log('Room config:', room);
           setWithBots(room.with_bots);
 
           // Get the current user's ID
@@ -67,7 +59,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             if (gameError) throw gameError;
             gameId = newGame.id;
 
-            // Initialize empty seats and bots based on actual_players count
+            // Initialize empty seats and bots
             const emptySeats = Array(room.actual_players).fill(null).map((_, index) => ({
               game_id: gameId,
               user_id: room.with_bots && index > 0 ? `bot-${index}` : user.id,
@@ -77,6 +69,8 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
               cards: [],
               name: room.with_bots && index > 0 ? `Bot ${index}` : "Empty Seat"
             }));
+
+            console.log('Creating game players:', emptySeats);
 
             // Create game_players entries
             const { error: playersError } = await supabase
@@ -112,6 +106,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
               .order('position');
 
             if (existingPlayers) {
+              console.log('Existing players:', existingPlayers);
               setGameContext(prev => ({
                 ...prev,
                 players: existingPlayers.map((player, index) => ({
@@ -128,70 +123,6 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
               }));
             }
           }
-
-          // Subscribe to real-time updates
-          const channel = supabase.channel('game-updates')
-            .on(
-              'postgres_changes',
-              { 
-                event: 'UPDATE', 
-                schema: 'public', 
-                table: 'games', 
-                filter: `id=eq.${gameId}` 
-              },
-              (payload: GameUpdatePayload) => {
-                console.log('Game updated:', payload);
-                const newGameState = payload.new;
-                setGameContext(prev => ({
-                  ...prev,
-                  pot: newGameState.pot || 0,
-                  rake: newGameState.rake || 0,
-                  communityCards: (newGameState.community_cards as unknown as Card[]) || [],
-                  currentPlayer: newGameState.current_player_index || 0,
-                  gameState: (newGameState.status as GameState) || 'waiting',
-                  currentBet: newGameState.current_bet || 0,
-                  dealerPosition: newGameState.dealer_position || 0,
-                }));
-              }
-            )
-            .on(
-              'postgres_changes',
-              { 
-                event: 'UPDATE', 
-                schema: 'public', 
-                table: 'game_players', 
-                filter: `game_id=eq.${gameId}` 
-              },
-              (payload: PlayerUpdatePayload) => {
-                console.log('Player updated:', payload);
-                const updatedPlayer = payload.new;
-                const positionIndex = parseInt(updatedPlayer.position || '0');
-                
-                setGameContext(prev => ({
-                  ...prev,
-                  players: prev.players.map((p, index) => 
-                    index === positionIndex
-                      ? {
-                          ...p,
-                          chips: updatedPlayer.chips || 0,
-                          cards: (updatedPlayer.cards as unknown as Card[]) || [],
-                          isActive: updatedPlayer.is_active || false,
-                          currentBet: updatedPlayer.current_bet || 0,
-                          isTurn: updatedPlayer.is_turn || false,
-                          name: updatedPlayer.is_active 
-                            ? (updatedPlayer.user_id?.startsWith('bot-') ? `Bot ${index}` : "Player")
-                            : "Empty Seat"
-                        }
-                      : p
-                  ),
-                }));
-              }
-            )
-            .subscribe();
-
-          return () => {
-            supabase.removeChannel(channel);
-          };
         }
       } catch (error) {
         console.error('Error initializing game:', error);
