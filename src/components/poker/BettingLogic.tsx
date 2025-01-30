@@ -1,135 +1,168 @@
-import { GameContext, Card } from '@/types/poker';
-import { checkAndDealCommunityCards } from '@/utils/communityCardHandler';
-import { placeBet } from '@/utils/betActions';
-import { handleFold } from '@/utils/foldActions';
-import { toast } from '@/hooks/use-toast';
-import { updatePlayerBet, updateGameState, handlePlayerFoldUpdate, updateGameStateAfterFold } from '@/utils/betHandlers';
-import { simulateOpponentAction } from '@/utils/opponentBehavior';
+import { GameContext, Player } from '@/types/poker';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useBettingLogic = (
   gameContext: GameContext,
   setGameContext: React.Dispatch<React.SetStateAction<GameContext>>,
-  dealCommunityCards: (count: number) => Card[]
+  dealCommunityCards: (count: number) => any[]
 ) => {
-  const handleTimeout = () => {
-    console.log('Timeout triggered for player:', gameContext.players[gameContext.currentPlayer].name);
-    handleBet(gameContext.currentBet);
-  };
-
   const handleBet = async (amount: number) => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     console.log(`${currentPlayer.name} attempting to bet ${amount}`);
-    
-    const amountToCall = gameContext.currentBet - currentPlayer.currentBet;
-    const actualBetAmount = Math.max(amountToCall, amount);
-
-    if (currentPlayer.chips < actualBetAmount) {
-      toast({
-        title: "Invalid bet",
-        description: `${currentPlayer.name} doesn't have enough chips`,
-      });
-      return;
-    }
 
     try {
-      await updatePlayerBet(currentPlayer, actualBetAmount);
-      await updateGameState(gameContext, actualBetAmount, currentPlayer);
+      // Get the current game
+      const { data: game } = await supabase
+        .from('games')
+        .select('*')
+        .eq('status', 'betting')
+        .single();
 
-      const updatedContext = placeBet(gameContext, currentPlayer, actualBetAmount, setGameContext);
-      if (!updatedContext) return;
-
-      let nextPlayerIndex = updatedContext.currentPlayer;
-      while (
-        !updatedContext.players[nextPlayerIndex].isActive ||
-        updatedContext.players[nextPlayerIndex].currentBet === updatedContext.currentBet
-      ) {
-        nextPlayerIndex = (nextPlayerIndex + 1) % updatedContext.players.length;
-        if (nextPlayerIndex === gameContext.currentPlayer) break;
+      if (!game) {
+        throw new Error('No active game found');
       }
-      
+
+      // Get the player's UUID from the game_players table
+      const { data: playerData } = await supabase
+        .from('game_players')
+        .select('id')
+        .eq('game_id', game.id)
+        .eq('position', currentPlayer.position)
+        .single();
+
+      if (!playerData) {
+        throw new Error('Player not found');
+      }
+
+      // Update player with the correct UUID
+      const { error: playerError } = await supabase
+        .from('game_players')
+        .update({
+          chips: currentPlayer.chips - amount,
+          current_bet: currentPlayer.currentBet + amount,
+          is_turn: false
+        })
+        .eq('id', playerData.id);
+
+      if (playerError) throw playerError;
+
+      // Update game state
+      const { error: gameError } = await supabase
+        .from('games')
+        .update({
+          pot: gameContext.pot + amount,
+          current_bet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount),
+          current_player_index: (gameContext.currentPlayer + 1) % gameContext.players.length
+        })
+        .eq('id', game.id);
+
+      if (gameError) throw gameError;
+
       setGameContext(prev => ({
         ...prev,
-        ...updatedContext,
-        currentPlayer: nextPlayerIndex,
-        players: updatedContext.players.map((p, i) => ({
-          ...p,
-          isTurn: i === nextPlayerIndex && p.isActive
-        }))
+        players: prev.players.map(p =>
+          p.id === currentPlayer.id
+            ? {
+                ...p,
+                chips: p.chips - amount,
+                currentBet: p.currentBet + amount,
+                isTurn: false
+              }
+            : p
+        ),
+        pot: prev.pot + amount,
+        currentBet: Math.max(prev.currentBet, currentPlayer.currentBet + amount),
+        currentPlayer: (prev.currentPlayer + 1) % prev.players.length
       }));
 
-      const shouldDealCards = checkAndDealCommunityCards(
-        { ...updatedContext, currentPlayer: nextPlayerIndex },
-        dealCommunityCards,
-        setGameContext
-      );
-      
-      if (!shouldDealCards && nextPlayerIndex !== 0) {
-        const nextPlayer = updatedContext.players[nextPlayerIndex];
-        if (nextPlayer.isActive) {
-          setTimeout(() => {
-            simulateOpponentAction(updatedContext, nextPlayer, handleBet, handlePlayerFold);
-          }, 1500);
-        }
-      }
+      toast(`${currentPlayer.name} bet ${amount} chips`);
     } catch (error) {
       console.error('Error handling bet:', error);
-      toast({
-        title: "Error",
-        description: "Failed to place bet",
-        variant: "destructive"
-      });
+      toast('Failed to place bet');
     }
   };
 
-  const handlePlayerFold = async () => {
+  const handleFold = async () => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
-    console.log(`${currentPlayer.name} folding`);
-    
     try {
-      await handlePlayerFoldUpdate(currentPlayer);
+      // Get the current game
+      const { data: game } = await supabase
+        .from('games')
+        .select('*')
+        .eq('status', 'betting')
+        .single();
 
-      const updatedContext = handleFold(gameContext, currentPlayer, setGameContext);
-      if (!updatedContext) return;
-
-      let nextPlayerIndex = updatedContext.currentPlayer;
-      while (!updatedContext.players[nextPlayerIndex].isActive) {
-        nextPlayerIndex = (nextPlayerIndex + 1) % updatedContext.players.length;
-        if (nextPlayerIndex === gameContext.currentPlayer) break;
+      if (!game) {
+        throw new Error('No active game found');
       }
-      
-      await updateGameStateAfterFold(nextPlayerIndex);
+
+      // Get the player's UUID from the game_players table
+      const { data: playerData } = await supabase
+        .from('game_players')
+        .select('id')
+        .eq('game_id', game.id)
+        .eq('position', currentPlayer.position)
+        .single();
+
+      if (!playerData) {
+        throw new Error('Player not found');
+      }
+
+      // Update player with the correct UUID
+      const { error: playerError } = await supabase
+        .from('game_players')
+        .update({
+          is_active: false,
+          is_turn: false
+        })
+        .eq('id', playerData.id);
+
+      if (playerError) throw playerError;
+
+      const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
+
+      // Update game state
+      const { error: gameError } = await supabase
+        .from('games')
+        .update({
+          current_player_index: nextPlayerIndex
+        })
+        .eq('id', game.id);
+
+      if (gameError) throw gameError;
 
       setGameContext(prev => ({
         ...prev,
-        ...updatedContext,
-        currentPlayer: nextPlayerIndex,
-        players: updatedContext.players.map((p, i) => ({
-          ...p,
-          isTurn: i === nextPlayerIndex && p.isActive
-        }))
+        players: prev.players.map(p =>
+          p.id === currentPlayer.id
+            ? { ...p, isActive: false, isTurn: false }
+            : p
+        ),
+        currentPlayer: nextPlayerIndex
       }));
 
-      if (nextPlayerIndex !== 0) {
-        const nextPlayer = updatedContext.players[nextPlayerIndex];
-        if (nextPlayer.isActive) {
-          setTimeout(() => {
-            simulateOpponentAction(updatedContext, nextPlayer, handleBet, handlePlayerFold);
-          }, 1500);
-        }
-      }
+      toast(`${currentPlayer.name} folded`);
     } catch (error) {
       console.error('Error handling fold:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fold",
-        variant: "destructive"
-      });
+      toast('Failed to fold');
+    }
+  };
+
+  const handleTimeout = () => {
+    const currentPlayer = gameContext.players[gameContext.currentPlayer];
+    console.log('Timeout triggered for player:', currentPlayer.name);
+    
+    if (currentPlayer.chips >= gameContext.minimumBet) {
+      handleBet(gameContext.minimumBet);
+    } else {
+      handleFold();
     }
   };
 
   return {
     handleBet,
-    handleFold: handlePlayerFold,
-    handleTimeout,
+    handleFold,
+    handleTimeout
   };
 };
