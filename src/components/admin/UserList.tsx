@@ -16,7 +16,7 @@ const UserList = () => {
   const [loading, setLoading] = useState(false);
 
   // Fetch users using the Edge Function
-  const { data: users, refetch: refetchUsers } = useQuery({
+  const { data: users, isLoading: isLoadingUsers, error: usersError } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -34,6 +34,7 @@ const UserList = () => {
       }
       
       const { users } = await response.json()
+      console.log('Fetched users:', users) // Debug log
       return users
     }
   });
@@ -68,6 +69,30 @@ const UserList = () => {
     }
   };
 
+  if (isLoadingUsers) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Manage Users</CardTitle>
+          <CardDescription>Loading users...</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
+  if (usersError) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Manage Users</CardTitle>
+          <CardDescription className="text-red-500">
+            Error loading users: {usersError.message}
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -78,27 +103,31 @@ const UserList = () => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {users?.map((user) => (
-            <div
-              key={user.id}
-              className="flex items-center justify-between p-4 border rounded-lg"
-            >
-              <div>
-                <p className="font-medium">{user.user_metadata?.username || user.email}</p>
-                <p className="text-sm text-gray-500">Created: {new Date(user.created_at).toLocaleDateString()}</p>
-              </div>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => handleDeleteUser(user.id)}
-                disabled={loading}
-                className="flex items-center gap-2"
+          {users && users.length > 0 ? (
+            users.map((user) => (
+              <div
+                key={user.id}
+                className="flex items-center justify-between p-4 border rounded-lg"
               >
-                <Trash2 className="h-4 w-4" />
-                Delete
-              </Button>
-            </div>
-          ))}
+                <div>
+                  <p className="font-medium">{user.user_metadata?.username || user.email}</p>
+                  <p className="text-sm text-gray-500">Created: {new Date(user.created_at).toLocaleDateString()}</p>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteUser(user.id)}
+                  disabled={loading}
+                  className="flex items-center gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-gray-500">No users found</p>
+          )}
         </div>
       </CardContent>
     </Card>
