@@ -2,6 +2,7 @@ import React from 'react';
 import { Player } from '@/types/poker';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import TurnTimer from './TurnTimer';
+import { Bot } from 'lucide-react';
 
 interface PlayerInfoProps {
   player: Player;
@@ -9,13 +10,19 @@ interface PlayerInfoProps {
 }
 
 const PlayerInfo: React.FC<PlayerInfoProps> = ({ player, onTimeout }) => {
+  const isBot = player.name.startsWith('Bot');
+
   return (
     <div className={`relative p-4 rounded-lg ${
       player.isTurn ? 'bg-poker-accent/20 animate-pulse' : 'bg-black/20'
     }`}>
       <Avatar className="w-16 h-16 border-2 border-poker-accent">
-        <AvatarFallback className="bg-poker-background text-poker-accent">
-          {player.name[0]}
+        <AvatarFallback className="bg-poker-background text-poker-accent relative">
+          {isBot ? (
+            <Bot className="w-8 h-8" />
+          ) : (
+            player.name[0]
+          )}
         </AvatarFallback>
       </Avatar>
       
@@ -29,7 +36,10 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ player, onTimeout }) => {
       )}
 
       <div className="mt-2 text-center">
-        <p className="text-poker-accent font-semibold">{player.name}</p>
+        <p className="text-poker-accent font-semibold flex items-center justify-center gap-2">
+          {player.name}
+          {isBot && <Bot className="w-4 h-4" />}
+        </p>
         <p className="text-sm text-poker-accent/80">${player.chips}</p>
         {player.currentBet > 0 && (
           <p className="text-xs text-poker-accent/60">Bet: ${player.currentBet}</p>

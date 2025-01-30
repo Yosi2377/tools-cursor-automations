@@ -61,50 +61,34 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
   const getPositionClasses = () => {
     const baseClasses = 'absolute transition-all duration-500';
     
+    const positionClasses = {
+      bottom: `${baseClasses} bottom-24 left-1/2 -translate-x-1/2`,
+      bottomLeft: `${baseClasses} bottom-32 left-32 -translate-x-1/2`,
+      left: `${baseClasses} left-24 top-1/2 -translate-y-1/2`,
+      topLeft: `${baseClasses} top-32 left-32 -translate-x-1/2`,
+      top: `${baseClasses} top-24 left-1/2 -translate-x-1/2`,
+      topRight: `${baseClasses} top-32 right-32 translate-x-1/2`,
+      right: `${baseClasses} right-24 top-1/2 -translate-y-1/2`,
+      bottomRight: `${baseClasses} bottom-32 right-32 translate-x-1/2`
+    };
+
     if (!player.isActive) {
-      switch (player.position) {
-        case 'bottom':
-          return `${baseClasses} bottom-24 left-1/2 -translate-x-1/2`;
-        case 'bottomLeft':
-          return `${baseClasses} bottom-32 left-32 -translate-x-1/2`;
-        case 'left':
-          return `${baseClasses} left-24 top-1/2 -translate-y-1/2`;
-        case 'topLeft':
-          return `${baseClasses} top-32 left-32 -translate-x-1/2`;
-        case 'top':
-          return `${baseClasses} top-24 left-1/2 -translate-x-1/2`;
-        case 'topRight':
-          return `${baseClasses} top-32 right-32 translate-x-1/2`;
-        case 'right':
-          return `${baseClasses} right-24 top-1/2 -translate-y-1/2`;
-        case 'bottomRight':
-          return `${baseClasses} bottom-32 right-32 translate-x-1/2`;
-        default:
-          return baseClasses;
-      }
+      return positionClasses[player.position as keyof typeof positionClasses] || baseClasses;
     }
 
     const zIndex = player.position === 'bottom' ? 'z-50' : 'z-10';
-    switch (player.position) {
-      case 'bottom':
-        return `${baseClasses} bottom-20 left-1/2 -translate-x-1/2 ${zIndex}`;
-      case 'bottomLeft':
-        return `${baseClasses} ${isMobile ? 'left-24 bottom-32' : 'left-64 bottom-48'} -translate-x-1/2 ${zIndex}`;
-      case 'left':
-        return `${baseClasses} ${isMobile ? 'left-16' : 'left-24'} top-1/2 -translate-y-1/2 ${zIndex}`;
-      case 'topLeft':
-        return `${baseClasses} ${isMobile ? 'left-24 top-32' : 'left-64 top-48'} -translate-x-1/2 ${zIndex}`;
-      case 'top':
-        return `${baseClasses} top-20 left-1/2 -translate-x-1/2 ${zIndex}`;
-      case 'topRight':
-        return `${baseClasses} ${isMobile ? 'right-24 top-32' : 'right-64 top-48'} translate-x-1/2 ${zIndex}`;
-      case 'right':
-        return `${baseClasses} ${isMobile ? 'right-16' : 'right-24'} top-1/2 -translate-y-1/2 ${zIndex}`;
-      case 'bottomRight':
-        return `${baseClasses} ${isMobile ? 'right-24 bottom-32' : 'right-64 bottom-48'} translate-x-1/2 ${zIndex}`;
-      default:
-        return baseClasses;
-    }
+    const mobileClasses = {
+      bottom: `${baseClasses} bottom-20 left-1/2 -translate-x-1/2 ${zIndex}`,
+      bottomLeft: `${baseClasses} ${isMobile ? 'left-24 bottom-32' : 'left-64 bottom-48'} -translate-x-1/2 ${zIndex}`,
+      left: `${baseClasses} ${isMobile ? 'left-16' : 'left-24'} top-1/2 -translate-y-1/2 ${zIndex}`,
+      topLeft: `${baseClasses} ${isMobile ? 'left-24 top-32' : 'left-64 top-48'} -translate-x-1/2 ${zIndex}`,
+      top: `${baseClasses} top-20 left-1/2 -translate-x-1/2 ${zIndex}`,
+      topRight: `${baseClasses} ${isMobile ? 'right-24 top-32' : 'right-64 top-48'} translate-x-1/2 ${zIndex}`,
+      right: `${baseClasses} ${isMobile ? 'right-16' : 'right-24'} top-1/2 -translate-y-1/2 ${zIndex}`,
+      bottomRight: `${baseClasses} ${isMobile ? 'right-24 bottom-32' : 'right-64 bottom-48'} translate-x-1/2 ${zIndex}`
+    };
+
+    return mobileClasses[player.position as keyof typeof mobileClasses] || baseClasses;
   };
 
   const getCardPositionClasses = () => {
