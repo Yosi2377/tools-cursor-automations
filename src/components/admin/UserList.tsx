@@ -19,24 +19,31 @@ const UserList = () => {
   const { data: users, isLoading: isLoadingUsers, error: usersError, refetch: refetchUsers } = useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) throw new Error('No session')
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session?.access_token) throw new Error('No session')
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-users`, {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      })
-      
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to fetch users')
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-users`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        })
+        
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to fetch users')
+        }
+        
+        const data = await response.json()
+        console.log('Fetched users:', data.users) // Debug log
+        return data.users
+      } catch (error: any) {
+        console.error('Error in queryFn:', error)
+        throw error
       }
-      
-      const { users } = await response.json()
-      console.log('Fetched users:', users) // Debug log
-      return users
-    }
+    },
+    retry: 1,
   });
 
   const handleDeleteUser = async (userId: string) => {
@@ -55,8 +62,8 @@ const UserList = () => {
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to delete user')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to delete user')
       }
 
       toast.success('User deleted successfully');
@@ -86,7 +93,7 @@ const UserList = () => {
         <CardHeader>
           <CardTitle>Manage Users</CardTitle>
           <CardDescription className="text-red-500">
-            Error loading users: {usersError.message}
+            Error loading users: {usersError instanceof Error ? usersError.message : 'Unknown error'}
           </CardDescription>
         </CardHeader>
       </Card>
