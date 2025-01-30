@@ -1,8 +1,7 @@
 import { useEffect } from 'react';
-import { GameContext, PlayerPosition, Card, GameState } from '@/types/poker';
+import { GameContext } from '@/types/poker';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { getPositionForIndex } from './TableLayout';
 
 interface TableInitializerProps {
   roomId: string;
@@ -67,13 +66,10 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
               is_active: room.with_bots && index > 0,
               chips: 1000,
               cards: [],
-              name: room.with_bots && index > 0 ? `Bot ${index}` : "Empty Seat",
               current_bet: 0,
               is_turn: false,
               score: 0
             }));
-
-            console.log('Creating game players:', emptySeats);
 
             // Create game_players entries
             const { error: playersError } = await supabase
@@ -87,10 +83,10 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
               ...prev,
               players: emptySeats.map((seat, index) => ({
                 id: index,
-                name: seat.name,
+                name: room.with_bots && index > 0 ? `Bot ${index}` : "Empty Seat",
                 position: getPositionForIndex(index),
                 chips: seat.chips,
-                cards: [] as Card[],
+                cards: [],
                 isActive: seat.is_active,
                 currentBet: 0,
                 isTurn: false,
@@ -102,11 +98,13 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             gameId = existingGames[0].id;
 
             // Get existing players
-            const { data: existingPlayers } = await supabase
+            const { data: existingPlayers, error: playersError } = await supabase
               .from('game_players')
               .select('*')
               .eq('game_id', gameId)
               .order('position');
+
+            if (playersError) throw playersError;
 
             if (existingPlayers) {
               console.log('Existing players:', existingPlayers);
@@ -114,12 +112,12 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                 ...prev,
                 players: existingPlayers.map((player, index) => ({
                   id: index,
-                  name: player.is_active ? 
-                    (player.user_id?.startsWith('bot-') ? `Bot ${index}` : "Player") : 
-                    "Empty Seat",
+                  name: player.user_id?.startsWith('bot-') ? 
+                    `Bot ${index}` : 
+                    (player.is_active ? "Player" : "Empty Seat"),
                   position: getPositionForIndex(index),
                   chips: player.chips || 1000,
-                  cards: (player.cards as unknown as Card[]) || [],
+                  cards: player.cards || [],
                   isActive: player.is_active || false,
                   currentBet: player.current_bet || 0,
                   isTurn: player.is_turn || false,
@@ -139,6 +137,14 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
   }, [roomId, setGameContext, setWithBots]);
 
   return null;
+};
+
+const getPositionForIndex = (index: number): PlayerPosition => {
+  const positions: PlayerPosition[] = [
+    'bottom', 'bottomRight', 'right', 'topRight',
+    'top', 'topLeft', 'left', 'bottomLeft'
+  ];
+  return positions[index % positions.length];
 };
 
 export default TableInitializer;
