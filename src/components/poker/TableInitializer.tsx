@@ -58,12 +58,12 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             if (gameError) throw gameError;
             gameId = newGame.id;
 
-            // Initialize empty seats and bots
+            // Initialize positions for all players including bots
             const positions = Array(room.actual_players).fill(null).map((_, index) => ({
               game_id: gameId,
               user_id: room.with_bots && index > 0 ? `bot-${index}` : null,
               position: index.toString(),
-              is_active: room.with_bots && index > 0, // Set bots as active
+              is_active: room.with_bots && index > 0, // Bots are active by default
               chips: 1000,
               cards: [],
               current_bet: 0,
@@ -82,17 +82,25 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             setGameContext(prev => ({
               ...prev,
               gameId,
+              minimumBet: room.min_bet,
               players: positions.map((seat, index) => ({
                 id: index,
                 name: room.with_bots && index > 0 ? `Bot ${index}` : 'Empty Seat',
                 position: getPositionForIndex(index),
                 chips: seat.chips,
                 cards: [],
-                isActive: seat.is_active, // This will be true for bots
+                isActive: seat.is_active,
                 currentBet: 0,
                 isTurn: false,
                 score: 0
-              }))
+              })),
+              pot: 0,
+              rake: 0,
+              communityCards: [],
+              currentPlayer: 0,
+              gameState: 'waiting',
+              currentBet: 0,
+              dealerPosition: 0
             }));
 
             console.log('Initialized players:', positions);
@@ -112,6 +120,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
               setGameContext(prev => ({
                 ...prev,
                 gameId,
+                minimumBet: room.min_bet,
                 players: existingPlayers.map((player, index) => ({
                   id: index,
                   name: player.user_id?.startsWith('bot-') ? 
@@ -124,7 +133,14 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                   currentBet: player.current_bet || 0,
                   isTurn: player.is_turn || false,
                   score: player.score || 0
-                }))
+                })),
+                pot: existingGames[0].pot || 0,
+                rake: existingGames[0].rake || 0,
+                communityCards: existingGames[0].community_cards || [],
+                currentPlayer: existingGames[0].current_player_index || 0,
+                gameState: existingGames[0].status || 'waiting',
+                currentBet: existingGames[0].current_bet || 0,
+                dealerPosition: existingGames[0].dealer_position || 0
               }));
             }
           }

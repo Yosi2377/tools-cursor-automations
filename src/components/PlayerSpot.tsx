@@ -5,7 +5,7 @@ import PlayerInfo from './poker/PlayerInfo';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Bot, User } from 'lucide-react';
+import { Bot } from 'lucide-react';
 
 interface PlayerSpotProps {
   player: Player;
