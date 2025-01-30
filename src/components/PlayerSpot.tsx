@@ -55,21 +55,21 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
     if (!player.isActive) {
       switch (player.position) {
         case 'bottom':
-          return `${baseClasses} bottom-8 left-1/2 -translate-x-1/2`;
+          return `${baseClasses} bottom-16 left-1/2 -translate-x-1/2`;
         case 'bottomLeft':
-          return `${baseClasses} bottom-16 left-16 -translate-x-1/2`;
+          return `${baseClasses} bottom-24 left-24 -translate-x-1/2`;
         case 'left':
-          return `${baseClasses} left-8 top-1/2 -translate-y-1/2`;
+          return `${baseClasses} left-16 top-1/2 -translate-y-1/2`;
         case 'topLeft':
-          return `${baseClasses} top-16 left-16 -translate-x-1/2`;
+          return `${baseClasses} top-24 left-24 -translate-x-1/2`;
         case 'top':
-          return `${baseClasses} top-8 left-1/2 -translate-x-1/2`;
+          return `${baseClasses} top-16 left-1/2 -translate-x-1/2`;
         case 'topRight':
-          return `${baseClasses} top-16 right-16 translate-x-1/2`;
+          return `${baseClasses} top-24 right-24 translate-x-1/2`;
         case 'right':
-          return `${baseClasses} right-8 top-1/2 -translate-y-1/2`;
+          return `${baseClasses} right-16 top-1/2 -translate-y-1/2`;
         case 'bottomRight':
-          return `${baseClasses} bottom-16 right-16 translate-x-1/2`;
+          return `${baseClasses} bottom-24 right-24 translate-x-1/2`;
         default:
           return baseClasses;
       }
@@ -79,21 +79,21 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
     const zIndex = player.position === 'bottom' ? 'z-50' : 'z-10';
     switch (player.position) {
       case 'bottom':
-        return `${baseClasses} bottom-4 left-1/2 -translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} bottom-12 left-1/2 -translate-x-1/2 ${zIndex}`;
       case 'bottomLeft':
-        return `${baseClasses} ${isMobile ? 'left-12 bottom-16' : 'left-32 bottom-24'} -translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${isMobile ? 'left-16 bottom-24' : 'left-48 bottom-32'} -translate-x-1/2 ${zIndex}`;
       case 'left':
-        return `${baseClasses} ${isMobile ? 'left-4' : 'left-8'} top-1/2 -translate-y-1/2 ${zIndex}`;
+        return `${baseClasses} ${isMobile ? 'left-8' : 'left-16'} top-1/2 -translate-y-1/2 ${zIndex}`;
       case 'topLeft':
-        return `${baseClasses} ${isMobile ? 'left-12 top-16' : 'left-32 top-24'} -translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${isMobile ? 'left-16 top-24' : 'left-48 top-32'} -translate-x-1/2 ${zIndex}`;
       case 'top':
-        return `${baseClasses} top-4 left-1/2 -translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} top-12 left-1/2 -translate-x-1/2 ${zIndex}`;
       case 'topRight':
-        return `${baseClasses} ${isMobile ? 'right-12 top-16' : 'right-32 top-24'} translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${isMobile ? 'right-16 top-24' : 'right-48 top-32'} translate-x-1/2 ${zIndex}`;
       case 'right':
-        return `${baseClasses} ${isMobile ? 'right-4' : 'right-8'} top-1/2 -translate-y-1/2 ${zIndex}`;
+        return `${baseClasses} ${isMobile ? 'right-8' : 'right-16'} top-1/2 -translate-y-1/2 ${zIndex}`;
       case 'bottomRight':
-        return `${baseClasses} ${isMobile ? 'right-12 bottom-16' : 'right-32 bottom-24'} translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${isMobile ? 'right-16 bottom-24' : 'right-48 bottom-32'} translate-x-1/2 ${zIndex}`;
       default:
         return baseClasses;
     }
@@ -116,8 +116,8 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       onClick={!player.isActive ? handleSeatClick : undefined}
     >
       {!player.isActive ? (
-        <div className="w-16 h-16 rounded-full bg-poker-accent/10 border-2 border-poker-accent/20 flex flex-col items-center justify-center text-poker-accent hover:bg-poker-accent/20 hover:border-poker-accent/40 transition-all">
-          <span>Empty</span>
+        <div className="w-20 h-20 rounded-full bg-poker-accent/20 border-2 border-poker-accent/40 flex flex-col items-center justify-center text-poker-accent hover:bg-poker-accent/30 hover:border-poker-accent/60 transition-all shadow-lg">
+          <span className="text-sm font-medium">Empty Seat</span>
           <span className="text-xs">Click to join</span>
         </div>
       ) : (

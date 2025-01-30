@@ -62,12 +62,15 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             // Initialize empty seats and bots
             const emptySeats = Array(room.actual_players).fill(null).map((_, index) => ({
               game_id: gameId,
-              user_id: room.with_bots && index > 0 ? `bot-${index}` : user.id,
+              user_id: room.with_bots && index > 0 ? `bot-${index}` : null,
               position: index.toString(),
               is_active: room.with_bots && index > 0,
               chips: 1000,
               cards: [],
-              name: room.with_bots && index > 0 ? `Bot ${index}` : "Empty Seat"
+              name: room.with_bots && index > 0 ? `Bot ${index}` : "Empty Seat",
+              current_bet: 0,
+              is_turn: false,
+              score: 0
             }));
 
             console.log('Creating game players:', emptySeats);
@@ -111,9 +114,11 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                 ...prev,
                 players: existingPlayers.map((player, index) => ({
                   id: index,
-                  name: player.is_active ? (player.user_id?.startsWith('bot-') ? `Bot ${index}` : "Player") : "Empty Seat",
+                  name: player.is_active ? 
+                    (player.user_id?.startsWith('bot-') ? `Bot ${index}` : "Player") : 
+                    "Empty Seat",
                   position: getPositionForIndex(index),
-                  chips: player.chips || 0,
+                  chips: player.chips || 1000,
                   cards: (player.cards as unknown as Card[]) || [],
                   isActive: player.is_active || false,
                   currentBet: player.current_bet || 0,
