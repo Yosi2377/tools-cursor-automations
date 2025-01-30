@@ -10,11 +10,11 @@ import { Room } from '@/types/poker';
 
 interface RoomListProps {
   onJoinRoom: (roomId: string) => void;
+  isCreating: boolean;
+  setIsCreating: (value: boolean) => void;
 }
 
-const RoomList = ({ onJoinRoom }: RoomListProps) => {
-  const [isCreating, setIsCreating] = useState(false);
-
+const RoomList = ({ onJoinRoom, isCreating, setIsCreating }: RoomListProps) => {
   const { data: rooms, isLoading, error, refetch } = useQuery({
     queryKey: ['rooms'],
     queryFn: async () => {
