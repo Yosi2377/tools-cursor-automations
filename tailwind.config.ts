@@ -25,7 +25,7 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         poker: {
-          background: "#0F172A",
+          background: "#1A1F2C",
           table: "#059669",
           accent: "#FCD34D",
         },
