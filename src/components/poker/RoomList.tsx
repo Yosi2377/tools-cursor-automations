@@ -22,13 +22,14 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
   const [isCreating, setIsCreating] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
 
-  const { data: rooms, refetch } = useQuery({
+  const { data: rooms, isLoading, error } = useQuery({
     queryKey: ['rooms'],
     queryFn: async () => {
       console.log('Fetching rooms...');
       const { data, error } = await supabase
         .from('rooms')
         .select('*')
+        .eq('is_active', true)
         .order('created_at', { ascending: false });
       
       if (error) {
@@ -49,23 +50,36 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
       const { data, error } = await supabase
         .rpc('is_admin', { user_id: user.id });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error checking admin status:', error);
+        throw error;
+      }
+      console.log('Is admin:', data);
       return data as boolean;
     }
   });
 
   const createRoom = async () => {
+    if (!newRoomName.trim()) {
+      toast.error('Please enter a room name');
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('rooms')
-        .insert([{ name: newRoomName }]);
+        .insert([{ 
+          name: newRoomName,
+          is_active: true,
+          min_bet: 20,
+          max_players: 8
+        }]);
 
       if (error) throw error;
 
       toast.success('Room created successfully');
       setIsCreating(false);
       setNewRoomName('');
-      refetch();
     } catch (error) {
       console.error('Error creating room:', error);
       toast.error('Failed to create room');
@@ -89,6 +103,23 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="p-4 text-center">
+        <p>Loading rooms...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 text-center text-red-500">
+        <p>Error loading rooms. Please try again later.</p>
+        <pre className="mt-2 text-sm">{error.message}</pre>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 space-y-4">
       <div className="flex justify-between items-center">
@@ -107,7 +138,7 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
             type="text"
             value={newRoomName}
             onChange={(e) => setNewRoomName(e.target.value)}
-            className="px-3 py-2 border rounded"
+            className="px-3 py-2 border rounded flex-1"
             placeholder="Room name"
           />
           <Button onClick={createRoom}>Create</Button>
@@ -115,23 +146,32 @@ const RoomList = ({ onJoinRoom }: RoomListProps) => {
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {rooms?.map((room) => (
-          <div key={room.id} className="p-4 border rounded-lg shadow">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="text-lg font-semibold">{room.name}</h3>
-              <div className="flex items-center gap-1 text-sm text-gray-500">
-                <Users className="w-4 h-4" />
-                <span>{room.max_players}</span>
+      {rooms && rooms.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          <p>No active rooms available.</p>
+          {isAdmin && (
+            <p className="mt-2">Click 'Create Room' to start a new game.</p>
+          )}
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {rooms?.map((room) => (
+            <div key={room.id} className="p-4 border rounded-lg shadow">
+              <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-semibold">{room.name}</h3>
+                <div className="flex items-center gap-1 text-sm text-gray-500">
+                  <Users className="w-4 h-4" />
+                  <span>{room.max_players}</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Min bet: ${room.min_bet}</span>
+                <Button onClick={() => joinRoom(room.id)}>Join</Button>
               </div>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-500">Min bet: ${room.min_bet}</span>
-              <Button onClick={() => joinRoom(room.id)}>Join</Button>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
