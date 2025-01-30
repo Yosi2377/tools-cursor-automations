@@ -23,8 +23,14 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
           return;
         }
 
-        const positionIndex = ['bottom', 'bottomRight', 'right', 'topRight', 'top', 'topLeft', 'left', 'bottomLeft']
-          .indexOf(player.position);
+        // Convert position to a number between 0-7
+        const positions = ['bottom', 'bottomRight', 'right', 'topRight', 'top', 'topLeft', 'left', 'bottomLeft'];
+        const positionIndex = positions.indexOf(player.position);
+        
+        if (positionIndex === -1) {
+          toast.error('Invalid position');
+          return;
+        }
 
         const { error } = await supabase
           .from('game_players')
