@@ -1,13 +1,22 @@
 import { useEffect } from 'react';
-import { GameContext, PlayerPosition } from '@/types/poker';
+import { GameContext, PlayerPosition, Card } from '@/types/poker';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { getPositionForIndex } from './TableLayout';
+import { Database } from '@/integrations/supabase/types';
 
 interface TableInitializerProps {
   roomId: string;
   setGameContext: React.Dispatch<React.SetStateAction<GameContext>>;
   setWithBots: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+type GameUpdatePayload = {
+  new: Database['public']['Tables']['games']['Row'];
+}
+
+type PlayerUpdatePayload = {
+  new: Database['public']['Tables']['game_players']['Row'];
 }
 
 const TableInitializer: React.FC<TableInitializerProps> = ({ 
@@ -83,7 +92,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                 name: "Empty Seat",
                 position: seat.position as PlayerPosition,
                 chips: seat.chips,
-                cards: [],
+                cards: [] as Card[],
                 isActive: false,
                 currentBet: 0,
                 isTurn: false,
@@ -108,11 +117,11 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                   id: index,
                   name: player.is_active ? "Player" : "Empty Seat",
                   position: player.position as PlayerPosition,
-                  chips: player.chips,
-                  cards: player.cards || [],
-                  isActive: player.is_active,
-                  currentBet: player.current_bet,
-                  isTurn: player.is_turn,
+                  chips: player.chips || 0,
+                  cards: (player.cards as Card[]) || [],
+                  isActive: player.is_active || false,
+                  currentBet: player.current_bet || 0,
+                  isTurn: player.is_turn || false,
                   score: player.score || 0
                 }))
               }));
@@ -124,38 +133,38 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             .on(
               'postgres_changes',
               { event: '*', schema: 'public', table: 'games', filter: `id=eq.${gameId}` },
-              (payload) => {
+              (payload: GameUpdatePayload) => {
                 console.log('Game updated:', payload);
                 const newGameState = payload.new;
                 setGameContext(prev => ({
                   ...prev,
-                  pot: newGameState.pot,
-                  rake: newGameState.rake,
-                  communityCards: newGameState.community_cards || [],
-                  currentPlayer: newGameState.current_player_index,
-                  gameState: newGameState.status,
-                  currentBet: newGameState.current_bet,
-                  dealerPosition: newGameState.dealer_position,
+                  pot: newGameState.pot || 0,
+                  rake: newGameState.rake || 0,
+                  communityCards: (newGameState.community_cards as Card[]) || [],
+                  currentPlayer: newGameState.current_player_index || 0,
+                  gameState: newGameState.status || 'waiting',
+                  currentBet: newGameState.current_bet || 0,
+                  dealerPosition: newGameState.dealer_position || 0,
                 }));
               }
             )
             .on(
               'postgres_changes',
               { event: '*', schema: 'public', table: 'game_players', filter: `game_id=eq.${gameId}` },
-              (payload) => {
+              (payload: PlayerUpdatePayload) => {
                 console.log('Player updated:', payload);
                 const updatedPlayer = payload.new;
                 setGameContext(prev => ({
                   ...prev,
                   players: prev.players.map((p, index) => 
-                    index === updatedPlayer.position_index 
+                    index === Number(updatedPlayer.position)
                       ? {
                           ...p,
-                          chips: updatedPlayer.chips,
-                          cards: updatedPlayer.cards || [],
-                          isActive: updatedPlayer.is_active,
-                          currentBet: updatedPlayer.current_bet,
-                          isTurn: updatedPlayer.is_turn,
+                          chips: updatedPlayer.chips || 0,
+                          cards: (updatedPlayer.cards as Card[]) || [],
+                          isActive: updatedPlayer.is_active || false,
+                          currentBet: updatedPlayer.current_bet || 0,
+                          isTurn: updatedPlayer.is_turn || false,
                           name: updatedPlayer.is_active ? "Player" : "Empty Seat"
                         }
                       : p
