@@ -13,32 +13,41 @@ export const useBettingLogic = (
 
     try {
       // Get the most recent active game
-      const { data: game } = await supabase
+      const { data: game, error: gameError } = await supabase
         .from('games')
         .select('*')
         .eq('status', 'betting')
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
+      if (gameError) throw gameError;
       if (!game) {
-        throw new Error('No active game found');
+        toast.error('No active game found');
+        return;
       }
 
       // Get the player's UUID from the game_players table
-      const { data: playerData } = await supabase
+      const { data: playerData, error: playerError } = await supabase
         .from('game_players')
         .select('id')
         .eq('game_id', game.id)
         .eq('position', currentPlayer.position)
-        .single();
+        .maybeSingle();
 
+      if (playerError) {
+        console.error('Error finding player:', playerError);
+        throw playerError;
+      }
+      
       if (!playerData) {
-        throw new Error('Player not found');
+        console.error('No player found for position:', currentPlayer.position);
+        toast.error('Player not found in game');
+        return;
       }
 
       // Update player with the correct UUID
-      const { error: playerError } = await supabase
+      const { error: playerUpdateError } = await supabase
         .from('game_players')
         .update({
           chips: currentPlayer.chips - amount,
@@ -47,10 +56,13 @@ export const useBettingLogic = (
         })
         .eq('id', playerData.id);
 
-      if (playerError) throw playerError;
+      if (playerUpdateError) {
+        console.error('Error updating player:', playerUpdateError);
+        throw playerUpdateError;
+      }
 
       // Update game state
-      const { error: gameError } = await supabase
+      const { error: gameUpdateError } = await supabase
         .from('games')
         .update({
           pot: gameContext.pot + amount,
@@ -59,7 +71,10 @@ export const useBettingLogic = (
         })
         .eq('id', game.id);
 
-      if (gameError) throw gameError;
+      if (gameUpdateError) {
+        console.error('Error updating game:', gameUpdateError);
+        throw gameUpdateError;
+      }
 
       setGameContext(prev => ({
         ...prev,
@@ -78,10 +93,10 @@ export const useBettingLogic = (
         currentPlayer: (prev.currentPlayer + 1) % prev.players.length
       }));
 
-      toast(`${currentPlayer.name} bet ${amount} chips`);
+      toast.success(`${currentPlayer.name} bet ${amount} chips`);
     } catch (error) {
       console.error('Error handling bet:', error);
-      toast('Failed to place bet');
+      toast.error('Failed to place bet');
     }
   };
 
@@ -89,32 +104,41 @@ export const useBettingLogic = (
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     try {
       // Get the most recent active game
-      const { data: game } = await supabase
+      const { data: game, error: gameError } = await supabase
         .from('games')
         .select('*')
         .eq('status', 'betting')
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
+      if (gameError) throw gameError;
       if (!game) {
-        throw new Error('No active game found');
+        toast.error('No active game found');
+        return;
       }
 
       // Get the player's UUID from the game_players table
-      const { data: playerData } = await supabase
+      const { data: playerData, error: playerError } = await supabase
         .from('game_players')
         .select('id')
         .eq('game_id', game.id)
         .eq('position', currentPlayer.position)
-        .single();
+        .maybeSingle();
+
+      if (playerError) {
+        console.error('Error finding player:', playerError);
+        throw playerError;
+      }
 
       if (!playerData) {
-        throw new Error('Player not found');
+        console.error('No player found for position:', currentPlayer.position);
+        toast.error('Player not found in game');
+        return;
       }
 
       // Update player with the correct UUID
-      const { error: playerError } = await supabase
+      const { error: playerUpdateError } = await supabase
         .from('game_players')
         .update({
           is_active: false,
@@ -122,19 +146,25 @@ export const useBettingLogic = (
         })
         .eq('id', playerData.id);
 
-      if (playerError) throw playerError;
+      if (playerUpdateError) {
+        console.error('Error updating player:', playerUpdateError);
+        throw playerUpdateError;
+      }
 
       const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
 
       // Update game state
-      const { error: gameError } = await supabase
+      const { error: gameUpdateError } = await supabase
         .from('games')
         .update({
           current_player_index: nextPlayerIndex
         })
         .eq('id', game.id);
 
-      if (gameError) throw gameError;
+      if (gameUpdateError) {
+        console.error('Error updating game:', gameUpdateError);
+        throw gameUpdateError;
+      }
 
       setGameContext(prev => ({
         ...prev,
@@ -146,10 +176,10 @@ export const useBettingLogic = (
         currentPlayer: nextPlayerIndex
       }));
 
-      toast(`${currentPlayer.name} folded`);
+      toast.success(`${currentPlayer.name} folded`);
     } catch (error) {
       console.error('Error handling fold:', error);
-      toast('Failed to fold');
+      toast.error('Failed to fold');
     }
   };
 
