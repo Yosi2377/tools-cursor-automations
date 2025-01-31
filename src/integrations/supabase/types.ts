@@ -291,6 +291,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_bot_uuids: {
+        Args: {
+          count: number
+        }
+        Returns: string[]
+      }
       is_admin: {
         Args: {
           user_id: string
