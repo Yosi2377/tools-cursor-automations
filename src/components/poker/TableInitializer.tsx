@@ -42,7 +42,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             name: room.with_bots ? `Bot ${index + 1}` : "Empty Seat",
             chips: 1000,
             cards: [],
-            positionPlayers),
+            position: getPositionForIndex(index, totalPlayers),
             isActive: room.with_bots,
             currentBet: 0,
             isTurn: false,
