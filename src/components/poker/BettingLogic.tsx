@@ -44,11 +44,13 @@ export const useBettingLogic = (
         return;
       }
 
-      // Update player chips and bet
+      // Update both current chips and default_chips
+      const newChips = playerData.chips - amount;
       const { error: playerError } = await supabase
         .from('game_players')
         .update({
-          chips: playerData.chips - amount,
+          chips: newChips,
+          default_chips: newChips, // Update default_chips as well
           current_bet: playerData.current_bet + amount,
           is_turn: false
         })
@@ -57,6 +59,21 @@ export const useBettingLogic = (
       if (playerError) {
         console.error('Error updating player:', playerError);
         throw playerError;
+      }
+
+      // Also update any other game_players entries for this user that don't have a game_id
+      const { error: defaultChipsError } = await supabase
+        .from('game_players')
+        .update({ 
+          chips: newChips,
+          default_chips: newChips 
+        })
+        .eq('user_id', playerData.user_id)
+        .is('game_id', null);
+
+      if (defaultChipsError) {
+        console.error('Error updating default chips:', defaultChipsError);
+        // Don't throw here as this is a secondary update
       }
 
       // Update game state
@@ -81,7 +98,7 @@ export const useBettingLogic = (
           p.id === currentPlayer.id
             ? {
                 ...p,
-                chips: p.chips - amount,
+                chips: newChips,
                 currentBet: p.currentBet + amount,
                 isTurn: false
               }
