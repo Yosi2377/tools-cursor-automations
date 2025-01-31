@@ -103,6 +103,7 @@ export const useBettingLogic = (
 
       // Trigger bot action immediately if next player is a bot
       if (nextPlayer.name.startsWith('Bot')) {
+        // Reduced delay for faster bot play
         setTimeout(() => {
           handleOpponentAction(
             nextPlayer,
@@ -115,7 +116,7 @@ export const useBettingLogic = (
             handleBet,
             handleFold
           );
-        }, Math.random() * 1000 + 500); // Random delay between 500ms and 1500ms
+        }, Math.random() * 500 + 200); // Faster random delay between 200ms and 700ms
       }
     } catch (error) {
       console.error('Error handling bet:', error);
@@ -206,15 +207,18 @@ export const useBettingLogic = (
 
       // Trigger bot action immediately if next player is a bot
       if (nextPlayer.name.startsWith('Bot')) {
-        handleOpponentAction(
-          nextPlayer,
-          {
-            ...gameContext,
-            currentPlayer: nextPlayerIndex
-          },
-          handleBet,
-          handleFold
-        );
+        // Reduced delay for faster bot play
+        setTimeout(() => {
+          handleOpponentAction(
+            nextPlayer,
+            {
+              ...gameContext,
+              currentPlayer: nextPlayerIndex
+            },
+            handleBet,
+            handleFold
+          );
+        }, Math.random() * 500 + 200); // Faster random delay between 200ms and 700ms
       }
     } catch (error) {
       console.error('Error handling fold:', error);

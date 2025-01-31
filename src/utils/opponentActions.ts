@@ -6,7 +6,7 @@ export const handleOpponentAction = (
   handleBet: (amount: number) => void,
   handleFold: () => void
 ) => {
-  console.log('Opponent action for:', player.name, 'Current bet:', gameContext.currentBet, 'Player bet:', player.currentBet);
+  console.log('Bot action for:', player.name, 'Current bet:', gameContext.currentBet, 'Player bet:', player.currentBet);
   
   const amountToCall = gameContext.currentBet - player.currentBet;
   const isFirstRound = gameContext.communityCards.length === 0;
@@ -14,18 +14,18 @@ export const handleOpponentAction = (
   const hasPair = player.cards[0].rank === player.cards[1].rank;
   const hasHighCards = player.cards.every(card => ['A', 'K', 'Q', 'J', '10'].includes(card.rank));
   
-  // More aggressive betting strategy
-  const shouldBet = isFirstRound || hasGoodCards || hasPair || hasHighCards || Math.random() < 0.7;
+  // More aggressive betting strategy with higher probability
+  const shouldBet = isFirstRound || hasGoodCards || hasPair || hasHighCards || Math.random() < 0.8;
   
-  // Random delay between 500ms and 2000ms to simulate thinking
-  const delay = Math.random() * 1500 + 500;
+  // Shorter delay between 200ms and 700ms to simulate faster thinking
+  const delay = Math.random() * 500 + 200;
   
   setTimeout(() => {
     if (shouldBet && player.chips >= amountToCall) {
-      // Increased probability of raising
-      const shouldRaise = Math.random() < 0.4;
+      // Increased probability of raising to 60%
+      const shouldRaise = Math.random() < 0.6;
       const raiseAmount = shouldRaise 
-        ? amountToCall + Math.floor(Math.random() * 3 + 1) * gameContext.minimumBet 
+        ? amountToCall + Math.floor(Math.random() * 4 + 1) * gameContext.minimumBet 
         : amountToCall;
       
       if (player.chips >= raiseAmount) {
