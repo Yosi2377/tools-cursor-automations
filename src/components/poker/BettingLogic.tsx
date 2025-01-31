@@ -25,81 +25,49 @@ export const useBettingLogic = (
         throw new Error('No active game found');
       }
 
-      // Get the player's data from the game_players table
-      const { data: playerData, error: playerQueryError } = await supabase
+      // Get the player's UUID from the game_players table
+      const { data: playerData } = await supabase
         .from('game_players')
-        .select('*')
+        .select('id')
         .eq('game_id', game.id)
         .eq('position', currentPlayer.position)
         .single();
 
-      if (playerQueryError || !playerData) {
-        console.error('Error finding player:', playerQueryError);
+      if (!playerData) {
         throw new Error('Player not found');
       }
 
-      // Check if player has enough chips
-      if (playerData.chips < amount) {
-        toast.error('Not enough chips to place bet');
-        return;
-      }
-
-      // Calculate new chip amount
-      const newChips = playerData.chips - amount;
-      console.log('Updating chips for player:', playerData.user_id, 'New amount:', newChips);
-
-      // First update the game_players entry for the current game
+      // Update player with the correct UUID
       const { error: playerError } = await supabase
         .from('game_players')
         .update({
-          chips: newChips,
-          current_bet: playerData.current_bet + amount,
+          chips: currentPlayer.chips - amount,
+          current_bet: currentPlayer.currentBet + amount,
           is_turn: false
         })
         .eq('id', playerData.id);
 
-      if (playerError) {
-        console.error('Error updating player:', playerError);
-        throw playerError;
-      }
-
-      // Then update the default balance entry (where game_id is null)
-      if (!playerData.user_id.startsWith('bot-')) {
-        const { error: defaultBalanceError } = await supabase
-          .from('game_players')
-          .update({ chips: newChips })
-          .eq('user_id', playerData.user_id)
-          .is('game_id', null);
-
-        if (defaultBalanceError) {
-          console.error('Error updating default balance:', defaultBalanceError);
-          // Don't throw here as it's a secondary update
-        }
-      }
+      if (playerError) throw playerError;
 
       // Update game state
       const { error: gameError } = await supabase
         .from('games')
         .update({
-          pot: game.pot + amount,
-          current_bet: Math.max(game.current_bet, playerData.current_bet + amount),
+          pot: gameContext.pot + amount,
+          current_bet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount),
           current_player_index: (gameContext.currentPlayer + 1) % gameContext.players.length
         })
         .eq('id', game.id);
 
-      if (gameError) {
-        console.error('Error updating game:', gameError);
-        throw gameError;
-      }
+      if (gameError) throw gameError;
 
-      // Update local state
       setGameContext(prev => ({
         ...prev,
         players: prev.players.map(p =>
           p.id === currentPlayer.id
             ? {
                 ...p,
-                chips: newChips,
+                chips: p.chips - amount,
                 currentBet: p.currentBet + amount,
                 isTurn: false
               }
@@ -110,10 +78,10 @@ export const useBettingLogic = (
         currentPlayer: (prev.currentPlayer + 1) % prev.players.length
       }));
 
-      toast.success(`${currentPlayer.name} bet ${amount} chips`);
+      toast(`${currentPlayer.name} bet ${amount} chips`);
     } catch (error) {
       console.error('Error handling bet:', error);
-      toast.error('Failed to place bet');
+      toast('Failed to place bet');
     }
   };
 

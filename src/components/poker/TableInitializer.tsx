@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { GameContext, PlayerPosition, Card, GameState } from '@/types/poker';
+import { useEffect, useState } from 'react';
+import { GameContext, Player, PlayerPosition } from '@/types/poker';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -9,6 +9,14 @@ interface TableInitializerProps {
   setWithBots: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+export const getPositionForIndex = (index: number, totalPlayers: number): PlayerPosition => {
+  const positions: PlayerPosition[] = [
+    'bottom', 'bottomRight', 'right', 'topRight',
+    'top', 'topLeft', 'left', 'bottomLeft'
+  ];
+  return positions[index % positions.length];
+};
+
 const TableInitializer: React.FC<TableInitializerProps> = ({ 
   roomId, 
   setGameContext,
@@ -17,7 +25,6 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
   useEffect(() => {
     const initializeGame = async () => {
       try {
-        // Get room configuration
         const { data: room } = await supabase
           .from('rooms')
           .select('*')
@@ -25,108 +32,24 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
           .single();
 
         if (room) {
-          console.log('Room config:', room);
           setWithBots(room.with_bots);
+          // Initialize empty seats based on actual_players count
+          const emptySeats: Player[] = Array(room.actual_players).fill(null).map((_, index) => ({
+            id: index + 1,
+            name: "Empty Seat",
+            chips: 1000,
+            cards: [],
+            position: getPositionForIndex(index, room.actual_players),
+            isActive: false,
+            currentBet: 0,
+            isTurn: false,
+            score: 0
+          }));
 
-          // Get the current user's ID
-          const { data: { user } } = await supabase.auth.getUser();
-          if (!user) throw new Error('No authenticated user');
-
-          // Check for existing active game
-          const { data: existingGames } = await supabase
-            .from('games')
-            .select('*')
-            .eq('room_id', roomId)
-            .eq('status', 'waiting');
-
-          let gameId;
-          
-          if (!existingGames || existingGames.length === 0) {
-            // Create a new game if none exists
-            const { data: newGame, error: gameError } = await supabase
-              .from('games')
-              .insert([{ 
-                room_id: roomId,
-                status: 'waiting' as GameState,
-                current_player_index: 0,
-                dealer_position: 0,
-                minimum_bet: room.min_bet,
-                community_cards: [],
-                pot: 0,
-                rake: 0,
-                current_bet: 0
-              }])
-              .select()
-              .single();
-
-            if (gameError) throw gameError;
-            gameId = newGame.id;
-
-            // Initialize positions for all players
-            const positions = Array(room.actual_players).fill(null).map((_, index) => ({
-              game_id: gameId,
-              user_id: room.with_bots && index > 0 ? `bot-${index}` : null,
-              position: index.toString(),
-              is_active: room.with_bots && index > 0, // Bots are active by default
-              chips: 1000,
-              cards: [],
-              current_bet: 0,
-              is_turn: false,
-              score: 0
-            }));
-
-            // Create game_players entries
-            const { error: playersError } = await supabase
-              .from('game_players')
-              .insert(positions);
-
-            if (playersError) throw playersError;
-
-            console.log('Initialized players:', positions);
-          } else {
-            gameId = existingGames[0].id;
-          }
-
-          // Get existing players
-          const { data: existingPlayers } = await supabase
-            .from('game_players')
-            .select('*')
-            .eq('game_id', gameId)
-            .order('position');
-
-          if (existingPlayers) {
-            console.log('Existing players:', existingPlayers);
-            
-            // Map existing players to game context format
-            const mappedPlayers = existingPlayers.map((player, index) => ({
-              id: index,
-              name: player.user_id?.startsWith('bot-') ? 
-                `Bot ${index}` : 
-                (player.is_active ? 'Player' : 'Empty Seat'),
-              position: getPositionForIndex(index),
-              chips: player.chips || 1000,
-              cards: (player.cards as Card[]) || [],
-              isActive: player.is_active || false,
-              currentBet: player.current_bet || 0,
-              isTurn: player.is_turn || false,
-              score: player.score || 0
-            }));
-
-            // Update game context
-            setGameContext(prev => ({
-              ...prev,
-              gameId,
-              minimumBet: room.min_bet,
-              players: mappedPlayers,
-              pot: existingGames[0].pot || 0,
-              rake: existingGames[0].rake || 0,
-              communityCards: (existingGames[0].community_cards as Card[]) || [],
-              currentPlayer: existingGames[0].current_player_index || 0,
-              gameState: (existingGames[0].status || 'waiting') as GameState,
-              currentBet: existingGames[0].current_bet || 0,
-              dealerPosition: existingGames[0].dealer_position || 0
-            }));
-          }
+          setGameContext(prev => ({
+            ...prev,
+            players: emptySeats
+          }));
         }
       } catch (error) {
         console.error('Error initializing game:', error);
@@ -138,14 +61,6 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
   }, [roomId, setGameContext, setWithBots]);
 
   return null;
-};
-
-const getPositionForIndex = (index: number): PlayerPosition => {
-  const positions: PlayerPosition[] = [
-    'bottom', 'bottomRight', 'right', 'topRight',
-    'top', 'topLeft', 'left', 'bottomLeft'
-  ];
-  return positions[index % positions.length];
 };
 
 export default TableInitializer;

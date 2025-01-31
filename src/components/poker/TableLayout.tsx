@@ -1,17 +1,9 @@
 import { useIsMobile } from '@/hooks/use-mobile';
-import { GameContext, PlayerPosition } from '@/types/poker';
+import { GameContext } from '@/types/poker';
 import TableFelt from './TableFelt';
 import PotDisplay from './PotDisplay';
 import CommunityCards from './CommunityCards';
 import PlayerSpot from '../PlayerSpot';
-
-export const getPositionForIndex = (index: number): PlayerPosition => {
-  const positions: PlayerPosition[] = [
-    'bottom', 'bottomRight', 'right', 'topRight',
-    'top', 'topLeft', 'left', 'bottomLeft'
-  ];
-  return positions[index % positions.length];
-};
 
 interface TableLayoutProps {
   gameContext: GameContext;

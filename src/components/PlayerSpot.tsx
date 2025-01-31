@@ -3,6 +3,7 @@ import { Player } from '@/types/poker';
 import PlayerCard from './poker/PlayerCard';
 import PlayerInfo from './poker/PlayerInfo';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from './ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -23,48 +24,15 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
           return;
         }
 
-        const positions = ['bottom', 'bottomRight', 'right', 'topRight', 'top', 'topLeft', 'left', 'bottomLeft'];
-        const positionIndex = positions.indexOf(player.position);
-        
-        if (positionIndex === -1) {
-          toast.error('Invalid position');
-          return;
-        }
-
-        console.log('Attempting to join game at position:', positionIndex);
-
-        // First, check if the user is already in the game
-        const { data: existingPlayer } = await supabase
-          .from('game_players')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (existingPlayer) {
-          toast.error('You are already in this game');
-          return;
-        }
-
-        // Update the player's position in the game
-        const { error: updateError } = await supabase
+        const { error } = await supabase
           .from('game_players')
           .update({
             is_active: true,
             user_id: user.id,
-            chips: 1000,
-            cards: [],
-            current_bet: 0,
-            is_turn: false,
-            score: 0
           })
-          .eq('position', positionIndex.toString());
+          .eq('position', player.position);
 
-        if (updateError) {
-          console.error('Error joining game:', updateError);
-          toast.error('Failed to join the game');
-          return;
-        }
-
+        if (error) throw error;
         toast.success('Successfully joined the game');
       } catch (error) {
         console.error('Error joining game:', error);
@@ -74,71 +42,79 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
   };
 
   const getPositionClasses = () => {
-    const baseClasses = 'absolute transition-all duration-500';
-    
-    const positionClasses = {
-      bottom: `${baseClasses} bottom-24 left-1/2 -translate-x-1/2`,
-      bottomLeft: `${baseClasses} bottom-32 left-32 -translate-x-1/2`,
-      left: `${baseClasses} left-24 top-1/2 -translate-y-1/2`,
-      topLeft: `${baseClasses} top-32 left-32 -translate-x-1/2`,
-      top: `${baseClasses} top-24 left-1/2 -translate-x-1/2`,
-      topRight: `${baseClasses} top-32 right-32 translate-x-1/2`,
-      right: `${baseClasses} right-24 top-1/2 -translate-y-1/2`,
-      bottomRight: `${baseClasses} bottom-32 right-32 translate-x-1/2`
-    };
-
     if (!player.isActive) {
-      return positionClasses[player.position as keyof typeof positionClasses] || baseClasses;
+      switch (player.position) {
+        case 'bottom':
+          return 'bottom-0 left-1/2 -translate-x-1/2 translate-y-[100%]';
+        case 'bottomLeft':
+          return 'bottom-0 left-0 -translate-x-[100%] translate-y-[100%]';
+        case 'left':
+          return 'left-0 top-1/2 -translate-y-1/2 -translate-x-[100%]';
+        case 'topLeft':
+          return 'top-0 left-0 -translate-x-[100%] -translate-y-[100%]';
+        case 'top':
+          return 'top-0 left-1/2 -translate-x-1/2 -translate-y-[100%]';
+        case 'topRight':
+          return 'top-0 right-0 translate-x-[100%] -translate-y-[100%]';
+        case 'right':
+          return 'right-0 top-1/2 -translate-y-1/2 translate-x-[100%]';
+        case 'bottomRight':
+          return 'bottom-0 right-0 translate-x-[100%] translate-y-[100%]';
+        default:
+          return '';
+      }
     }
 
+    // Position active players in a perfect oval around the table, with bottom position having higher z-index
     const zIndex = player.position === 'bottom' ? 'z-50' : 'z-10';
-    const mobileClasses = {
-      bottom: `${baseClasses} bottom-20 left-1/2 -translate-x-1/2 ${zIndex}`,
-      bottomLeft: `${baseClasses} ${isMobile ? 'left-24 bottom-32' : 'left-64 bottom-48'} -translate-x-1/2 ${zIndex}`,
-      left: `${baseClasses} ${isMobile ? 'left-16' : 'left-24'} top-1/2 -translate-y-1/2 ${zIndex}`,
-      topLeft: `${baseClasses} ${isMobile ? 'left-24 top-32' : 'left-64 top-48'} -translate-x-1/2 ${zIndex}`,
-      top: `${baseClasses} top-20 left-1/2 -translate-x-1/2 ${zIndex}`,
-      topRight: `${baseClasses} ${isMobile ? 'right-24 top-32' : 'right-64 top-48'} translate-x-1/2 ${zIndex}`,
-      right: `${baseClasses} ${isMobile ? 'right-16' : 'right-24'} top-1/2 -translate-y-1/2 ${zIndex}`,
-      bottomRight: `${baseClasses} ${isMobile ? 'right-24 bottom-32' : 'right-64 bottom-48'} translate-x-1/2 ${zIndex}`
-    };
-
-    return mobileClasses[player.position as keyof typeof mobileClasses] || baseClasses;
+    switch (player.position) {
+      case 'bottom':
+        return `bottom-4 left-1/2 -translate-x-1/2 ${zIndex}`;
+      case 'bottomLeft':
+        return `${isMobile ? 'left-12 bottom-16' : 'left-32 bottom-24'} -translate-x-1/2 ${zIndex}`;
+      case 'left':
+        return `${isMobile ? 'left-4' : 'left-8'} top-1/2 -translate-y-1/2 ${zIndex}`;
+      case 'topLeft':
+        return `${isMobile ? 'left-12 top-16' : 'left-32 top-24'} -translate-x-1/2 ${zIndex}`;
+      case 'top':
+        return `top-4 left-1/2 -translate-x-1/2 ${zIndex}`;
+      case 'topRight':
+        return `${isMobile ? 'right-12 top-16' : 'right-32 top-24'} translate-x-1/2 ${zIndex}`;
+      case 'right':
+        return `${isMobile ? 'right-4' : 'right-8'} top-1/2 -translate-y-1/2 ${zIndex}`;
+      case 'bottomRight':
+        return `${isMobile ? 'right-12 bottom-16' : 'right-32 bottom-24'} translate-x-1/2 ${zIndex}`;
+      default:
+        return '';
+    }
   };
 
   const getCardPositionClasses = () => {
     if (player.position === 'bottom') {
-      return 'top-full mt-4';
+      return 'top-full mt-2';
     }
-    return 'top-0 -translate-y-full -mt-4';
+    return 'top-0 -translate-y-full';
   };
 
   const shouldShowFaceUp = player.position === 'bottom';
   const inactiveStyles = !player.isActive ? 'opacity-100 hover:opacity-80 cursor-pointer' : '';
-  const isBot = player.name.startsWith('Bot');
 
   return (
     <div 
-      className={`${getPositionClasses()} flex flex-col items-center gap-4 ${inactiveStyles}`}
+      className={`absolute ${getPositionClasses()} flex flex-col items-center gap-2 transition-all duration-500 ${inactiveStyles}`}
       onClick={!player.isActive ? handleSeatClick : undefined}
     >
       {!player.isActive ? (
-        <div className="w-40 h-40 rounded-full bg-poker-accent/30 border-4 border-poker-accent/60 flex flex-col items-center justify-center text-poker-accent hover:bg-poker-accent/40 hover:border-poker-accent/80 transition-all shadow-xl animate-pulse ring-4 ring-white/20">
-          <span className="text-lg font-semibold">Empty Seat</span>
-          <span className="text-sm mt-1">Click to join</span>
+        <div className="w-16 h-16 rounded-full bg-poker-background border-2 border-white/20 flex flex-col items-center justify-center text-white/50 hover:text-white/80 transition-colors">
+          <span>Empty</span>
+          <span className="text-xs">Waiting...</span>
         </div>
       ) : (
-        <PlayerInfo 
-          player={{
-            ...player,
-            name: isBot ? `Bot ${player.id}` : player.name
-          }} 
-          onTimeout={onTimeout}
-        />
+        <PlayerInfo player={player} onTimeout={onTimeout} />
       )}
       
-      {player.cards && player.cards.length > 0 && (
-        <div className={`absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-2 ${getCardPositionClasses()}`}>
+      {player.cards.length > 0 && (
+        <div className={`absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-1 ${getCardPositionClasses()}`}>
           {player.cards.map((card, index) => (
             <PlayerCard
               key={index}
