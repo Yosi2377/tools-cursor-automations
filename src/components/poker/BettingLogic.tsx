@@ -12,6 +12,11 @@ export const useBettingLogic = (
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     console.log(`${currentPlayer.name} attempting to bet ${amount}`);
 
+    if (currentPlayer.chips < amount) {
+      toast.error("Not enough chips to make this bet");
+      return;
+    }
+
     try {
       // Get the most recent active game
       const { data: game, error: gameError } = await supabase
@@ -65,6 +70,21 @@ export const useBettingLogic = (
       const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
       const nextPlayer = gameContext.players[nextPlayerIndex];
 
+      // Update next player's turn
+      const { data: nextPlayerData } = await supabase
+        .from('game_players')
+        .select('id')
+        .eq('game_id', game.id)
+        .eq('position', nextPlayer.position)
+        .single();
+
+      if (nextPlayerData) {
+        await supabase
+          .from('game_players')
+          .update({ is_turn: true })
+          .eq('id', nextPlayerData.id);
+      }
+
       // Update game state
       const { error: gameUpdateError } = await supabase
         .from('games')
@@ -103,20 +123,17 @@ export const useBettingLogic = (
 
       // Trigger bot action immediately if next player is a bot
       if (nextPlayer.name.startsWith('Bot')) {
-        // Reduced delay for faster bot play
-        setTimeout(() => {
-          handleOpponentAction(
-            nextPlayer,
-            {
-              ...gameContext,
-              currentPlayer: nextPlayerIndex,
-              pot: gameContext.pot + amount,
-              currentBet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount)
-            },
-            handleBet,
-            handleFold
-          );
-        }, Math.random() * 500 + 200); // Faster random delay between 200ms and 700ms
+        handleOpponentAction(
+          nextPlayer,
+          {
+            ...gameContext,
+            currentPlayer: nextPlayerIndex,
+            pot: gameContext.pot + amount,
+            currentBet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount)
+          },
+          handleBet,
+          handleFold
+        );
       }
     } catch (error) {
       console.error('Error handling bet:', error);
@@ -178,6 +195,21 @@ export const useBettingLogic = (
       const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
       const nextPlayer = gameContext.players[nextPlayerIndex];
 
+      // Update next player's turn
+      const { data: nextPlayerData } = await supabase
+        .from('game_players')
+        .select('id')
+        .eq('game_id', game.id)
+        .eq('position', nextPlayer.position)
+        .single();
+
+      if (nextPlayerData) {
+        await supabase
+          .from('game_players')
+          .update({ is_turn: true })
+          .eq('id', nextPlayerData.id);
+      }
+
       // Update game state
       const { error: gameUpdateError } = await supabase
         .from('games')
@@ -207,18 +239,15 @@ export const useBettingLogic = (
 
       // Trigger bot action immediately if next player is a bot
       if (nextPlayer.name.startsWith('Bot')) {
-        // Reduced delay for faster bot play
-        setTimeout(() => {
-          handleOpponentAction(
-            nextPlayer,
-            {
-              ...gameContext,
-              currentPlayer: nextPlayerIndex
-            },
-            handleBet,
-            handleFold
-          );
-        }, Math.random() * 500 + 200); // Faster random delay between 200ms and 700ms
+        handleOpponentAction(
+          nextPlayer,
+          {
+            ...gameContext,
+            currentPlayer: nextPlayerIndex
+          },
+          handleBet,
+          handleFold
+        );
       }
     } catch (error) {
       console.error('Error handling fold:', error);
@@ -230,7 +259,6 @@ export const useBettingLogic = (
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     console.log('Timeout triggered for player:', currentPlayer.name);
     
-    // If it's a bot's turn, trigger the bot action immediately
     if (currentPlayer.name.startsWith('Bot')) {
       handleOpponentAction(
         currentPlayer,

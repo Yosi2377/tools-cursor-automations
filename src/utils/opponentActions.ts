@@ -17,7 +17,6 @@ export const handleOpponentAction = (
   // Very aggressive betting strategy with higher probability
   const shouldBet = isFirstRound || hasGoodCards || hasPair || hasHighCards || Math.random() < 0.9;
   
-  // Remove delay and execute action immediately
   if (shouldBet && player.chips >= amountToCall) {
     // High probability of raising
     const shouldRaise = Math.random() < 0.7;
