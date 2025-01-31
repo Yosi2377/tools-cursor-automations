@@ -33,17 +33,6 @@ export interface GameContext {
   minimumBet: number;
   currentBet: number;
   dealerPosition: number;
+  gameId?: string;
+  roomId?: string;
 }
-
-export interface Room {
-  id: string;
-  name: string;
-  max_players: number;
-  min_bet: number;
-  created_at: string;
-  is_active: boolean;
-  with_bots: boolean;
-  actual_players: number;
-}
-
-// ... keep existing code

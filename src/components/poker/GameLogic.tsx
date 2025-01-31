@@ -1,4 +1,4 @@
-import { GameContext, Player } from '@/types/poker';
+import { GameContext, Player, Card } from '@/types/poker';
 import { toast } from 'sonner';
 import { dealCards } from '@/utils/pokerLogic';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +21,25 @@ export const useGameLogic = (
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
+      // Create new game first
+      const { data: newGame, error: gameCreateError } = await supabase
+        .from('games')
+        .insert({
+          status: 'betting',
+          current_player_index: firstPlayerIndex,
+          community_cards: [],
+          pot: 0,
+          rake: 0,
+          current_bet: gameContext.minimumBet,
+          dealer_position: nextDealerIndex,
+          room_id: gameContext.roomId // Make sure roomId is passed in context
+        })
+        .select()
+        .single();
+
+      if (gameCreateError) throw gameCreateError;
+      if (!newGame) throw new Error('Failed to create new game');
+
       // Update game state in Supabase
       const { error: gameError } = await supabase
         .from('games')
@@ -33,7 +52,7 @@ export const useGameLogic = (
           current_bet: gameContext.minimumBet,
           dealer_position: nextDealerIndex
         })
-        .eq('status', 'waiting');
+        .eq('id', newGame.id);
 
       if (gameError) throw gameError;
 
@@ -41,12 +60,15 @@ export const useGameLogic = (
       const { error: playersError } = await supabase
         .from('game_players')
         .upsert(
-          updatedPlayers.map(p => ({
+          updatedPlayers.map((p, index) => ({
+            game_id: newGame.id,
             user_id: user.id,
-            cards: p.cards,
-            is_turn: p.position === getPositionForIndex(firstPlayerIndex, updatedPlayers.length),
+            position: getPositionForIndex(index, updatedPlayers.length),
+            cards: JSON.stringify(p.cards),
+            is_turn: index === firstPlayerIndex,
             is_active: true,
-            current_bet: 0
+            current_bet: 0,
+            chips: p.chips
           }))
         );
 
@@ -66,7 +88,8 @@ export const useGameLogic = (
         pot: 0,
         rake: 0,
         currentBet: prev.minimumBet,
-        dealerPosition: nextDealerIndex
+        dealerPosition: nextDealerIndex,
+        gameId: newGame.id // Store the game ID in context
       }));
 
       toast.success("New hand started");
@@ -78,8 +101,13 @@ export const useGameLogic = (
   };
 
   const dealNextCommunityCards = async () => {
+    if (!gameContext.gameId) {
+      console.error('No game ID found in context');
+      return;
+    }
+
     const currentCount = gameContext.communityCards.length;
-    let newCards = [];
+    let newCards: Card[] = [];
     let stage = '';
 
     if (currentCount === 0) {
@@ -102,7 +130,7 @@ export const useGameLogic = (
             current_bet: 0,
             current_player_index: (gameContext.dealerPosition + 1) % gameContext.players.length
           })
-          .eq('status', 'betting');
+          .eq('id', gameContext.gameId);
 
         if (updateError) throw updateError;
 
@@ -110,7 +138,7 @@ export const useGameLogic = (
         const { error: playersError } = await supabase
           .from('game_players')
           .update({ current_bet: 0 })
-          .eq('game_id', gameContext.currentGameId);
+          .eq('game_id', gameContext.gameId);
 
         if (playersError) throw playersError;
 
