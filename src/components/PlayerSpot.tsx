@@ -5,7 +5,6 @@ import PlayerInfo from './poker/PlayerInfo';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Bot } from 'lucide-react';
 
 interface PlayerSpotProps {
   player: Player;
@@ -32,6 +31,20 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
           return;
         }
 
+        console.log('Attempting to join game at position:', positionIndex);
+
+        // First, check if the user is already in the game
+        const { data: existingPlayer } = await supabase
+          .from('game_players')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (existingPlayer) {
+          toast.error('You are already in this game');
+          return;
+        }
+
         // Update the player's position in the game
         const { error: updateError } = await supabase
           .from('game_players')
@@ -41,7 +54,8 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
             chips: 1000,
             cards: [],
             current_bet: 0,
-            is_turn: false
+            is_turn: false,
+            score: 0
           })
           .eq('position', positionIndex.toString());
 
