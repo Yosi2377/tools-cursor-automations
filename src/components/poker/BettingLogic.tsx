@@ -25,42 +25,56 @@ export const useBettingLogic = (
         throw new Error('No active game found');
       }
 
-      // Get the player's UUID from the game_players table
-      const { data: playerData } = await supabase
+      // Get the player's data from the game_players table
+      const { data: playerData, error: playerQueryError } = await supabase
         .from('game_players')
-        .select('id')
+        .select('*')
         .eq('game_id', game.id)
         .eq('position', currentPlayer.position)
         .single();
 
-      if (!playerData) {
+      if (playerQueryError || !playerData) {
+        console.error('Error finding player:', playerQueryError);
         throw new Error('Player not found');
       }
 
-      // Update player with the correct UUID
+      // Check if player has enough chips
+      if (playerData.chips < amount) {
+        toast.error('Not enough chips to place bet');
+        return;
+      }
+
+      // Update player chips and bet
       const { error: playerError } = await supabase
         .from('game_players')
         .update({
-          chips: currentPlayer.chips - amount,
-          current_bet: currentPlayer.currentBet + amount,
+          chips: playerData.chips - amount,
+          current_bet: playerData.current_bet + amount,
           is_turn: false
         })
         .eq('id', playerData.id);
 
-      if (playerError) throw playerError;
+      if (playerError) {
+        console.error('Error updating player:', playerError);
+        throw playerError;
+      }
 
       // Update game state
       const { error: gameError } = await supabase
         .from('games')
         .update({
-          pot: gameContext.pot + amount,
-          current_bet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount),
+          pot: game.pot + amount,
+          current_bet: Math.max(game.current_bet, playerData.current_bet + amount),
           current_player_index: (gameContext.currentPlayer + 1) % gameContext.players.length
         })
         .eq('id', game.id);
 
-      if (gameError) throw gameError;
+      if (gameError) {
+        console.error('Error updating game:', gameError);
+        throw gameError;
+      }
 
+      // Update local state
       setGameContext(prev => ({
         ...prev,
         players: prev.players.map(p =>
@@ -78,10 +92,10 @@ export const useBettingLogic = (
         currentPlayer: (prev.currentPlayer + 1) % prev.players.length
       }));
 
-      toast(`${currentPlayer.name} bet ${amount} chips`);
+      toast.success(`${currentPlayer.name} bet ${amount} chips`);
     } catch (error) {
       console.error('Error handling bet:', error);
-      toast('Failed to place bet');
+      toast.error('Failed to place bet');
     }
   };
 
