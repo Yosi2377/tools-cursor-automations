@@ -70,12 +70,18 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
 
             if (gameError) throw gameError;
 
-            // Insert game players
+            // Generate bot user IDs using a consistent pattern
+            const botUserIds = Array(totalPlayers).fill(null).map((_, index) => 
+              `bot-${roomId}-${index + 1}`
+            );
+
+            // Insert game players with bot user IDs
             const { error: playersError } = await supabase
               .from('game_players')
               .insert(
-                updatedPlayers.map(p => ({
+                updatedPlayers.map((p, index) => ({
                   game_id: game.id,
+                  user_id: botUserIds[index], // Add the bot user ID
                   position: p.position,
                   chips: p.chips,
                   cards: p.cards,
