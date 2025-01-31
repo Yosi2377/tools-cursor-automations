@@ -28,8 +28,11 @@ const GameControls: React.FC<GameControlsProps> = ({
     );
   }
 
+  const currentPlayer = gameContext.players[gameContext.currentPlayer];
+  
   if (gameContext.gameState === "betting" && 
-      gameContext.players[gameContext.currentPlayer].position === "bottom") {
+      currentPlayer && // Add safety check
+      currentPlayer.position === "bottom") {
     return (
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
         <Button 
