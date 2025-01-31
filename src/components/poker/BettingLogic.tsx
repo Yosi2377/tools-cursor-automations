@@ -1,6 +1,7 @@
 import { GameContext, Player } from '@/types/poker';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { handleOpponentAction } from '@/utils/opponentActions';
 
 export const useBettingLogic = (
   gameContext: GameContext,
@@ -61,13 +62,16 @@ export const useBettingLogic = (
         throw playerUpdateError;
       }
 
+      const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
+      const nextPlayer = gameContext.players[nextPlayerIndex];
+
       // Update game state
       const { error: gameUpdateError } = await supabase
         .from('games')
         .update({
           pot: gameContext.pot + amount,
           current_bet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount),
-          current_player_index: (gameContext.currentPlayer + 1) % gameContext.players.length
+          current_player_index: nextPlayerIndex
         })
         .eq('id', game.id);
 
@@ -86,14 +90,31 @@ export const useBettingLogic = (
                 currentBet: p.currentBet + amount,
                 isTurn: false
               }
-            : p
+            : p.id === nextPlayer.id
+              ? { ...p, isTurn: true }
+              : p
         ),
         pot: prev.pot + amount,
         currentBet: Math.max(prev.currentBet, currentPlayer.currentBet + amount),
-        currentPlayer: (prev.currentPlayer + 1) % prev.players.length
+        currentPlayer: nextPlayerIndex
       }));
 
       toast.success(`${currentPlayer.name} bet ${amount} chips`);
+
+      // Trigger bot action immediately if next player is a bot
+      if (nextPlayer.name.startsWith('Bot')) {
+        handleOpponentAction(
+          nextPlayer,
+          {
+            ...gameContext,
+            currentPlayer: nextPlayerIndex,
+            pot: gameContext.pot + amount,
+            currentBet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount)
+          },
+          handleBet,
+          handleFold
+        );
+      }
     } catch (error) {
       console.error('Error handling bet:', error);
       toast.error('Failed to place bet');
@@ -152,6 +173,7 @@ export const useBettingLogic = (
       }
 
       const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
+      const nextPlayer = gameContext.players[nextPlayerIndex];
 
       // Update game state
       const { error: gameUpdateError } = await supabase
@@ -171,12 +193,27 @@ export const useBettingLogic = (
         players: prev.players.map(p =>
           p.id === currentPlayer.id
             ? { ...p, isActive: false, isTurn: false }
-            : p
+            : p.id === nextPlayer.id
+              ? { ...p, isTurn: true }
+              : p
         ),
         currentPlayer: nextPlayerIndex
       }));
 
       toast.success(`${currentPlayer.name} folded`);
+
+      // Trigger bot action immediately if next player is a bot
+      if (nextPlayer.name.startsWith('Bot')) {
+        handleOpponentAction(
+          nextPlayer,
+          {
+            ...gameContext,
+            currentPlayer: nextPlayerIndex
+          },
+          handleBet,
+          handleFold
+        );
+      }
     } catch (error) {
       console.error('Error handling fold:', error);
       toast.error('Failed to fold');
@@ -187,7 +224,15 @@ export const useBettingLogic = (
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     console.log('Timeout triggered for player:', currentPlayer.name);
     
-    if (currentPlayer.chips >= gameContext.minimumBet) {
+    // If it's a bot's turn, trigger the bot action
+    if (currentPlayer.name.startsWith('Bot')) {
+      handleOpponentAction(
+        currentPlayer,
+        gameContext,
+        handleBet,
+        handleFold
+      );
+    } else if (currentPlayer.chips >= gameContext.minimumBet) {
       handleBet(gameContext.minimumBet);
     } else {
       handleFold();
