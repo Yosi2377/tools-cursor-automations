@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
-import { GameContext } from '../types/poker';
-import GameControls from './poker/GameControls';
 import { Button } from './ui/button';
 import { Menu, LogOut } from 'lucide-react';
 import LeaderBoard from './poker/LeaderBoard';
-import { useGameLogic } from './poker/GameLogic';
-import { useBettingLogic } from './poker/BettingLogic';
-import { useCardDealing } from './poker/CardDealing';
 import TableLayout from './poker/TableLayout';
-import TableInitializer from './poker/TableInitializer';
-import GameSubscriptions from './poker/GameSubscriptions';
+import { useGameState } from './poker/GameStateManager';
+import { useBettingHandler } from './poker/BettingHandler';
+import GameControls from './poker/GameControls';
 
 interface PokerTableProps {
   roomId: string;
@@ -18,41 +14,25 @@ interface PokerTableProps {
 
 const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
-  const [withBots, setWithBots] = useState(true);
-  
-  const [gameContext, setGameContext] = useState<GameContext>({
-    players: [],
-    pot: 0,
-    rake: 0,
-    communityCards: [],
-    currentPlayer: 0,
-    gameState: "waiting",
-    minimumBet: 20,
-    currentBet: 0,
-    dealerPosition: 0,
-  });
+  const { gameContext, setGameContext } = useGameState(roomId);
+  const { handleBet, handleFold } = useBettingHandler(gameContext, setGameContext);
 
-  const { dealCommunityCards } = useCardDealing();
-  const { startNewHand } = useGameLogic(gameContext, setGameContext);
-  const { handleBet, handleFold, handleTimeout } = useBettingLogic(
-    gameContext,
-    setGameContext,
-    (count: number) => {
-      const cards = dealCommunityCards(count);
-      return cards;
+  const handleTimeout = () => {
+    const currentPlayer = gameContext.players[gameContext.currentPlayer];
+    console.log('Timeout triggered for player:', currentPlayer.name);
+    
+    if (currentPlayer.name.startsWith('Bot')) {
+      // Bot logic will be handled separately
+      if (currentPlayer.chips >= gameContext.minimumBet) {
+        handleBet(gameContext.minimumBet);
+      } else {
+        handleFold();
+      }
     }
-  );
+  };
 
   return (
     <div className="relative w-full h-screen bg-poker-background p-4 overflow-hidden">
-      <TableInitializer 
-        roomId={roomId}
-        setGameContext={setGameContext}
-        setWithBots={setWithBots}
-      />
-      
-      <GameSubscriptions setGameContext={setGameContext} />
-
       <div className="flex justify-between items-center absolute top-4 left-4 right-4 z-50">
         <Button 
           variant="outline" 
@@ -87,7 +67,6 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
 
       <GameControls
         gameContext={gameContext}
-        onStartHand={startNewHand}
         onBet={handleBet}
         onFold={handleFold}
       />
