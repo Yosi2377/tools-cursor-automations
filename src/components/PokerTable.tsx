@@ -5,6 +5,7 @@ import LeaderBoard from './poker/LeaderBoard';
 import TableLayout from './poker/TableLayout';
 import { useGameState } from './poker/GameStateManager';
 import { useBettingHandler } from './poker/BettingHandler';
+import { useGameLogic } from './poker/GameLogic';
 import GameControls from './poker/GameControls';
 
 interface PokerTableProps {
@@ -16,6 +17,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const { gameContext, setGameContext } = useGameState(roomId);
   const { handleBet, handleFold } = useBettingHandler(gameContext, setGameContext);
+  const { startNewHand } = useGameLogic(gameContext, setGameContext);
 
   const handleTimeout = () => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
@@ -67,6 +69,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
 
       <GameControls
         gameContext={gameContext}
+        onStartHand={startNewHand}
         onBet={handleBet}
         onFold={handleFold}
       />
