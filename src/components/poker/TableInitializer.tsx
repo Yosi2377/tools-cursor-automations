@@ -50,7 +50,8 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
                 status: 'waiting',
                 current_player_index: 0,
                 dealer_position: 0,
-                minimum_bet: room.min_bet
+                minimum_bet: room.min_bet,
+                community_cards: []
               }])
               .select()
               .single();
@@ -58,7 +59,7 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             if (gameError) throw gameError;
             gameId = newGame.id;
 
-            // Initialize positions for all players including bots
+            // Initialize positions for all players
             const positions = Array(room.actual_players).fill(null).map((_, index) => ({
               game_id: gameId,
               user_id: room.with_bots && index > 0 ? `bot-${index}` : null,
@@ -117,23 +118,27 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
 
             if (existingPlayers) {
               console.log('Existing players:', existingPlayers);
+              
+              // Map existing players to game context format
+              const mappedPlayers = existingPlayers.map((player, index) => ({
+                id: index,
+                name: player.user_id?.startsWith('bot-') ? 
+                  `Bot ${index}` : 
+                  (player.is_active ? 'Player' : 'Empty Seat'),
+                position: getPositionForIndex(index),
+                chips: player.chips || 1000,
+                cards: (player.cards as Card[]) || [],
+                isActive: player.is_active || false,
+                currentBet: player.current_bet || 0,
+                isTurn: player.is_turn || false,
+                score: player.score || 0
+              }));
+
               setGameContext(prev => ({
                 ...prev,
                 gameId,
                 minimumBet: room.min_bet,
-                players: existingPlayers.map((player, index) => ({
-                  id: index,
-                  name: player.user_id?.startsWith('bot-') ? 
-                    `Bot ${index}` : 
-                    (player.is_active ? 'Player' : 'Empty Seat'),
-                  position: getPositionForIndex(index),
-                  chips: player.chips || 1000,
-                  cards: (player.cards as Card[]) || [],
-                  isActive: player.is_active || false,
-                  currentBet: player.current_bet || 0,
-                  isTurn: player.is_turn || false,
-                  score: player.score || 0
-                })),
+                players: mappedPlayers,
                 pot: existingGames[0].pot || 0,
                 rake: existingGames[0].rake || 0,
                 communityCards: (existingGames[0].community_cards as Card[]) || [],
