@@ -42,8 +42,8 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
             name: room.with_bots ? `Bot ${index + 1}` : "Empty Seat",
             chips: 1000,
             cards: [],
-            position: getPositionForIndex(index, totalPlayers),
-            isActive: room.with_bots, // Bots are active by default
+            positionPlayers),
+            isActive: room.with_bots,
             currentBet: 0,
             isTurn: false,
             score: 0
@@ -81,10 +81,10 @@ const TableInitializer: React.FC<TableInitializerProps> = ({
               .insert(
                 updatedPlayers.map((p, index) => ({
                   game_id: game.id,
-                  user_id: botUserIds[index], // Add the bot user ID
-                  position: p.position,
+                  user_id: botUserIds[index],
+                  position: p.position as string,
                   chips: p.chips,
-                  cards: p.cards,
+                  cards: JSON.stringify(p.cards),
                   is_active: true,
                   current_bet: 0,
                   is_turn: p.position === getPositionForIndex(firstPlayerIndex, totalPlayers)
