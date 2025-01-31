@@ -17,27 +17,23 @@ export const handleOpponentAction = (
   // Very aggressive betting strategy with higher probability
   const shouldBet = isFirstRound || hasGoodCards || hasPair || hasHighCards || Math.random() < 0.9;
   
-  // Very short delay to make bots play faster
-  const delay = Math.random() * 300 + 100; // 100-400ms delay
-  
-  setTimeout(() => {
-    if (shouldBet && player.chips >= amountToCall) {
-      // High probability of raising
-      const shouldRaise = Math.random() < 0.7;
-      const raiseAmount = shouldRaise 
-        ? amountToCall + Math.floor(Math.random() * 5 + 1) * gameContext.minimumBet 
-        : amountToCall;
-      
-      if (player.chips >= raiseAmount) {
-        console.log(`${player.name} betting ${raiseAmount}`);
-        handleBet(raiseAmount);
-      } else {
-        console.log(`${player.name} calling ${amountToCall}`);
-        handleBet(amountToCall);
-      }
+  // Remove delay and execute action immediately
+  if (shouldBet && player.chips >= amountToCall) {
+    // High probability of raising
+    const shouldRaise = Math.random() < 0.7;
+    const raiseAmount = shouldRaise 
+      ? amountToCall + Math.floor(Math.random() * 5 + 1) * gameContext.minimumBet 
+      : amountToCall;
+    
+    if (player.chips >= raiseAmount) {
+      console.log(`${player.name} betting ${raiseAmount}`);
+      handleBet(raiseAmount);
     } else {
-      console.log(`${player.name} folding`);
-      handleFold();
+      console.log(`${player.name} calling ${amountToCall}`);
+      handleBet(amountToCall);
     }
-  }, delay);
+  } else {
+    console.log(`${player.name} folding`);
+    handleFold();
+  }
 };
