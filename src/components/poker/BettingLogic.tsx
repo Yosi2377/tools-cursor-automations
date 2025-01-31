@@ -103,17 +103,19 @@ export const useBettingLogic = (
 
       // Trigger bot action immediately if next player is a bot
       if (nextPlayer.name.startsWith('Bot')) {
-        handleOpponentAction(
-          nextPlayer,
-          {
-            ...gameContext,
-            currentPlayer: nextPlayerIndex,
-            pot: gameContext.pot + amount,
-            currentBet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount)
-          },
-          handleBet,
-          handleFold
-        );
+        setTimeout(() => {
+          handleOpponentAction(
+            nextPlayer,
+            {
+              ...gameContext,
+              currentPlayer: nextPlayerIndex,
+              pot: gameContext.pot + amount,
+              currentBet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount)
+            },
+            handleBet,
+            handleFold
+          );
+        }, Math.random() * 1000 + 500); // Random delay between 500ms and 1500ms
       }
     } catch (error) {
       console.error('Error handling bet:', error);
@@ -224,7 +226,7 @@ export const useBettingLogic = (
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     console.log('Timeout triggered for player:', currentPlayer.name);
     
-    // If it's a bot's turn, trigger the bot action
+    // If it's a bot's turn, trigger the bot action immediately
     if (currentPlayer.name.startsWith('Bot')) {
       handleOpponentAction(
         currentPlayer,
