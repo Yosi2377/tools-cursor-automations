@@ -32,7 +32,7 @@ export const useGameLogic = (
           rake: 0,
           current_bet: gameContext.minimumBet,
           dealer_position: nextDealerIndex,
-          room_id: gameContext.roomId // Make sure roomId is passed in context
+          room_id: gameContext.roomId
         })
         .select()
         .single();
@@ -89,7 +89,7 @@ export const useGameLogic = (
         rake: 0,
         currentBet: prev.minimumBet,
         dealerPosition: nextDealerIndex,
-        gameId: newGame.id // Store the game ID in context
+        gameId: newGame.id
       }));
 
       toast.success("New hand started");
@@ -126,7 +126,7 @@ export const useGameLogic = (
         const { error: updateError } = await supabase
           .from('games')
           .update({
-            community_cards: [...gameContext.communityCards, ...newCards],
+            community_cards: JSON.stringify([...gameContext.communityCards, ...newCards]),
             current_bet: 0,
             current_player_index: (gameContext.dealerPosition + 1) % gameContext.players.length
           })
