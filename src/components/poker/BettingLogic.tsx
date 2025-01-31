@@ -18,14 +18,33 @@ export const useBettingLogic = (
     }
 
     try {
-      // Get the most recent active game
-      const { data: game, error: gameError } = await supabase
-        .from('games')
-        .select('*')
-        .eq('status', 'betting')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      // Get the most recent active game with retries
+      let retries = 3;
+      let game = null;
+      let gameError = null;
+
+      while (retries > 0 && !game) {
+        const result = await supabase
+          .from('games')
+          .select('*')
+          .eq('status', 'betting')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (result.error) {
+          console.error(`Attempt ${4-retries}: Error fetching game:`, result.error);
+          gameError = result.error;
+          retries--;
+          if (retries > 0) {
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retry
+            continue;
+          }
+        } else {
+          game = result.data;
+          break;
+        }
+      }
 
       if (gameError) throw gameError;
       if (!game) {
@@ -76,7 +95,7 @@ export const useBettingLogic = (
         .select('id')
         .eq('game_id', game.id)
         .eq('position', nextPlayer.position)
-        .single();
+        .maybeSingle();
 
       if (nextPlayerData) {
         await supabase
@@ -137,7 +156,7 @@ export const useBettingLogic = (
       }
     } catch (error) {
       console.error('Error handling bet:', error);
-      toast.error('Failed to place bet');
+      toast.error('Failed to place bet. Please try again.');
     }
   };
 
