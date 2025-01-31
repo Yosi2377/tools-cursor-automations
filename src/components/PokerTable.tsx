@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Menu, LogOut } from 'lucide-react';
 import LeaderBoard from './poker/LeaderBoard';
@@ -17,7 +17,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const { gameContext, setGameContext } = useGameState(roomId);
   const { handleBet, handleFold } = useBettingHandler(gameContext, setGameContext);
-  const { startNewHand } = useGameLogic(gameContext, setGameContext);
+  const { startNewHand, dealNextCommunityCards } = useGameLogic(gameContext, setGameContext);
 
   const handleTimeout = () => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
@@ -32,6 +32,19 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
       }
     }
   };
+
+  // Check for dealing community cards when all players have acted
+  useEffect(() => {
+    const activePlayers = gameContext.players.filter(p => p.isActive);
+    const allPlayersActed = activePlayers.every(p => p.currentBet === gameContext.currentBet);
+    
+    if (allPlayersActed && activePlayers.length > 1) {
+      const currentCommunityCards = gameContext.communityCards.length;
+      if (currentCommunityCards < 5) {
+        dealNextCommunityCards();
+      }
+    }
+  }, [gameContext.players, gameContext.currentBet, gameContext.communityCards]);
 
   return (
     <div className="relative w-full h-screen bg-poker-background p-4 overflow-hidden">

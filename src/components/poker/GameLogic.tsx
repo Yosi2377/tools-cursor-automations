@@ -1,12 +1,15 @@
 import { GameContext, Player } from '@/types/poker';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { dealCards } from '@/utils/pokerLogic';
 import { supabase } from '@/integrations/supabase/client';
+import { useCardDealing } from './CardDealing';
 
 export const useGameLogic = (
   gameContext: GameContext,
   setGameContext: React.Dispatch<React.SetStateAction<GameContext>>
 ) => {
+  const { dealCommunityCards } = useCardDealing();
+
   const startNewHand = async () => {
     const currentDealerIndex = gameContext.dealerPosition;
     const nextDealerIndex = (currentDealerIndex + 1) % gameContext.players.length;
@@ -40,8 +43,8 @@ export const useGameLogic = (
         .upsert(
           updatedPlayers.map(p => ({
             user_id: user.id,
-            cards: JSON.stringify(p.cards),
-            is_turn: p.isTurn,
+            cards: p.cards,
+            is_turn: p.position === getPositionForIndex(firstPlayerIndex, updatedPlayers.length),
             is_active: true,
             current_bet: 0
           }))
@@ -66,22 +69,77 @@ export const useGameLogic = (
         dealerPosition: nextDealerIndex
       }));
 
-      toast({
-        title: "New hand started",
-        description: "Cards have been dealt to all players",
-      });
+      toast.success("New hand started");
 
     } catch (error) {
       console.error('Error starting new hand:', error);
-      toast({
-        title: "Error",
-        description: "Failed to start new hand",
-        variant: "destructive"
-      });
+      toast.error("Failed to start new hand");
+    }
+  };
+
+  const dealNextCommunityCards = async () => {
+    const currentCount = gameContext.communityCards.length;
+    let newCards = [];
+    let stage = '';
+
+    if (currentCount === 0) {
+      newCards = dealCommunityCards(3); // Flop
+      stage = 'Flop';
+    } else if (currentCount === 3) {
+      newCards = dealCommunityCards(1); // Turn
+      stage = 'Turn';
+    } else if (currentCount === 4) {
+      newCards = dealCommunityCards(1); // River
+      stage = 'River';
+    }
+
+    if (newCards.length > 0) {
+      try {
+        const { error: updateError } = await supabase
+          .from('games')
+          .update({
+            community_cards: [...gameContext.communityCards, ...newCards],
+            current_bet: 0,
+            current_player_index: (gameContext.dealerPosition + 1) % gameContext.players.length
+          })
+          .eq('status', 'betting');
+
+        if (updateError) throw updateError;
+
+        // Reset player bets
+        const { error: playersError } = await supabase
+          .from('game_players')
+          .update({ current_bet: 0 })
+          .eq('game_id', gameContext.currentGameId);
+
+        if (playersError) throw playersError;
+
+        setGameContext(prev => ({
+          ...prev,
+          communityCards: [...prev.communityCards, ...newCards],
+          currentBet: 0,
+          players: prev.players.map(p => ({ ...p, currentBet: 0 })),
+          currentPlayer: (prev.dealerPosition + 1) % prev.players.length
+        }));
+
+        toast.success(`${stage} dealt!`);
+      } catch (error) {
+        console.error('Error dealing community cards:', error);
+        toast.error('Failed to deal community cards');
+      }
     }
   };
 
   return {
-    startNewHand
+    startNewHand,
+    dealNextCommunityCards
   };
+};
+
+const getPositionForIndex = (index: number, totalPlayers: number) => {
+  const positions = [
+    'bottom', 'bottomRight', 'right', 'topRight',
+    'top', 'topLeft', 'left', 'bottomLeft'
+  ];
+  return positions[index % positions.length] as any;
 };

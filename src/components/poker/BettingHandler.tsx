@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { GameContext, Player } from '@/types/poker';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { handleOpponentAction } from '@/utils/opponentActions';
 
 export const useBettingHandler = (
   gameContext: GameContext,
@@ -58,8 +59,10 @@ export const useBettingHandler = (
 
       if (updateError) throw updateError;
 
-      // Update game state
       const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
+      const nextPlayer = gameContext.players[nextPlayerIndex];
+
+      // Update game state
       const { error: gameUpdateError } = await supabase
         .from('games')
         .update({
@@ -72,6 +75,23 @@ export const useBettingHandler = (
       if (gameUpdateError) throw gameUpdateError;
 
       toast.success(`${currentPlayer.name} bet ${amount} chips`);
+
+      // Trigger bot action immediately if next player is a bot
+      if (nextPlayer.name.startsWith('Bot')) {
+        setTimeout(() => {
+          handleOpponentAction(
+            nextPlayer,
+            {
+              ...gameContext,
+              currentPlayer: nextPlayerIndex,
+              pot: gameContext.pot + amount,
+              currentBet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount)
+            },
+            handleBet,
+            handleFold
+          );
+        }, 1000); // Small delay for visual feedback
+      }
 
     } catch (error) {
       console.error('Error handling bet:', error);
@@ -121,8 +141,10 @@ export const useBettingHandler = (
 
       if (updateError) throw updateError;
 
-      // Move to next player
       const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
+      const nextPlayer = gameContext.players[nextPlayerIndex];
+
+      // Move to next player
       const { error: gameUpdateError } = await supabase
         .from('games')
         .update({
@@ -133,6 +155,21 @@ export const useBettingHandler = (
       if (gameUpdateError) throw gameUpdateError;
 
       toast.success(`${currentPlayer.name} folded`);
+
+      // Trigger bot action immediately if next player is a bot
+      if (nextPlayer.name.startsWith('Bot')) {
+        setTimeout(() => {
+          handleOpponentAction(
+            nextPlayer,
+            {
+              ...gameContext,
+              currentPlayer: nextPlayerIndex
+            },
+            handleBet,
+            handleFold
+          );
+        }, 1000); // Small delay for visual feedback
+      }
 
     } catch (error) {
       console.error('Error handling fold:', error);
