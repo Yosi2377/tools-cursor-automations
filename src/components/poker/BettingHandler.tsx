@@ -54,7 +54,7 @@ export const useBettingHandler = (
           current_bet: currentPlayer.currentBet + actualBetAmount,
           is_turn: false
         })
-        .eq('id', currentPlayer.id);
+        .eq('id', currentPlayer.id.toString()); // Convert id to string here
 
       if (playerError) {
         console.error('Error updating player bet:', playerError);
