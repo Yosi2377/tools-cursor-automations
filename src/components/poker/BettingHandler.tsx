@@ -124,7 +124,7 @@ export const useBettingHandler = (
           is_active: false,
           is_turn: false
         })
-        .eq('id', currentPlayer.id);
+        .eq('id', currentPlayer.id.toString()); // Convert id to string here
 
       if (playerError) throw playerError;
 
