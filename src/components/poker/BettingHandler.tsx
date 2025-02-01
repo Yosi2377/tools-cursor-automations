@@ -1,181 +1,165 @@
-import { useCallback } from 'react';
-import { GameContext, Player } from '@/types/poker';
-import { supabase } from '@/integrations/supabase/client';
+import { GameContext } from '@/types/poker';
 import { toast } from 'sonner';
-import { handleOpponentAction } from '@/utils/opponentActions';
+import { supabase } from '@/integrations/supabase/client';
+
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // 1 second
+
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const useBettingHandler = (
   gameContext: GameContext,
   setGameContext: React.Dispatch<React.SetStateAction<GameContext>>
 ) => {
-  const handleBet = useCallback(async (amount: number) => {
-    const currentPlayer = gameContext.players[gameContext.currentPlayer];
-    console.log(`${currentPlayer.name} attempting to bet ${amount}`);
-
-    if (currentPlayer.chips < amount) {
-      toast.error("Not enough chips to make this bet");
-      return;
-    }
-
+  const updateGameState = async (
+    actualBetAmount: number,
+    currentPlayer: any,
+    retryCount = 0
+  ) => {
     try {
-      // Get current game
-      const { data: game, error: gameError } = await supabase
+      const { error: gameError } = await supabase
         .from('games')
-        .select('*')
-        .eq('status', 'betting')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+        .update({
+          pot: gameContext.pot + actualBetAmount,
+          current_bet: Math.max(gameContext.currentBet, currentPlayer.currentBet + actualBetAmount),
+          current_player_index: (gameContext.currentPlayer + 1) % gameContext.players.length
+        })
+        .eq('id', gameContext.gameId);
 
-      if (gameError) throw gameError;
-      if (!game) {
-        toast.error('No active game found');
-        return;
+      if (gameError) {
+        console.error('Error updating game state:', gameError);
+        if (retryCount < MAX_RETRIES) {
+          await delay(RETRY_DELAY);
+          return updateGameState(actualBetAmount, currentPlayer, retryCount + 1);
+        }
+        throw gameError;
       }
+    } catch (error) {
+      console.error('Error in updateGameState:', error);
+      toast.error('Failed to update game state. Please try again.');
+      throw error;
+    }
+  };
 
-      // Get player data
-      const { data: playerData, error: playerError } = await supabase
-        .from('game_players')
-        .select('id')
-        .eq('game_id', game.id)
-        .eq('position', currentPlayer.position)
-        .maybeSingle();
-
-      if (playerError) throw playerError;
-      if (!playerData) {
-        toast.error('Player not found in game');
-        return;
-      }
-
-      // Update player
-      const { error: updateError } = await supabase
+  const updatePlayerBet = async (
+    currentPlayer: any,
+    actualBetAmount: number,
+    retryCount = 0
+  ) => {
+    try {
+      const { error: playerError } = await supabase
         .from('game_players')
         .update({
-          chips: currentPlayer.chips - amount,
-          current_bet: currentPlayer.currentBet + amount,
+          chips: currentPlayer.chips - actualBetAmount,
+          current_bet: currentPlayer.currentBet + actualBetAmount,
           is_turn: false
         })
-        .eq('id', playerData.id);
+        .eq('id', currentPlayer.id);
 
-      if (updateError) throw updateError;
+      if (playerError) {
+        console.error('Error updating player bet:', playerError);
+        if (retryCount < MAX_RETRIES) {
+          await delay(RETRY_DELAY);
+          return updatePlayerBet(currentPlayer, actualBetAmount, retryCount + 1);
+        }
+        throw playerError;
+      }
+    } catch (error) {
+      console.error('Error in updatePlayerBet:', error);
+      toast.error('Failed to update player bet. Please try again.');
+      throw error;
+    }
+  };
 
-      const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
-      const nextPlayer = gameContext.players[nextPlayerIndex];
+  const handleBet = async (amount: number) => {
+    try {
+      const currentPlayer = gameContext.players[gameContext.currentPlayer];
+      const actualBetAmount = Math.min(amount, currentPlayer.chips);
 
-      // Update game state
-      const { error: gameUpdateError } = await supabase
-        .from('games')
-        .update({
-          pot: gameContext.pot + amount,
-          current_bet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount),
-          current_player_index: nextPlayerIndex
-        })
-        .eq('id', game.id);
-
-      if (gameUpdateError) throw gameUpdateError;
-
-      toast.success(`${currentPlayer.name} bet ${amount} chips`);
-
-      // Trigger bot action immediately if next player is a bot
-      if (nextPlayer.name.startsWith('Bot')) {
-        setTimeout(() => {
-          handleOpponentAction(
-            nextPlayer,
-            {
-              ...gameContext,
-              currentPlayer: nextPlayerIndex,
-              pot: gameContext.pot + amount,
-              currentBet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount)
-            },
-            handleBet,
-            handleFold
-          );
-        }, 1000); // Small delay for visual feedback
+      if (actualBetAmount <= 0) {
+        toast.error("Invalid bet amount");
+        return;
       }
 
+      // Update player's bet first
+      await updatePlayerBet(currentPlayer, actualBetAmount);
+      
+      // Then update game state
+      await updateGameState(actualBetAmount, currentPlayer);
+
+      // Update local state
+      setGameContext(prev => ({
+        ...prev,
+        pot: prev.pot + actualBetAmount,
+        currentBet: Math.max(prev.currentBet, currentPlayer.currentBet + actualBetAmount),
+        players: prev.players.map(p => 
+          p.id === currentPlayer.id
+            ? {
+                ...p,
+                chips: p.chips - actualBetAmount,
+                currentBet: p.currentBet + actualBetAmount,
+                isTurn: false
+              }
+            : p.id === prev.players[(prev.currentPlayer + 1) % prev.players.length].id
+            ? { ...p, isTurn: true }
+            : p
+        ),
+        currentPlayer: (prev.currentPlayer + 1) % prev.players.length
+      }));
+
+      toast.success(`Bet placed: $${actualBetAmount}`);
     } catch (error) {
       console.error('Error handling bet:', error);
-      toast.error('Failed to place bet');
+      toast.error('Failed to place bet. Please try again.');
     }
-  }, [gameContext]);
+  };
 
-  const handleFold = useCallback(async () => {
-    const currentPlayer = gameContext.players[gameContext.currentPlayer];
-    
+  const handleFold = async () => {
     try {
-      const { data: game, error: gameError } = await supabase
-        .from('games')
-        .select('*')
-        .eq('status', 'betting')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const currentPlayer = gameContext.players[gameContext.currentPlayer];
 
-      if (gameError) throw gameError;
-      if (!game) {
-        toast.error('No active game found');
-        return;
-      }
-
-      // Update player status
-      const { data: playerData, error: playerError } = await supabase
-        .from('game_players')
-        .select('id')
-        .eq('game_id', game.id)
-        .eq('position', currentPlayer.position)
-        .maybeSingle();
-
-      if (playerError) throw playerError;
-      if (!playerData) {
-        toast.error('Player not found in game');
-        return;
-      }
-
-      const { error: updateError } = await supabase
+      const { error: playerError } = await supabase
         .from('game_players')
         .update({
           is_active: false,
           is_turn: false
         })
-        .eq('id', playerData.id);
+        .eq('id', currentPlayer.id);
 
-      if (updateError) throw updateError;
+      if (playerError) throw playerError;
 
       const nextPlayerIndex = (gameContext.currentPlayer + 1) % gameContext.players.length;
-      const nextPlayer = gameContext.players[nextPlayerIndex];
 
-      // Move to next player
-      const { error: gameUpdateError } = await supabase
+      const { error: gameError } = await supabase
         .from('games')
         .update({
           current_player_index: nextPlayerIndex
         })
-        .eq('id', game.id);
+        .eq('id', gameContext.gameId);
 
-      if (gameUpdateError) throw gameUpdateError;
+      if (gameError) throw gameError;
+
+      setGameContext(prev => ({
+        ...prev,
+        players: prev.players.map(p => 
+          p.id === currentPlayer.id
+            ? { ...p, isActive: false, isTurn: false }
+            : p.id === prev.players[nextPlayerIndex].id
+            ? { ...p, isTurn: true }
+            : p
+        ),
+        currentPlayer: nextPlayerIndex
+      }));
 
       toast.success(`${currentPlayer.name} folded`);
-
-      // Trigger bot action immediately if next player is a bot
-      if (nextPlayer.name.startsWith('Bot')) {
-        setTimeout(() => {
-          handleOpponentAction(
-            nextPlayer,
-            {
-              ...gameContext,
-              currentPlayer: nextPlayerIndex
-            },
-            handleBet,
-            handleFold
-          );
-        }, 1000); // Small delay for visual feedback
-      }
-
     } catch (error) {
       console.error('Error handling fold:', error);
-      toast.error('Failed to fold');
+      toast.error('Failed to fold. Please try again.');
     }
-  }, [gameContext]);
+  };
 
-  return { handleBet, handleFold };
+  return {
+    handleBet,
+    handleFold
+  };
 };
