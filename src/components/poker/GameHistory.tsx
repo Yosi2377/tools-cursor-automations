@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +8,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { supabase } from '@/integrations/supabase/client';
 
 interface GameHistoryEntry {
   id: string;
@@ -31,7 +30,8 @@ const GameHistory = () => {
       
       if (error) throw error;
       return data as GameHistoryEntry[];
-    }
+    },
+    retry: 3,
   });
 
   return (
