@@ -16,6 +16,11 @@ export const useBettingHandler = (
     currentPlayer: any,
     retryCount = 0
   ) => {
+    if (!gameContext.gameId) {
+      console.error('No game ID found in context');
+      return;
+    }
+
     try {
       const { error: gameError } = await supabase
         .from('games')
@@ -47,6 +52,25 @@ export const useBettingHandler = (
     retryCount = 0
   ) => {
     try {
+      // Get the player's UUID from the game_players table
+      const { data: playerData, error: playerLookupError } = await supabase
+        .from('game_players')
+        .select('id')
+        .eq('game_id', gameContext.gameId)
+        .eq('position', currentPlayer.position)
+        .single();
+
+      if (playerLookupError) {
+        console.error('Error finding player:', playerLookupError);
+        throw playerLookupError;
+      }
+
+      if (!playerData) {
+        console.error('No player found for position:', currentPlayer.position);
+        toast.error('Player not found in game');
+        return;
+      }
+
       const { error: playerError } = await supabase
         .from('game_players')
         .update({
@@ -54,7 +78,7 @@ export const useBettingHandler = (
           current_bet: currentPlayer.currentBet + actualBetAmount,
           is_turn: false
         })
-        .eq('id', currentPlayer.id.toString()); // Convert id to string here
+        .eq('id', playerData.id);
 
       if (playerError) {
         console.error('Error updating player bet:', playerError);
@@ -80,6 +104,12 @@ export const useBettingHandler = (
         toast.error("Invalid bet amount");
         return;
       }
+
+      console.log('Handling bet:', {
+        player: currentPlayer.name,
+        amount: actualBetAmount,
+        gameId: gameContext.gameId
+      });
 
       // Update player's bet first
       await updatePlayerBet(currentPlayer, actualBetAmount);
@@ -115,8 +145,32 @@ export const useBettingHandler = (
   };
 
   const handleFold = async () => {
+    if (!gameContext.gameId) {
+      console.error('No game ID found in context');
+      return;
+    }
+
     try {
       const currentPlayer = gameContext.players[gameContext.currentPlayer];
+
+      // Get the player's UUID from the game_players table
+      const { data: playerData, error: playerLookupError } = await supabase
+        .from('game_players')
+        .select('id')
+        .eq('game_id', gameContext.gameId)
+        .eq('position', currentPlayer.position)
+        .single();
+
+      if (playerLookupError) {
+        console.error('Error finding player:', playerLookupError);
+        throw playerLookupError;
+      }
+
+      if (!playerData) {
+        console.error('No player found for position:', currentPlayer.position);
+        toast.error('Player not found in game');
+        return;
+      }
 
       const { error: playerError } = await supabase
         .from('game_players')
@@ -124,7 +178,7 @@ export const useBettingHandler = (
           is_active: false,
           is_turn: false
         })
-        .eq('id', currentPlayer.id.toString()); // Convert id to string here
+        .eq('id', playerData.id);
 
       if (playerError) throw playerError;
 

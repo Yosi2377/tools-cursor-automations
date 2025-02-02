@@ -35,16 +35,30 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
 
   // Check for dealing community cards when all players have acted
   useEffect(() => {
+    if (!gameContext.gameId) {
+      console.log('No game ID in context, skipping community card check');
+      return;
+    }
+
     const activePlayers = gameContext.players.filter(p => p.isActive);
     const allPlayersActed = activePlayers.every(p => p.currentBet === gameContext.currentBet);
     
+    console.log('Checking community cards:', {
+      activePlayers: activePlayers.length,
+      allPlayersActed,
+      currentCommunityCards: gameContext.communityCards.length,
+      playerBets: activePlayers.map(p => ({ name: p.name, bet: p.currentBet })),
+      currentBet: gameContext.currentBet,
+      gameId: gameContext.gameId
+    });
+
     if (allPlayersActed && activePlayers.length > 1) {
       const currentCommunityCards = gameContext.communityCards.length;
       if (currentCommunityCards < 5) {
         dealNextCommunityCards();
       }
     }
-  }, [gameContext.players, gameContext.currentBet, gameContext.communityCards]);
+  }, [gameContext.players, gameContext.currentBet, gameContext.communityCards, gameContext.gameId]);
 
   return (
     <div className="relative w-full h-screen bg-poker-background p-4 overflow-hidden">
