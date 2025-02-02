@@ -45,6 +45,14 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     }
   };
 
+  // Create a wrapper function that matches the expected signature
+  const handleTimeout = () => {
+    const currentPlayer = gameContext.players[gameContext.currentPlayer];
+    if (currentPlayer) {
+      handleBotAction(currentPlayer);
+    }
+  };
+
   // Handle bot turns immediately
   useEffect(() => {
     if (!gameContext.gameId) return;
@@ -129,7 +137,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
 
       <TableLayout 
         gameContext={gameContext}
-        onTimeout={handleBotAction}
+        onTimeout={handleTimeout}
       />
 
       <GameControls
