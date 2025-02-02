@@ -33,6 +33,25 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     }
   };
 
+  // Handle bot turns immediately without waiting for timeout
+  useEffect(() => {
+    if (!gameContext.gameId) return;
+
+    const currentPlayer = gameContext.players[gameContext.currentPlayer];
+    if (currentPlayer?.name.startsWith('Bot') && currentPlayer.isTurn) {
+      // Add a small delay to make it look more natural
+      const timer = setTimeout(() => {
+        if (currentPlayer.chips >= gameContext.minimumBet) {
+          handleBet(gameContext.minimumBet);
+        } else {
+          handleFold();
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [gameContext.currentPlayer, gameContext.gameId, gameContext.players]);
+
   // Check for dealing community cards when all players have acted
   useEffect(() => {
     if (!gameContext.gameId) {
@@ -55,7 +74,10 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     if (allPlayersActed && activePlayers.length > 1) {
       const currentCommunityCards = gameContext.communityCards.length;
       if (currentCommunityCards < 5) {
-        dealNextCommunityCards();
+        const timer = setTimeout(() => {
+          dealNextCommunityCards();
+        }, 1000);
+        return () => clearTimeout(timer);
       }
     }
   }, [gameContext.players, gameContext.currentBet, gameContext.communityCards, gameContext.gameId]);

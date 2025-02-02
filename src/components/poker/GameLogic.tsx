@@ -40,22 +40,6 @@ export const useGameLogic = (
       if (gameCreateError) throw gameCreateError;
       if (!newGame) throw new Error('Failed to create new game');
 
-      // Update game state in Supabase
-      const { error: gameError } = await supabase
-        .from('games')
-        .update({
-          status: 'betting',
-          current_player_index: firstPlayerIndex,
-          community_cards: [],
-          pot: 0,
-          rake: 0,
-          current_bet: gameContext.minimumBet,
-          dealer_position: nextDealerIndex
-        })
-        .eq('id', newGame.id);
-
-      if (gameError) throw gameError;
-
       // Update players in Supabase
       const { error: playersError } = await supabase
         .from('game_players')
@@ -126,7 +110,7 @@ export const useGameLogic = (
         const { error: updateError } = await supabase
           .from('games')
           .update({
-            community_cards: JSON.stringify([...gameContext.communityCards, ...newCards]),
+            community_cards: [...gameContext.communityCards, ...newCards],
             current_bet: 0,
             current_player_index: (gameContext.dealerPosition + 1) % gameContext.players.length
           })
