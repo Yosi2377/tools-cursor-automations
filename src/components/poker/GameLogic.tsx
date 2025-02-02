@@ -110,7 +110,7 @@ export const useGameLogic = (
         const { error: updateError } = await supabase
           .from('games')
           .update({
-            community_cards: [...gameContext.communityCards, ...newCards],
+            community_cards: JSON.stringify([...gameContext.communityCards, ...newCards]),
             current_bet: 0,
             current_player_index: (gameContext.dealerPosition + 1) % gameContext.players.length
           })
