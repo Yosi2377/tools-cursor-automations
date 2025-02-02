@@ -24,19 +24,6 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
           return;
         }
 
-        // Check if user is already seated at another position
-        const { data: existingPlayer } = await supabase
-          .from('game_players')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('is_active', true)
-          .single();
-
-        if (existingPlayer) {
-          toast.error('You are already seated at another position');
-          return;
-        }
-
         const { error } = await supabase
           .from('game_players')
           .update({
@@ -58,45 +45,45 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
     if (!player.isActive) {
       switch (player.position) {
         case 'bottom':
-          return 'bottom-0 left-1/2 -translate-x-1/2 translate-y-[50%]';
+          return 'bottom-0 left-1/2 -translate-x-1/2 translate-y-[100%]';
         case 'bottomLeft':
-          return 'bottom-8 left-8 -translate-x-1/2 translate-y-1/2';
+          return 'bottom-0 left-0 -translate-x-[100%] translate-y-[100%]';
         case 'left':
-          return 'left-0 top-1/2 -translate-y-1/2 -translate-x-[50%]';
+          return 'left-0 top-1/2 -translate-y-1/2 -translate-x-[100%]';
         case 'topLeft':
-          return 'top-8 left-8 -translate-x-1/2 -translate-y-1/2';
+          return 'top-0 left-0 -translate-x-[100%] -translate-y-[100%]';
         case 'top':
-          return 'top-0 left-1/2 -translate-x-1/2 -translate-y-[50%]';
+          return 'top-0 left-1/2 -translate-x-1/2 -translate-y-[100%]';
         case 'topRight':
-          return 'top-8 right-8 translate-x-1/2 -translate-y-1/2';
+          return 'top-0 right-0 translate-x-[100%] -translate-y-[100%]';
         case 'right':
-          return 'right-0 top-1/2 -translate-y-1/2 translate-x-[50%]';
+          return 'right-0 top-1/2 -translate-y-1/2 translate-x-[100%]';
         case 'bottomRight':
-          return 'bottom-8 right-8 translate-x-1/2 translate-y-1/2';
+          return 'bottom-0 right-0 translate-x-[100%] translate-y-[100%]';
         default:
           return '';
       }
     }
 
-    // Position active players in a perfect oval around the table
+    // Position active players in a perfect oval around the table, with bottom position having higher z-index
     const zIndex = player.position === 'bottom' ? 'z-50' : 'z-10';
     switch (player.position) {
       case 'bottom':
         return `bottom-4 left-1/2 -translate-x-1/2 ${zIndex}`;
       case 'bottomLeft':
-        return `${isMobile ? 'left-12 bottom-16' : 'left-24 bottom-20'} -translate-x-1/2 ${zIndex}`;
+        return `${isMobile ? 'left-12 bottom-16' : 'left-32 bottom-24'} -translate-x-1/2 ${zIndex}`;
       case 'left':
         return `${isMobile ? 'left-4' : 'left-8'} top-1/2 -translate-y-1/2 ${zIndex}`;
       case 'topLeft':
-        return `${isMobile ? 'left-12 top-16' : 'left-24 top-20'} -translate-x-1/2 ${zIndex}`;
+        return `${isMobile ? 'left-12 top-16' : 'left-32 top-24'} -translate-x-1/2 ${zIndex}`;
       case 'top':
         return `top-4 left-1/2 -translate-x-1/2 ${zIndex}`;
       case 'topRight':
-        return `${isMobile ? 'right-12 top-16' : 'right-24 top-20'} translate-x-1/2 ${zIndex}`;
+        return `${isMobile ? 'right-12 top-16' : 'right-32 top-24'} translate-x-1/2 ${zIndex}`;
       case 'right':
         return `${isMobile ? 'right-4' : 'right-8'} top-1/2 -translate-y-1/2 ${zIndex}`;
       case 'bottomRight':
-        return `${isMobile ? 'right-12 bottom-16' : 'right-24 bottom-20'} translate-x-1/2 ${zIndex}`;
+        return `${isMobile ? 'right-12 bottom-16' : 'right-32 bottom-24'} translate-x-1/2 ${zIndex}`;
       default:
         return '';
     }
@@ -118,9 +105,9 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       onClick={!player.isActive ? handleSeatClick : undefined}
     >
       {!player.isActive ? (
-        <div className="w-12 h-12 rounded-full bg-poker-background border-2 border-white/20 flex flex-col items-center justify-center text-white/50 hover:text-white/80 transition-colors">
-          <span className="text-xs">Empty</span>
-          <span className="text-[10px]">Seat</span>
+        <div className="w-16 h-16 rounded-full bg-poker-background border-2 border-white/20 flex flex-col items-center justify-center text-white/50 hover:text-white/80 transition-colors">
+          <span>Empty</span>
+          <span className="text-xs">Waiting...</span>
         </div>
       ) : (
         <PlayerInfo player={player} onTimeout={onTimeout} />

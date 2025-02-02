@@ -11,14 +11,55 @@ export const supabase = createClient<Database>(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      storage: localStorage
     },
     global: {
-      fetch: (input: RequestInfo | URL, init?: RequestInit) => {
-        return fetch(input, init).catch(err => {
-          console.error('Supabase fetch error:', err);
-          throw err;
-        });
+      headers: {
+        'apikey': SUPABASE_PUBLISHABLE_KEY,
+        'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+      },
+      fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+        const maxRetries = 3;
+        let attempt = 0;
+        
+        // Get the current session
+        const session = supabase.auth.session();
+        const accessToken = session?.access_token;
+        
+        while (attempt < maxRetries) {
+          try {
+            const response = await fetch(input, {
+              ...init,
+              headers: {
+                ...init?.headers,
+                'apikey': SUPABASE_PUBLISHABLE_KEY,
+                'Authorization': accessToken ? `Bearer ${accessToken}` : `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+              }
+            });
+            
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return response;
+          } catch (error) {
+            attempt++;
+            console.error(`Attempt ${attempt} failed:`, error);
+            
+            if (attempt === maxRetries) {
+              console.error('All retry attempts failed:', error);
+              throw error;
+            }
+            
+            // Wait before retrying (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+          }
+        }
+        
+        throw new Error('Failed to fetch after all retries');
       }
     },
     db: {
