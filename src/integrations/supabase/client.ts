@@ -14,6 +14,10 @@ export const supabase = createClient<Database>(
       detectSessionInUrl: true
     },
     global: {
+      headers: {
+        'apikey': SUPABASE_PUBLISHABLE_KEY,
+        'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+      },
       fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
         const maxRetries = 3;
         let attempt = 0;
@@ -24,6 +28,8 @@ export const supabase = createClient<Database>(
               ...init,
               headers: {
                 ...init?.headers,
+                'apikey': SUPABASE_PUBLISHABLE_KEY,
+                'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
                 'Cache-Control': 'no-cache',
                 'Pragma': 'no-cache'
               }
