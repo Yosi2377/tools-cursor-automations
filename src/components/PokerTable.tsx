@@ -19,56 +19,40 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
   const { handleBet, handleFold } = useBettingHandler(gameContext, setGameContext);
   const { startNewHand, dealNextCommunityCards } = useGameLogic(gameContext, setGameContext);
 
-  const handleBotAction = (currentPlayer: any) => {
-    console.log('Bot action for:', currentPlayer.name);
-    const amountToCall = gameContext.currentBet - currentPlayer.currentBet;
-    
-    // Bot decision making based on Texas Hold'em strategy
-    const hasGoodHand = currentPlayer.cards.some(card => 
-      ['A', 'K', 'Q', 'J', '10'].includes(card.rank)
-    );
-    const hasPair = currentPlayer.cards[0].rank === currentPlayer.cards[1].rank;
-    const isPreFlop = gameContext.communityCards.length === 0;
-    const potOdds = amountToCall / (gameContext.pot + amountToCall);
-    
-    // More aggressive pre-flop play
-    if (isPreFlop && (hasGoodHand || hasPair || Math.random() < 0.7)) {
-      const raiseAmount = Math.min(
-        currentPlayer.chips,
-        amountToCall + gameContext.minimumBet * (1 + Math.floor(Math.random() * 3))
-      );
-      handleBet(raiseAmount);
-    } else if (currentPlayer.chips >= amountToCall && (hasGoodHand || Math.random() < 0.4)) {
-      handleBet(amountToCall); // Call
-    } else {
-      handleFold();
-    }
-  };
-
-  // Create a wrapper function that matches the expected signature
   const handleTimeout = () => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
-    if (currentPlayer) {
-      handleBotAction(currentPlayer);
+    console.log('Timeout triggered for player:', currentPlayer.name);
+    
+    if (currentPlayer.name.startsWith('Bot')) {
+      // Bot logic will be handled separately
+      if (currentPlayer.chips >= gameContext.minimumBet) {
+        handleBet(gameContext.minimumBet);
+      } else {
+        handleFold();
+      }
     }
   };
 
-  // Handle bot turns immediately
+  // Handle bot turns immediately without waiting for timeout
   useEffect(() => {
     if (!gameContext.gameId) return;
 
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     if (currentPlayer?.name.startsWith('Bot') && currentPlayer.isTurn) {
-      // Small delay for visual feedback
+      // Add a small delay to make it look more natural
       const timer = setTimeout(() => {
-        handleBotAction(currentPlayer);
+        if (currentPlayer.chips >= gameContext.minimumBet) {
+          handleBet(gameContext.minimumBet);
+        } else {
+          handleFold();
+        }
       }, 1000);
 
       return () => clearTimeout(timer);
     }
   }, [gameContext.currentPlayer, gameContext.gameId, gameContext.players]);
 
-  // Check for dealing community cards
+  // Check for dealing community cards when all players have acted
   useEffect(() => {
     if (!gameContext.gameId) {
       console.log('No game ID in context, skipping community card check');
@@ -88,14 +72,6 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     });
 
     if (allPlayersActed && activePlayers.length > 1) {
-      // Reset bets before dealing next cards
-      setGameContext(prev => ({
-        ...prev,
-        players: prev.players.map(p => ({ ...p, currentBet: 0 })),
-        currentBet: 0,
-        currentPlayer: (prev.dealerPosition + 1) % prev.players.length
-      }));
-
       const currentCommunityCards = gameContext.communityCards.length;
       if (currentCommunityCards < 5) {
         const timer = setTimeout(() => {
