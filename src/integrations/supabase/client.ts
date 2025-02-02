@@ -11,7 +11,8 @@ export const supabase = createClient<Database>(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      storage: localStorage
     },
     global: {
       headers: {
@@ -22,6 +23,10 @@ export const supabase = createClient<Database>(
         const maxRetries = 3;
         let attempt = 0;
         
+        // Get the current session
+        const session = supabase.auth.session();
+        const accessToken = session?.access_token;
+        
         while (attempt < maxRetries) {
           try {
             const response = await fetch(input, {
@@ -29,7 +34,7 @@ export const supabase = createClient<Database>(
               headers: {
                 ...init?.headers,
                 'apikey': SUPABASE_PUBLISHABLE_KEY,
-                'Authorization': `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
+                'Authorization': accessToken ? `Bearer ${accessToken}` : `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
                 'Cache-Control': 'no-cache',
                 'Pragma': 'no-cache'
               }
