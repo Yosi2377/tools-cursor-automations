@@ -7,6 +7,7 @@ import { useGameState } from './poker/GameStateManager';
 import { useBettingHandler } from './poker/BettingHandler';
 import { useGameLogic } from './poker/GameLogic';
 import GameControls from './poker/GameControls';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PokerTableProps {
   roomId: string;
@@ -18,13 +19,13 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
   const { gameContext, setGameContext } = useGameState(roomId);
   const { handleBet, handleFold } = useBettingHandler(gameContext, setGameContext);
   const { startNewHand, dealNextCommunityCards } = useGameLogic(gameContext, setGameContext);
+  const [isSpectator, setIsSpectator] = useState(true);
 
   const handleTimeout = () => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     console.log('Timeout triggered for player:', currentPlayer.name);
     
     if (currentPlayer.name.startsWith('Bot')) {
-      // Bot logic will be handled separately
       if (currentPlayer.chips >= gameContext.minimumBet) {
         handleBet(gameContext.minimumBet);
       } else {
@@ -33,13 +34,27 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     }
   };
 
+  // Check if current user is playing
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const isPlaying = gameContext.players.some(p => 
+        p.isActive && p.name === `Player ${user.id.slice(0, 4)}`
+      );
+      setIsSpectator(!isPlaying);
+    };
+
+    checkUserStatus();
+  }, [gameContext.players]);
+
   // Handle bot turns immediately without waiting for timeout
   useEffect(() => {
     if (!gameContext.gameId) return;
 
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     if (currentPlayer?.name.startsWith('Bot') && currentPlayer.isTurn) {
-      // Add a small delay to make it look more natural
       const timer = setTimeout(() => {
         if (currentPlayer.chips >= gameContext.minimumBet) {
           handleBet(gameContext.minimumBet);
@@ -116,12 +131,14 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
         onTimeout={handleTimeout}
       />
 
-      <GameControls
-        gameContext={gameContext}
-        onStartHand={startNewHand}
-        onBet={handleBet}
-        onFold={handleFold}
-      />
+      {!isSpectator && (
+        <GameControls
+          gameContext={gameContext}
+          onStartHand={startNewHand}
+          onBet={handleBet}
+          onFold={handleFold}
+        />
+      )}
     </div>
   );
 };
