@@ -1,21 +1,13 @@
-import React from 'react';
-
 const TableFelt = () => {
   return (
-    <div className="absolute inset-0 rounded-[200px] overflow-hidden">
+    <div className="absolute inset-0 bg-gradient-to-br from-[#0d4a2c] to-[#0a3720] rounded-xl shadow-2xl">
       {/* Table border */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#4a3f35] to-[#2d261f]">
-        {/* Inner padding */}
-        <div className="absolute inset-4 rounded-[180px] bg-gradient-to-b from-[#234e52] to-[#1a373a]">
-          {/* Felt texture */}
-          <div className="absolute inset-2 rounded-[170px] bg-[#277148] shadow-inner">
-            {/* Table pattern */}
-            <div className="absolute inset-0 opacity-30"
-                 style={{
-                   backgroundImage: `radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.2) 100%)`,
-                   backgroundSize: '100% 100%'
-                 }}
-            />
+      <div className="absolute inset-2 border-4 border-[#8B4513] rounded-lg overflow-hidden">
+        {/* Table felt */}
+        <div className="absolute inset-0 bg-[#0d4a2c]">
+          {/* Table pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="w-full h-full bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]" />
           </div>
         </div>
       </div>
