@@ -29,6 +29,9 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
       } else {
         handleFold();
       }
+    } else {
+      // For human players, automatically fold when time runs out
+      handleFold();
     }
   };
 

@@ -15,6 +15,9 @@ const GameControls: React.FC<GameControlsProps> = ({
   onBet,
   onFold,
 }) => {
+  const currentPlayer = gameContext.players[gameContext.currentPlayer];
+  const isPlayerTurn = currentPlayer?.position === 'bottom' && currentPlayer?.isTurn;
+
   if (gameContext.gameState === "waiting") {
     return (
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
@@ -28,11 +31,10 @@ const GameControls: React.FC<GameControlsProps> = ({
     );
   }
 
-  const currentPlayer = gameContext.players[gameContext.currentPlayer];
-  
-  if (gameContext.gameState === "betting" && 
-      currentPlayer && // Add safety check
-      currentPlayer.position === "bottom") {
+  if (gameContext.gameState === "betting" && isPlayerTurn) {
+    const canCall = currentPlayer.chips >= gameContext.currentBet;
+    const canRaise = currentPlayer.chips >= gameContext.currentBet * 2;
+
     return (
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4">
         <Button 
@@ -42,19 +44,23 @@ const GameControls: React.FC<GameControlsProps> = ({
         >
           Fold
         </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => onBet(gameContext.currentBet)}
-          className="bg-poker-accent text-black hover:bg-poker-accent/90 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-        >
-          Call ${gameContext.currentBet}
-        </Button>
-        <Button 
-          onClick={() => onBet(gameContext.currentBet * 2)}
-          className="bg-poker-accent text-black hover:bg-poker-accent/90 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-        >
-          Raise to ${gameContext.currentBet * 2}
-        </Button>
+        {canCall && (
+          <Button 
+            variant="outline" 
+            onClick={() => onBet(gameContext.currentBet)}
+            className="bg-poker-accent text-black hover:bg-poker-accent/90 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+          >
+            Call ${gameContext.currentBet}
+          </Button>
+        )}
+        {canRaise && (
+          <Button 
+            onClick={() => onBet(gameContext.currentBet * 2)}
+            className="bg-poker-accent text-black hover:bg-poker-accent/90 px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all"
+          >
+            Raise to ${gameContext.currentBet * 2}
+          </Button>
+        )}
       </div>
     );
   }
