@@ -10,17 +10,21 @@ interface PlayerInfoProps {
 
 const PlayerInfo: React.FC<PlayerInfoProps> = ({ player, onTimeout }) => {
   return (
-    <div className={`relative p-4 rounded-lg ${
-      player.isTurn ? 'bg-poker-accent/20 animate-pulse' : 'bg-black/20'
+    <div className={`relative flex flex-col items-center ${
+      player.isTurn ? 'animate-pulse' : ''
     }`}>
-      <Avatar className="w-16 h-16 border-2 border-poker-accent">
-        <AvatarFallback className="bg-poker-background text-poker-accent">
-          {player.name[0]}
-        </AvatarFallback>
-      </Avatar>
+      <div className={`p-2 rounded-lg ${
+        player.isTurn ? 'bg-poker-accent/20' : 'bg-black/40'
+      }`}>
+        <Avatar className="w-12 h-12 border border-poker-accent/50">
+          <AvatarFallback className="bg-poker-background text-poker-accent text-sm">
+            {player.name[0]}
+          </AvatarFallback>
+        </Avatar>
+      </div>
       
       {player.isTurn && (
-        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2">
+        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2">
           <TurnTimer 
             isActive={player.isTurn} 
             onTimeout={onTimeout}
@@ -28,9 +32,9 @@ const PlayerInfo: React.FC<PlayerInfoProps> = ({ player, onTimeout }) => {
         </div>
       )}
 
-      <div className="mt-2 text-center">
-        <p className="text-poker-accent font-semibold">{player.name}</p>
-        <p className="text-sm text-poker-accent/80">${player.chips}</p>
+      <div className="mt-1 text-center">
+        <p className="text-sm text-poker-accent font-medium truncate max-w-[100px]">{player.name}</p>
+        <p className="text-xs text-poker-accent/80">${player.chips}</p>
         {player.currentBet > 0 && (
           <p className="text-xs text-poker-accent/60">Bet: ${player.currentBet}</p>
         )}

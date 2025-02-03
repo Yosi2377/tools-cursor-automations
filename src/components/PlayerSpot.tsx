@@ -42,50 +42,28 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
   };
 
   const getPositionClasses = () => {
-    if (!player.isActive) {
-      switch (player.position) {
-        case 'bottom':
-          return 'bottom-0 left-1/2 -translate-x-1/2 translate-y-[100%]';
-        case 'bottomLeft':
-          return 'bottom-0 left-0 -translate-x-[100%] translate-y-[100%]';
-        case 'left':
-          return 'left-0 top-1/2 -translate-y-1/2 -translate-x-[100%]';
-        case 'topLeft':
-          return 'top-0 left-0 -translate-x-[100%] -translate-y-[100%]';
-        case 'top':
-          return 'top-0 left-1/2 -translate-x-1/2 -translate-y-[100%]';
-        case 'topRight':
-          return 'top-0 right-0 translate-x-[100%] -translate-y-[100%]';
-        case 'right':
-          return 'right-0 top-1/2 -translate-y-1/2 translate-x-[100%]';
-        case 'bottomRight':
-          return 'bottom-0 right-0 translate-x-[100%] translate-y-[100%]';
-        default:
-          return '';
-      }
-    }
-
-    // Position active players in a perfect oval around the table, with bottom position having higher z-index
-    const zIndex = player.position === 'bottom' ? 'z-50' : 'z-10';
+    const baseClasses = 'absolute transition-all duration-500';
+    const activeClasses = player.isActive ? 'z-10' : 'opacity-70 hover:opacity-100 cursor-pointer';
+    
     switch (player.position) {
       case 'bottom':
-        return `bottom-4 left-1/2 -translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${activeClasses} bottom-4 left-1/2 -translate-x-1/2`;
       case 'bottomLeft':
-        return `${isMobile ? 'left-12 bottom-16' : 'left-32 bottom-24'} -translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${activeClasses} bottom-16 left-16 -translate-x-1/2`;
       case 'left':
-        return `${isMobile ? 'left-4' : 'left-8'} top-1/2 -translate-y-1/2 ${zIndex}`;
+        return `${baseClasses} ${activeClasses} left-8 top-1/2 -translate-y-1/2`;
       case 'topLeft':
-        return `${isMobile ? 'left-12 top-16' : 'left-32 top-24'} -translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${activeClasses} top-16 left-16 -translate-x-1/2`;
       case 'top':
-        return `top-4 left-1/2 -translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${activeClasses} top-4 left-1/2 -translate-x-1/2`;
       case 'topRight':
-        return `${isMobile ? 'right-12 top-16' : 'right-32 top-24'} translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${activeClasses} top-16 right-16 translate-x-1/2`;
       case 'right':
-        return `${isMobile ? 'right-4' : 'right-8'} top-1/2 -translate-y-1/2 ${zIndex}`;
+        return `${baseClasses} ${activeClasses} right-8 top-1/2 -translate-y-1/2`;
       case 'bottomRight':
-        return `${isMobile ? 'right-12 bottom-16' : 'right-32 bottom-24'} translate-x-1/2 ${zIndex}`;
+        return `${baseClasses} ${activeClasses} bottom-16 right-16 translate-x-1/2`;
       default:
-        return '';
+        return baseClasses;
     }
   };
 
@@ -96,18 +74,15 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
     return 'top-0 -translate-y-full';
   };
 
-  const shouldShowFaceUp = player.position === 'bottom';
-  const inactiveStyles = !player.isActive ? 'opacity-100 hover:opacity-80 cursor-pointer' : '';
-
   return (
     <div 
-      className={`absolute ${getPositionClasses()} flex flex-col items-center gap-2 transition-all duration-500 ${inactiveStyles}`}
+      className={getPositionClasses()}
       onClick={!player.isActive ? handleSeatClick : undefined}
     >
       {!player.isActive ? (
-        <div className="w-16 h-16 rounded-full bg-poker-background border-2 border-white/20 flex flex-col items-center justify-center text-white/50 hover:text-white/80 transition-colors">
-          <span>Empty</span>
-          <span className="text-xs">Waiting...</span>
+        <div className="w-12 h-12 rounded-full bg-black/40 border border-white/20 flex flex-col items-center justify-center text-white/50 hover:text-white/80 transition-colors">
+          <span className="text-xs">Empty</span>
+          <span className="text-[10px]">Click to join</span>
         </div>
       ) : (
         <PlayerInfo player={player} onTimeout={onTimeout} />
@@ -120,7 +95,7 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
               key={index}
               card={card}
               index={index}
-              shouldShowFaceUp={shouldShowFaceUp}
+              shouldShowFaceUp={player.position === 'bottom'}
             />
           ))}
         </div>
