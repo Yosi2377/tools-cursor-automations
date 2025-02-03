@@ -15,13 +15,13 @@ export const handleOpponentAction = (
   const hasHighCards = player.cards.every(card => ['A', 'K', 'Q', 'J', '10'].includes(card.rank));
   
   // Very aggressive betting strategy with higher probability
-  const shouldBet = isFirstRound || hasGoodCards || hasPair || hasHighCards || Math.random() < 0.9;
+  const shouldBet = isFirstRound || hasGoodCards || hasPair || hasHighCards || Math.random() < 0.8;
   
   if (shouldBet && player.chips >= amountToCall) {
     // High probability of raising
-    const shouldRaise = Math.random() < 0.7;
+    const shouldRaise = Math.random() < 0.6;
     const raiseAmount = shouldRaise 
-      ? amountToCall + Math.floor(Math.random() * 5 + 1) * gameContext.minimumBet 
+      ? amountToCall + Math.floor(Math.random() * 3 + 1) * gameContext.minimumBet 
       : amountToCall;
     
     if (player.chips >= raiseAmount) {

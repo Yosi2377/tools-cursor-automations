@@ -37,7 +37,7 @@ export const useBettingLogic = (
           gameError = result.error;
           retries--;
           if (retries > 0) {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retry
+            await new Promise(resolve => setTimeout(resolve, 1000));
             continue;
           }
         } else {
@@ -142,17 +142,19 @@ export const useBettingLogic = (
 
       // Trigger bot action immediately if next player is a bot
       if (nextPlayer.name.startsWith('Bot')) {
-        handleOpponentAction(
-          nextPlayer,
-          {
-            ...gameContext,
-            currentPlayer: nextPlayerIndex,
-            pot: gameContext.pot + amount,
-            currentBet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount)
-          },
-          handleBet,
-          handleFold
-        );
+        setTimeout(() => {
+          handleOpponentAction(
+            nextPlayer,
+            {
+              ...gameContext,
+              currentPlayer: nextPlayerIndex,
+              pot: gameContext.pot + amount,
+              currentBet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount)
+            },
+            handleBet,
+            handleFold
+          );
+        }, 500); // Small delay for visual feedback
       }
     } catch (error) {
       console.error('Error handling bet:', error);
@@ -258,15 +260,17 @@ export const useBettingLogic = (
 
       // Trigger bot action immediately if next player is a bot
       if (nextPlayer.name.startsWith('Bot')) {
-        handleOpponentAction(
-          nextPlayer,
-          {
-            ...gameContext,
-            currentPlayer: nextPlayerIndex
-          },
-          handleBet,
-          handleFold
-        );
+        setTimeout(() => {
+          handleOpponentAction(
+            nextPlayer,
+            {
+              ...gameContext,
+              currentPlayer: nextPlayerIndex
+            },
+            handleBet,
+            handleFold
+          );
+        }, 500); // Small delay for visual feedback
       }
     } catch (error) {
       console.error('Error handling fold:', error);
@@ -274,27 +278,8 @@ export const useBettingLogic = (
     }
   };
 
-  const handleTimeout = () => {
-    const currentPlayer = gameContext.players[gameContext.currentPlayer];
-    console.log('Timeout triggered for player:', currentPlayer.name);
-    
-    if (currentPlayer.name.startsWith('Bot')) {
-      handleOpponentAction(
-        currentPlayer,
-        gameContext,
-        handleBet,
-        handleFold
-      );
-    } else if (currentPlayer.chips >= gameContext.minimumBet) {
-      handleBet(gameContext.minimumBet);
-    } else {
-      handleFold();
-    }
-  };
-
   return {
     handleBet,
-    handleFold,
-    handleTimeout
+    handleFold
   };
 };
