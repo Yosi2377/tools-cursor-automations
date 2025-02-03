@@ -11,18 +11,17 @@ export const useGameLogic = (
   const { dealCommunityCards } = useCardDealing();
 
   const startNewHand = async () => {
+    const currentDealerIndex = gameContext.dealerPosition;
+    const nextDealerIndex = (currentDealerIndex + 1) % gameContext.players.length;
+    
+    const { updatedPlayers, remainingDeck } = dealCards(gameContext.players);
+    const firstPlayerIndex = (nextDealerIndex + 1) % gameContext.players.length;
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
-      const currentDealerIndex = gameContext.dealerPosition;
-      const nextDealerIndex = (currentDealerIndex + 1) % gameContext.players.length;
-      const firstPlayerIndex = (nextDealerIndex + 1) % gameContext.players.length;
-      
-      // Deal cards to players
-      const { updatedPlayers } = dealCards(gameContext.players);
-
-      // Create new game
+      // Create new game first
       const { data: newGame, error: gameCreateError } = await supabase
         .from('games')
         .insert({
@@ -41,7 +40,7 @@ export const useGameLogic = (
       if (gameCreateError) throw gameCreateError;
       if (!newGame) throw new Error('Failed to create new game');
 
-      // Update players in database
+      // Update players in Supabase
       const { error: playersError } = await supabase
         .from('game_players')
         .upsert(
@@ -59,7 +58,6 @@ export const useGameLogic = (
 
       if (playersError) throw playersError;
 
-      // Update local game state
       setGameContext(prev => ({
         ...prev,
         players: updatedPlayers.map((p, i) => ({ 
@@ -79,7 +77,6 @@ export const useGameLogic = (
       }));
 
       toast.success("New hand started");
-      console.log("New hand started with game ID:", newGame.id);
 
     } catch (error) {
       console.error('Error starting new hand:', error);
@@ -97,7 +94,6 @@ export const useGameLogic = (
     let newCards: Card[] = [];
     let stage = '';
 
-    // Determine which cards to deal based on current stage
     if (currentCount === 0) {
       newCards = dealCommunityCards(3); // Flop
       stage = 'Flop';
@@ -111,7 +107,6 @@ export const useGameLogic = (
 
     if (newCards.length > 0) {
       try {
-        // Update game state in database
         const { error: updateError } = await supabase
           .from('games')
           .update({
@@ -123,7 +118,7 @@ export const useGameLogic = (
 
         if (updateError) throw updateError;
 
-        // Reset player bets for new betting round
+        // Reset player bets
         const { error: playersError } = await supabase
           .from('game_players')
           .update({ current_bet: 0 })
@@ -131,7 +126,6 @@ export const useGameLogic = (
 
         if (playersError) throw playersError;
 
-        // Update local game state
         setGameContext(prev => ({
           ...prev,
           communityCards: [...prev.communityCards, ...newCards],
@@ -141,8 +135,6 @@ export const useGameLogic = (
         }));
 
         toast.success(`${stage} dealt!`);
-        console.log(`${stage} dealt:`, newCards);
-
       } catch (error) {
         console.error('Error dealing community cards:', error);
         toast.error('Failed to deal community cards');
