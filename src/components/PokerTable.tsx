@@ -35,6 +35,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     }
   };
 
+  // Handle bot actions
   useEffect(() => {
     if (!gameContext.gameId) return;
 
@@ -52,6 +53,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     }
   }, [gameContext.currentPlayer, gameContext.gameId, gameContext.players]);
 
+  // Handle community card dealing
   useEffect(() => {
     if (!gameContext.gameId) {
       console.log('No game ID in context, skipping community card check');
@@ -61,9 +63,18 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     const activePlayers = gameContext.players.filter(p => p.isActive);
     const allPlayersActed = activePlayers.every(p => p.currentBet === gameContext.currentBet);
     
+    console.log('Checking community cards:', {
+      activePlayers: activePlayers.length,
+      allPlayersActed,
+      currentCommunityCards: gameContext.communityCards.length,
+      playerBets: activePlayers.map(p => ({ name: p.name, bet: p.currentBet })),
+      currentBet: gameContext.currentBet
+    });
+
     if (allPlayersActed && activePlayers.length > 1) {
       const currentCommunityCards = gameContext.communityCards.length;
       if (currentCommunityCards < 5) {
+        console.log('All players have acted, dealing next community cards');
         const timer = setTimeout(() => {
           dealNextCommunityCards();
         }, 1000);
