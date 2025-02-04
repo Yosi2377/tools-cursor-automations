@@ -9,7 +9,6 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,52 +36,21 @@ const Auth = () => {
       const sanitizedUsername = username.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
       const email = `${sanitizedUsername}@poker-game.com`;
 
-      if (!isLogin) {
-        // Handle signup
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              username: sanitizedUsername
-            },
-            emailRedirectTo: window.location.origin
-          }
-        });
+      // Handle login
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
-        if (signUpError) {
-          console.error('Signup error:', signUpError);
-          if (signUpError.message.includes('email_provider_disabled')) {
-            toast.error('Email signups are currently disabled. Please contact the administrator.');
-          } else if (signUpError.message.includes('User already registered')) {
-            toast.error('This username is already taken. Please try another one or log in');
-          } else {
-            toast.error(signUpError.message || 'An error occurred during signup');
-          }
-          return;
-        }
+      if (signInError) {
+        console.error('Login error:', signInError);
+        toast.error(signInError.message || 'Invalid username or password');
+        return;
+      }
 
-        if (signUpData.user) {
-          toast.success('Signed up successfully! You can now log in');
-          setIsLogin(true);
-        }
-      } else {
-        // Handle login
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        if (signInError) {
-          console.error('Login error:', signInError);
-          toast.error(signInError.message || 'Invalid username or password');
-          return;
-        }
-
-        if (signInData.user) {
-          toast.success('Logged in successfully!');
-          navigate('/');
-        }
+      if (signInData.user) {
+        toast.success('Logged in successfully!');
+        navigate('/');
       }
     } catch (error: any) {
       console.error('Auth error:', error);
@@ -97,10 +65,10 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-poker-accent">
-            {isLogin ? 'Welcome Back!' : 'Create Account'}
+            Welcome Back!
           </h2>
           <p className="mt-2 text-sm text-gray-400">
-            {isLogin ? 'Please log in to continue' : 'Sign up to start playing'}
+            Please log in to continue
           </p>
         </div>
 
@@ -134,18 +102,8 @@ const Auth = () => {
               disabled={loading}
               className="w-full bg-poker-accent text-black hover:bg-poker-accent/90"
             >
-              {loading ? 'Processing...' : isLogin ? 'Log In' : 'Sign Up'}
+              {loading ? 'Processing...' : 'Log In'}
             </Button>
-          </div>
-
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-poker-accent hover:underline"
-            >
-              {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Log in'}
-            </button>
           </div>
         </form>
       </div>
