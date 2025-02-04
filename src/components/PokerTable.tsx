@@ -50,7 +50,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
           handleBet,
           handleFold
         );
-      }, 300); // Reduced from 500ms to 300ms for faster gameplay
+      }, 300);
 
       return () => clearTimeout(timer);
     }
@@ -65,9 +65,9 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
 
     const activePlayers = gameContext.players.filter(p => p.isActive);
     
-    // Check if all active players have matched the current bet or folded
+    // Check if all active players have matched the current bet
     const allPlayersActed = activePlayers.every(p => 
-      !p.isActive || p.currentBet === gameContext.currentBet
+      p.currentBet === gameContext.currentBet
     );
     
     console.log('Checking community cards:', {
@@ -77,20 +77,18 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
       playerBets: activePlayers.map(p => ({ 
         name: p.name, 
         bet: p.currentBet,
-        isActive: p.isActive 
+        isActive: p.isActive,
+        isTurn: p.isTurn
       })),
       currentBet: gameContext.currentBet
     });
 
     if (allPlayersActed && activePlayers.length > 1) {
-      const currentCommunityCards = gameContext.communityCards.length;
-      if (currentCommunityCards < 5) {
-        console.log('All players have acted, dealing next community cards');
-        const timer = setTimeout(() => {
-          dealNextCommunityCards();
-        }, 1000);
-        return () => clearTimeout(timer);
-      }
+      console.log('All players have acted, dealing next community cards');
+      const timer = setTimeout(() => {
+        dealNextCommunityCards();
+      }, 1000);
+      return () => clearTimeout(timer);
     }
   }, [gameContext.players, gameContext.currentBet, gameContext.communityCards, gameContext.gameId]);
 
