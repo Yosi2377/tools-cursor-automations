@@ -32,7 +32,6 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
         handleFold
       );
     } else {
-      // For human players, automatically fold when time runs out
       handleFold();
     }
   };
@@ -44,7 +43,6 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     if (currentPlayer?.name.startsWith('Bot') && currentPlayer.isTurn) {
       console.log('Bot turn detected:', currentPlayer.name);
-      // Immediate bot action with a very small delay for visual feedback
       const timer = setTimeout(() => {
         handleOpponentAction(
           currentPlayer,
@@ -52,13 +50,13 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
           handleBet,
           handleFold
         );
-      }, 500);
+      }, 300); // Reduced from 500ms to 300ms for faster gameplay
 
       return () => clearTimeout(timer);
     }
   }, [gameContext.currentPlayer, gameContext.gameId, gameContext.players]);
 
-  // Handle community card dealing with improved logging
+  // Handle community card dealing with improved checks
   useEffect(() => {
     if (!gameContext.gameId) {
       console.log('No game ID in context, skipping community card check');
@@ -66,13 +64,21 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     }
 
     const activePlayers = gameContext.players.filter(p => p.isActive);
-    const allPlayersActed = activePlayers.every(p => p.currentBet === gameContext.currentBet);
+    
+    // Check if all active players have matched the current bet or folded
+    const allPlayersActed = activePlayers.every(p => 
+      !p.isActive || p.currentBet === gameContext.currentBet
+    );
     
     console.log('Checking community cards:', {
       activePlayers: activePlayers.length,
       allPlayersActed,
       currentCommunityCards: gameContext.communityCards.length,
-      playerBets: activePlayers.map(p => ({ name: p.name, bet: p.currentBet })),
+      playerBets: activePlayers.map(p => ({ 
+        name: p.name, 
+        bet: p.currentBet,
+        isActive: p.isActive 
+      })),
       currentBet: gameContext.currentBet
     });
 
