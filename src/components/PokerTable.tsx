@@ -7,6 +7,7 @@ import { useGameState } from './poker/GameStateManager';
 import { useBettingHandler } from './poker/BettingHandler';
 import { useGameLogic } from './poker/GameLogic';
 import GameControls from './poker/GameControls';
+import { handleOpponentAction } from '@/utils/opponentActions';
 
 interface PokerTableProps {
   roomId: string;
@@ -24,36 +25,40 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     console.log('Timeout triggered for player:', currentPlayer.name);
     
     if (currentPlayer.name.startsWith('Bot')) {
-      if (currentPlayer.chips >= gameContext.minimumBet) {
-        handleBet(gameContext.minimumBet);
-      } else {
-        handleFold();
-      }
+      handleOpponentAction(
+        currentPlayer,
+        gameContext,
+        handleBet,
+        handleFold
+      );
     } else {
       // For human players, automatically fold when time runs out
       handleFold();
     }
   };
 
-  // Handle bot actions
+  // Handle bot actions immediately when it's their turn
   useEffect(() => {
     if (!gameContext.gameId) return;
 
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     if (currentPlayer?.name.startsWith('Bot') && currentPlayer.isTurn) {
+      console.log('Bot turn detected:', currentPlayer.name);
+      // Immediate bot action with a very small delay for visual feedback
       const timer = setTimeout(() => {
-        if (currentPlayer.chips >= gameContext.minimumBet) {
-          handleBet(gameContext.minimumBet);
-        } else {
-          handleFold();
-        }
-      }, 1000);
+        handleOpponentAction(
+          currentPlayer,
+          gameContext,
+          handleBet,
+          handleFold
+        );
+      }, 500);
 
       return () => clearTimeout(timer);
     }
   }, [gameContext.currentPlayer, gameContext.gameId, gameContext.players]);
 
-  // Handle community card dealing
+  // Handle community card dealing with improved logging
   useEffect(() => {
     if (!gameContext.gameId) {
       console.log('No game ID in context, skipping community card check');
