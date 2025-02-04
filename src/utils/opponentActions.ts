@@ -1,5 +1,4 @@
 import { GameContext, Player } from '@/types/poker';
-import { toast } from 'sonner';
 
 export const handleOpponentAction = (
   player: Player,
@@ -16,27 +15,24 @@ export const handleOpponentAction = (
   const hasHighCards = player.cards.every(card => ['A', 'K', 'Q', 'J', '10'].includes(card.rank));
   
   // Very aggressive betting strategy with higher probability
-  const shouldBet = isFirstRound || hasGoodCards || hasPair || hasHighCards || Math.random() < 0.9;
+  const shouldBet = isFirstRound || hasGoodCards || hasPair || hasHighCards || Math.random() < 0.8;
   
   if (shouldBet && player.chips >= amountToCall) {
     // High probability of raising
-    const shouldRaise = Math.random() < 0.7;
+    const shouldRaise = Math.random() < 0.6;
     const raiseAmount = shouldRaise 
       ? amountToCall + Math.floor(Math.random() * 3 + 1) * gameContext.minimumBet 
       : amountToCall;
     
     if (player.chips >= raiseAmount) {
       console.log(`${player.name} betting ${raiseAmount}`);
-      toast.success(`${player.name} bets ${raiseAmount}`);
       handleBet(raiseAmount);
     } else {
       console.log(`${player.name} calling ${amountToCall}`);
-      toast.success(`${player.name} calls ${amountToCall}`);
       handleBet(amountToCall);
     }
   } else {
     console.log(`${player.name} folding`);
-    toast.error(`${player.name} folds`);
     handleFold();
   }
 };

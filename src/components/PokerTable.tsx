@@ -8,7 +8,6 @@ import { useBettingHandler } from './poker/BettingHandler';
 import { useGameLogic } from './poker/GameLogic';
 import GameControls from './poker/GameControls';
 import { handleOpponentAction } from '@/utils/opponentActions';
-import { toast } from 'sonner';
 
 interface PokerTableProps {
   roomId: string;
@@ -33,6 +32,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
         handleFold
       );
     } else {
+      // For human players, automatically fold when time runs out
       handleFold();
     }
   };
@@ -44,6 +44,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     if (currentPlayer?.name.startsWith('Bot') && currentPlayer.isTurn) {
       console.log('Bot turn detected:', currentPlayer.name);
+      // Immediate bot action with a very small delay for visual feedback
       const timer = setTimeout(() => {
         handleOpponentAction(
           currentPlayer,
@@ -51,7 +52,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
           handleBet,
           handleFold
         );
-      }, 300); // Reduced delay for faster gameplay
+      }, 500);
 
       return () => clearTimeout(timer);
     }
@@ -79,18 +80,17 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
       const currentCommunityCards = gameContext.communityCards.length;
       if (currentCommunityCards < 5) {
         console.log('All players have acted, dealing next community cards');
-        toast.success('Dealing next community cards...');
         const timer = setTimeout(() => {
           dealNextCommunityCards();
-        }, 500);
+        }, 1000);
         return () => clearTimeout(timer);
       }
     }
   }, [gameContext.players, gameContext.currentBet, gameContext.communityCards, gameContext.gameId]);
 
   return (
-    <div className="relative w-full h-screen bg-[#1a1a1a] p-2 overflow-hidden">
-      <div className="flex justify-between items-center absolute top-2 left-2 right-2 z-50">
+    <div className="relative w-full h-screen bg-[#1a1a1a] p-4 overflow-hidden">
+      <div className="flex justify-between items-center absolute top-4 left-4 right-4 z-50">
         <Button 
           variant="outline" 
           size="sm"

@@ -14,22 +14,18 @@ const TableLayout: React.FC<TableLayoutProps> = ({ gameContext, onTimeout }) => 
   const isMobile = useIsMobile();
 
   return (
-    <div className={`absolute ${isMobile ? 'inset-2' : 'inset-8'} bg-transparent`}>
+    <div className={`absolute ${isMobile ? 'inset-4' : 'inset-16'} bg-transparent`}>
       <TableFelt />
       <PotDisplay amount={gameContext.pot} rake={gameContext.rake} />
-      <div className="scale-75 origin-center">
-        <CommunityCards cards={gameContext.communityCards} />
-      </div>
+      <CommunityCards cards={gameContext.communityCards} />
       
-      <div className="scale-90 origin-center">
-        {gameContext.players.map((player) => (
-          <PlayerSpot 
-            key={player.id} 
-            player={player} 
-            onTimeout={player.isTurn ? onTimeout : undefined}
-          />
-        ))}
-      </div>
+      {gameContext.players.map((player) => (
+        <PlayerSpot 
+          key={player.id} 
+          player={player} 
+          onTimeout={player.isTurn ? onTimeout : undefined}
+        />
+      ))}
     </div>
   );
 };
