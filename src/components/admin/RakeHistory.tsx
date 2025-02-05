@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { toast } from 'sonner';
 
 interface RakeEntry {
   id: string;
@@ -21,7 +22,7 @@ interface RakeEntry {
 }
 
 const RakeHistory = () => {
-  const { data: rakeHistory, isLoading } = useQuery({
+  const { data: rakeHistory, isLoading, error } = useQuery({
     queryKey: ['rakeHistory'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -29,15 +30,28 @@ const RakeHistory = () => {
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching rake history:', error);
+        toast.error('Failed to load rake history. Please try again.');
+        throw error;
+      }
       return data as RakeEntry[];
-    }
+    },
+    retry: 1
   });
 
   const totalRake = rakeHistory?.reduce((sum, entry) => sum + entry.amount, 0) || 0;
 
+  if (error) {
+    return (
+      <div className="p-4 text-red-500">
+        Error loading rake history. Please try again later.
+      </div>
+    );
+  }
+
   if (isLoading) {
-    return <div>Loading rake history...</div>;
+    return <div className="p-4">Loading rake history...</div>;
   }
 
   return (
