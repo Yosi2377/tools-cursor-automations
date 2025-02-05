@@ -39,11 +39,11 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
 
   // Handle bot actions with a shorter delay
   useEffect(() => {
-    if (!gameContext.gameId) return;
+    if (!gameContext.gameId || gameContext.gameState !== 'betting') return;
 
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     if (currentPlayer?.name.startsWith('Bot') && currentPlayer.isTurn) {
-      console.log('Bot turn detected:', currentPlayer.name);
+      console.log('Bot turn detected:', currentPlayer.name, 'Game state:', gameContext.gameState);
       const timer = setTimeout(() => {
         handleOpponentAction(
           currentPlayer,
@@ -51,16 +51,16 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
           handleBet,
           handleFold
         );
-      }, 300);
+      }, 1000); // Slightly longer delay for better visualization
 
       return () => clearTimeout(timer);
     }
-  }, [gameContext.currentPlayer, gameContext.gameId, gameContext.players]);
+  }, [gameContext.currentPlayer, gameContext.gameId, gameContext.gameState, gameContext.players]);
 
   // Handle community card dealing with Texas Hold'em rules
   useEffect(() => {
-    if (!gameContext.gameId) {
-      console.log('No game ID in context, skipping community card check');
+    if (!gameContext.gameId || gameContext.gameState !== 'betting') {
+      console.log('No game ID in context or not in betting state, skipping community card check');
       return;
     }
 
@@ -81,7 +81,8 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
         isActive: p.isActive,
         isTurn: p.isTurn
       })),
-      currentBet: gameContext.currentBet
+      currentBet: gameContext.currentBet,
+      gameState: gameContext.gameState
     });
 
     // Deal community cards when all players have acted and at least 2 players are active
@@ -92,7 +93,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [gameContext.players, gameContext.currentBet, gameContext.communityCards, gameContext.gameId]);
+  }, [gameContext.players, gameContext.currentBet, gameContext.communityCards, gameContext.gameId, gameContext.gameState]);
 
   return (
     <div className="relative w-full h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213E] p-4 overflow-hidden">

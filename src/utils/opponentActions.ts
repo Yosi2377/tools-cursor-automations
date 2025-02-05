@@ -1,3 +1,4 @@
+
 import { GameContext, Player } from '@/types/poker';
 
 export const handleOpponentAction = (
@@ -14,11 +15,11 @@ export const handleOpponentAction = (
   const hasPair = player.cards[0].rank === player.cards[1].rank;
   const hasHighCards = player.cards.every(card => ['A', 'K', 'Q', 'J', '10'].includes(card.rank));
   
-  // Very aggressive betting strategy with higher probability
+  // More aggressive betting strategy with higher probability of betting
   const shouldBet = isFirstRound || hasGoodCards || hasPair || hasHighCards || Math.random() < 0.8;
   
   if (shouldBet && player.chips >= amountToCall) {
-    // High probability of raising
+    // Higher probability of raising (60%)
     const shouldRaise = Math.random() < 0.6;
     const raiseAmount = shouldRaise 
       ? amountToCall + Math.floor(Math.random() * 3 + 1) * gameContext.minimumBet 
