@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
-import { Menu, LogOut } from 'lucide-react';
+import { Menu, LogOut, ChevronRight } from 'lucide-react';
 import LeaderBoard from './poker/LeaderBoard';
 import TableLayout from './poker/TableLayout';
 import { useGameState } from './poker/GameStateManager';
@@ -36,7 +37,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     }
   };
 
-  // Handle bot actions immediately when it's their turn
+  // Handle bot actions with a shorter delay
   useEffect(() => {
     if (!gameContext.gameId) return;
 
@@ -56,7 +57,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     }
   }, [gameContext.currentPlayer, gameContext.gameId, gameContext.players]);
 
-  // Handle community card dealing with improved checks
+  // Handle community card dealing with Texas Hold'em rules
   useEffect(() => {
     if (!gameContext.gameId) {
       console.log('No game ID in context, skipping community card check');
@@ -65,9 +66,9 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
 
     const activePlayers = gameContext.players.filter(p => p.isActive);
     
-    // Check if all active players have matched the current bet
+    // Check if all active players have either matched the current bet or folded
     const allPlayersActed = activePlayers.every(p => 
-      p.currentBet === gameContext.currentBet
+      p.currentBet === gameContext.currentBet || !p.isActive
     );
     
     console.log('Checking community cards:', {
@@ -83,7 +84,8 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
       currentBet: gameContext.currentBet
     });
 
-    if (allPlayersActed && activePlayers.length > 1) {
+    // Deal community cards when all players have acted and at least 2 players are active
+    if (allPlayersActed && activePlayers.filter(p => p.isActive).length > 1) {
       console.log('All players have acted, dealing next community cards');
       const timer = setTimeout(() => {
         dealNextCommunityCards();
@@ -93,13 +95,13 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
   }, [gameContext.players, gameContext.currentBet, gameContext.communityCards, gameContext.gameId]);
 
   return (
-    <div className="relative w-full h-screen bg-[#1a1a1a] p-4 overflow-hidden">
+    <div className="relative w-full h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213E] p-4 overflow-hidden">
       <div className="flex justify-between items-center absolute top-4 left-4 right-4 z-50">
         <Button 
           variant="outline" 
           size="sm"
           onClick={onLeaveRoom}
-          className="flex items-center gap-2 bg-black/50 text-white border-white/20 hover:bg-black/70"
+          className="flex items-center gap-2 bg-black/50 text-white border-white/20 hover:bg-black/70 transition-all duration-300"
         >
           <LogOut className="w-4 h-4" />
           Leave Room
@@ -109,9 +111,11 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
           variant="outline" 
           size="sm"
           onClick={() => setShowLeaderboard(!showLeaderboard)}
-          className="bg-black/50 text-white border-white/20 hover:bg-black/70"
+          className="bg-black/50 text-white border-white/20 hover:bg-black/70 transition-all duration-300 flex items-center gap-2"
         >
           <Menu className="w-4 h-4" />
+          <span>Leaderboard</span>
+          <ChevronRight className="w-4 h-4" />
         </Button>
       </div>
 
