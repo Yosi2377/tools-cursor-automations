@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { GameContext } from '@/types/poker';
-import { Chip } from 'lucide-react';
+import { CircleDollarSign } from 'lucide-react';
 
 interface GameControlsProps {
   gameContext: GameContext;
@@ -27,7 +27,7 @@ const GameControls: React.FC<GameControlsProps> = ({
           onClick={onStartHand}
           className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
         >
-          <Chip className="w-6 h-6 mr-2" />
+          <CircleDollarSign className="w-6 h-6 mr-2" />
           Start New Hand
         </Button>
       </div>
@@ -56,7 +56,7 @@ const GameControls: React.FC<GameControlsProps> = ({
             onClick={() => onBet(amountToCall)}
             className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white border-none px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
           >
-            <Chip className="w-5 h-5 mr-2" />
+            <CircleDollarSign className="w-5 h-5 mr-2" />
             Call ${amountToCall}
           </Button>
         )}
@@ -66,7 +66,7 @@ const GameControls: React.FC<GameControlsProps> = ({
             onClick={() => onBet(minRaise)}
             className="bg-[#6E59A5] hover:bg-[#9b87f5] text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
           >
-            <Chip className="w-5 h-5 mr-2" />
+            <CircleDollarSign className="w-5 h-5 mr-2" />
             Raise to ${minRaise}
           </Button>
         )}
