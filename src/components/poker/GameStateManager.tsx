@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { GameContext, Player } from '@/types/poker';
 import { supabase } from '@/integrations/supabase/client';
@@ -72,7 +73,7 @@ export const useGameState = (roomId: string) => {
           setGameContext(prev => ({
             ...prev,
             pot: newGameState.pot,
-            rake: newGameState.rake,
+            rake: Math.floor(newGameState.pot * 0.12), // Calculate rake as 12%
             communityCards: newGameState.community_cards || [],
             currentPlayer: newGameState.current_player_index,
             gameState: newGameState.status,
