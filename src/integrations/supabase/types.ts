@@ -229,6 +229,41 @@ export type Database = {
         }
         Relationships: []
       }
+      rake_history: {
+        Row: {
+          amount: number
+          created_at: string | null
+          game_id: string | null
+          hand_number: number | null
+          id: string
+          total_pot: number
+        }
+        Insert: {
+          amount?: number
+          created_at?: string | null
+          game_id?: string | null
+          hand_number?: number | null
+          id?: string
+          total_pot?: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          game_id?: string | null
+          hand_number?: number | null
+          id?: string
+          total_pot?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rake_history_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rooms: {
         Row: {
           actual_players: number | null

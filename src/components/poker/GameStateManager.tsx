@@ -15,6 +15,7 @@ export const useGameState = (roomId: string) => {
     minimumBet: 20,
     currentBet: 0,
     dealerPosition: 0,
+    roomId
   });
 
   // Initialize game state when component mounts
@@ -47,7 +48,8 @@ export const useGameState = (roomId: string) => {
         setGameContext(prev => ({
           ...prev,
           players: initialPlayers,
-          minimumBet: room.min_bet
+          minimumBet: room.min_bet,
+          roomId
         }));
 
       } catch (error) {
@@ -73,12 +75,13 @@ export const useGameState = (roomId: string) => {
           setGameContext(prev => ({
             ...prev,
             pot: newGameState.pot,
-            rake: Math.floor(newGameState.pot * 0.12), // Calculate rake as 12%
+            rake: newGameState.rake,
             communityCards: newGameState.community_cards || [],
             currentPlayer: newGameState.current_player_index,
             gameState: newGameState.status,
             currentBet: newGameState.current_bet,
             dealerPosition: newGameState.dealer_position,
+            gameId: newGameState.id
           }));
         }
       )
