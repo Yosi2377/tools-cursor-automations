@@ -37,12 +37,15 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     }
   };
 
-  // Handle bot actions with a shorter delay
+  // Handle bot actions immediately when it's their turn
   useEffect(() => {
-    if (!gameContext.gameId || gameContext.gameState !== 'betting') return;
+    if (!gameContext.gameId || gameContext.gameState !== 'betting') {
+      console.log('No game ID in context or not in betting state, skipping bot check');
+      return;
+    }
 
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
-    if (currentPlayer?.name.startsWith('Bot') && currentPlayer.isTurn) {
+    if (currentPlayer?.name.startsWith('Bot') && currentPlayer.isTurn && currentPlayer.isActive) {
       console.log('Bot turn detected:', currentPlayer.name, 'Game state:', gameContext.gameState);
       const timer = setTimeout(() => {
         handleOpponentAction(
@@ -51,7 +54,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
           handleBet,
           handleFold
         );
-      }, 1000);
+      }, 500); // Reduced delay for faster bot actions
 
       return () => clearTimeout(timer);
     }
