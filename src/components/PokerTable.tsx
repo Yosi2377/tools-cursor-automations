@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Menu, LogOut, ChevronRight } from 'lucide-react';
@@ -9,6 +8,7 @@ import { useBettingHandler } from './poker/BettingHandler';
 import { useGameLogic } from './poker/GameLogic';
 import GameControls from './poker/GameControls';
 import { handleOpponentAction } from '@/utils/opponentActions';
+import { toast } from 'sonner';
 
 interface PokerTableProps {
   roomId: string;
@@ -51,7 +51,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
           handleBet,
           handleFold
         );
-      }, 1000); // Slightly longer delay for better visualization
+      }, 1000);
 
       return () => clearTimeout(timer);
     }
@@ -68,7 +68,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     
     // Check if all active players have either matched the current bet or folded
     const allPlayersActed = activePlayers.every(p => 
-      p.currentBet === gameContext.currentBet || !p.isActive
+      !p.isActive || p.currentBet === gameContext.currentBet
     );
     
     console.log('Checking community cards:', {
@@ -89,7 +89,10 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
     if (allPlayersActed && activePlayers.filter(p => p.isActive).length > 1) {
       console.log('All players have acted, dealing next community cards');
       const timer = setTimeout(() => {
-        dealNextCommunityCards();
+        dealNextCommunityCards().catch(error => {
+          console.error('Error dealing community cards:', error);
+          toast.error('Failed to deal community cards');
+        });
       }, 1000);
       return () => clearTimeout(timer);
     }
