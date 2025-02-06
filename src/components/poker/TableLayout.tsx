@@ -1,9 +1,9 @@
-import { useIsMobile } from '@/hooks/use-mobile';
+import React from 'react';
 import { GameContext } from '@/types/poker';
-import TableFelt from './TableFelt';
-import PotDisplay from './PotDisplay';
-import CommunityCards from './CommunityCards';
 import PlayerSpot from '../PlayerSpot';
+import CommunityCards from './CommunityCards';
+import PotDisplay from './PotDisplay';
+import TableFelt from './TableFelt';
 
 interface TableLayoutProps {
   gameContext: GameContext;
@@ -11,21 +11,40 @@ interface TableLayoutProps {
 }
 
 const TableLayout: React.FC<TableLayoutProps> = ({ gameContext, onTimeout }) => {
-  const isMobile = useIsMobile();
+  const positions = [
+    'bottom', 'bottomRight', 'right', 'topRight',
+    'top', 'topLeft', 'left', 'bottomLeft'
+  ];
 
   return (
-    <div className={`absolute ${isMobile ? 'inset-4' : 'inset-16'} bg-transparent`}>
-      <TableFelt />
-      <PotDisplay amount={gameContext.pot} rake={gameContext.rake} />
-      <CommunityCards cards={gameContext.communityCards} />
-      
-      {gameContext.players.map((player) => (
-        <PlayerSpot 
-          key={player.id} 
-          player={player} 
-          onTimeout={player.isTurn ? onTimeout : undefined}
-        />
-      ))}
+    <div className="relative w-full h-full flex items-center justify-center">
+      <TableFelt>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative w-[900px] h-[500px]">
+            {positions.map((position, index) => {
+              const player = gameContext.players.find(p => p.position === position);
+              const isCurrentPlayer = index === gameContext.currentPlayer;
+              const isBot = player?.name?.startsWith('Bot') || false;
+
+              return (
+                <PlayerSpot
+                  key={position}
+                  position={position}
+                  player={player}
+                  isCurrentPlayer={isCurrentPlayer}
+                  onTimeout={onTimeout}
+                  isBot={isBot}
+                />
+              );
+            })}
+            
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
+              <CommunityCards cards={gameContext.communityCards} />
+              <PotDisplay pot={gameContext.pot} />
+            </div>
+          </div>
+        </div>
+      </TableFelt>
     </div>
   );
 };

@@ -5,33 +5,40 @@ interface TurnTimerProps {
   isActive: boolean;
   onTimeout: () => void;
   duration?: number;
+  isBot?: boolean;
 }
 
 const TurnTimer: React.FC<TurnTimerProps> = ({ 
   isActive, 
   onTimeout,
-  duration = 30 
+  duration = 30,
+  isBot = false
 }) => {
   const [timeLeft, setTimeLeft] = useState(duration);
   const progress = (timeLeft / duration) * 100;
-
+  
+  // Only start the timer if the turn is active
   useEffect(() => {
     if (isActive) {
-      setTimeLeft(duration);
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            onTimeout();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      setTimeLeft(isBot ? 2 : duration); // Short timer for bots, longer for humans
+      
+      // Don't start timer for human players unless explicitly requested
+      if (!isBot) {
+        const timer = setInterval(() => {
+          setTimeLeft((prev) => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              onTimeout();
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
 
-      return () => clearInterval(timer);
+        return () => clearInterval(timer);
+      }
     }
-  }, [isActive, duration, onTimeout]);
+  }, [isActive, duration, onTimeout, isBot]);
 
   if (!isActive) return null;
 

@@ -33,20 +33,22 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
         handleFold
       );
     } else {
-      handleFold();
+      // For human players, show a warning toast instead of auto-folding
+      toast.warning("Your turn is about to end! Please make a decision.", {
+        duration: 5000,
+      });
     }
   };
 
   // Handle bot actions immediately when it's their turn
   useEffect(() => {
     if (!gameContext.gameId || gameContext.gameState !== 'betting') {
-      console.log('No game ID in context or not in betting state, skipping bot check');
       return;
     }
 
     const currentPlayer = gameContext.players[gameContext.currentPlayer];
     if (currentPlayer?.name.startsWith('Bot') && currentPlayer.isTurn && currentPlayer.isActive) {
-      console.log('Bot turn detected:', currentPlayer.name, 'Game state:', gameContext.gameState);
+      console.log('Bot turn detected:', currentPlayer.name);
       const timer = setTimeout(() => {
         handleOpponentAction(
           currentPlayer,
@@ -54,7 +56,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
           handleBet,
           handleFold
         );
-      }, 500); // Reduced delay for faster bot actions
+      }, 500);
 
       return () => clearTimeout(timer);
     }
