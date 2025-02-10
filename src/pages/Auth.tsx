@@ -40,10 +40,7 @@ const Auth = () => {
       // Try to sign in first
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        password,
-        options: {
-          redirectTo: window.location.origin
-        }
+        password
       });
 
       if (signInError) {
@@ -52,7 +49,6 @@ const Auth = () => {
           email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
             data: {
               username: sanitizedUsername
             }

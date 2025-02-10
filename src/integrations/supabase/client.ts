@@ -14,8 +14,7 @@ export const supabase = createClient<Database>(
       persistSession: true,
       detectSessionInUrl: true,
       storage: localStorage,
-      storageKey: 'poker-auth-token',
-      flowType: 'pkce'
+      storageKey: 'poker-auth-token'
     },
     global: {
       fetch: (input: RequestInfo | URL, init?: RequestInit) => {
