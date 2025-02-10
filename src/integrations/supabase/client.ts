@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
@@ -11,7 +12,10 @@ export const supabase = createClient<Database>(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: true
+      detectSessionInUrl: true,
+      storage: localStorage,
+      storageKey: 'poker-auth-token',
+      flowType: 'pkce'
     },
     global: {
       fetch: (input: RequestInfo | URL, init?: RequestInit) => {

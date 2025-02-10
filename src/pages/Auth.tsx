@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -36,19 +37,41 @@ const Auth = () => {
       const sanitizedUsername = username.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
       const email = `${sanitizedUsername}@poker-game.com`;
 
-      // Handle login
+      // Try to sign in first
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
+        options: {
+          redirectTo: window.location.origin
+        }
       });
 
       if (signInError) {
-        console.error('Login error:', signInError);
-        toast.error(signInError.message || 'Invalid username or password');
-        return;
-      }
+        // If login fails, try to sign up
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: {
+              username: sanitizedUsername
+            }
+          }
+        });
 
-      if (signInData.user) {
+        if (signUpError) {
+          console.error('Sign up error:', signUpError);
+          toast.error(signUpError.message || 'Failed to create account');
+          return;
+        }
+
+        if (signUpData.session) {
+          toast.success('Account created and logged in successfully!');
+          navigate('/');
+        } else {
+          toast.info('Please check your email to confirm your account');
+        }
+      } else if (signInData.session) {
         toast.success('Logged in successfully!');
         navigate('/');
       }
@@ -65,10 +88,10 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold text-poker-accent">
-            Welcome Back!
+            Welcome!
           </h2>
           <p className="mt-2 text-sm text-gray-400">
-            Please log in to continue
+            Please log in or sign up to continue
           </p>
         </div>
 
@@ -102,7 +125,7 @@ const Auth = () => {
               disabled={loading}
               className="w-full bg-poker-accent text-black hover:bg-poker-accent/90"
             >
-              {loading ? 'Processing...' : 'Log In'}
+              {loading ? 'Processing...' : 'Log In / Sign Up'}
             </Button>
           </div>
         </form>
