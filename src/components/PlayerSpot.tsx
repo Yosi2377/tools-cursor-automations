@@ -47,21 +47,21 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
     
     switch (player.position) {
       case 'bottom':
-        return `${baseClasses} ${activeClasses} bottom-4 left-1/2 -translate-x-1/2`;
+        return `${baseClasses} ${activeClasses} bottom-2 sm:bottom-3 md:bottom-4 left-1/2 -translate-x-1/2`;
       case 'bottomLeft':
-        return `${baseClasses} ${activeClasses} bottom-16 left-16 -translate-x-1/2`;
+        return `${baseClasses} ${activeClasses} bottom-12 sm:bottom-14 md:bottom-16 left-12 sm:left-14 md:left-16 -translate-x-1/2`;
       case 'left':
-        return `${baseClasses} ${activeClasses} left-8 top-1/2 -translate-y-1/2`;
+        return `${baseClasses} ${activeClasses} left-6 sm:left-7 md:left-8 top-1/2 -translate-y-1/2`;
       case 'topLeft':
-        return `${baseClasses} ${activeClasses} top-16 left-16 -translate-x-1/2`;
+        return `${baseClasses} ${activeClasses} top-12 sm:top-14 md:top-16 left-12 sm:left-14 md:left-16 -translate-x-1/2`;
       case 'top':
-        return `${baseClasses} ${activeClasses} top-4 left-1/2 -translate-x-1/2`;
+        return `${baseClasses} ${activeClasses} top-2 sm:top-3 md:top-4 left-1/2 -translate-x-1/2`;
       case 'topRight':
-        return `${baseClasses} ${activeClasses} top-16 right-16 translate-x-1/2`;
+        return `${baseClasses} ${activeClasses} top-12 sm:top-14 md:top-16 right-12 sm:right-14 md:right-16 translate-x-1/2`;
       case 'right':
-        return `${baseClasses} ${activeClasses} right-8 top-1/2 -translate-y-1/2`;
+        return `${baseClasses} ${activeClasses} right-6 sm:right-7 md:right-8 top-1/2 -translate-y-1/2`;
       case 'bottomRight':
-        return `${baseClasses} ${activeClasses} bottom-16 right-16 translate-x-1/2`;
+        return `${baseClasses} ${activeClasses} bottom-12 sm:bottom-14 md:bottom-16 right-12 sm:right-14 md:right-16 translate-x-1/2`;
       default:
         return baseClasses;
     }
@@ -80,16 +80,16 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
       onClick={!player.isActive ? handleSeatClick : undefined}
     >
       {!player.isActive ? (
-        <div className="w-12 h-12 rounded-full bg-black/40 border border-white/20 flex flex-col items-center justify-center text-white/50 hover:text-white/80 transition-colors">
-          <span className="text-xs">Empty</span>
-          <span className="text-[10px]">Click to join</span>
+        <div className="w-10 h-10 sm:w-11 sm:h-11 md:w-12 md:h-12 rounded-full bg-black/40 border border-white/20 flex flex-col items-center justify-center text-white/50 hover:text-white/80 transition-colors">
+          <span className="text-[10px] sm:text-xs">Empty</span>
+          <span className="text-[8px] sm:text-[10px]">Click to join</span>
         </div>
       ) : (
         <PlayerInfo player={player} onTimeout={onTimeout} />
       )}
       
       {player.cards.length > 0 && (
-        <div className={`absolute left-1/2 transform -translate-x-1/2 mt-2 flex gap-1 ${getCardPositionClasses()}`}>
+        <div className={`absolute left-1/2 transform -translate-x-1/2 mt-1 sm:mt-1.5 md:mt-2 flex gap-0.5 sm:gap-1 ${getCardPositionClasses()}`}>
           {player.cards.map((card, index) => (
             <PlayerCard
               key={index}
