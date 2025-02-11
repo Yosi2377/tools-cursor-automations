@@ -24,7 +24,7 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ card, index, shouldShowFaceUp }
 
   return (
     <div
-      className={`w-8 h-12 sm:w-9 sm:h-13 md:w-10 md:h-14 rounded-md shadow-lg flex flex-col items-center justify-between p-1 animate-card-deal ${
+      className={`w-12 h-16 sm:w-14 sm:h-20 md:w-16 md:h-24 rounded-lg shadow-lg flex flex-col items-center justify-between p-1.5 animate-card-deal ${
         shouldShowFaceUp
           ? 'bg-white'
           : 'bg-poker-accent/20 border border-poker-accent/40'
@@ -36,13 +36,19 @@ const PlayerCard: React.FC<PlayerCardProps> = ({ card, index, shouldShowFaceUp }
     >
       {shouldShowFaceUp ? (
         <>
-          <div className={`text-sm font-bold ${getSuitColor(card.suit)} self-start`}>
+          <div 
+            className={`text-xs sm:text-sm md:text-base font-bold ${getSuitColor(card.suit)} self-start leading-none`}
+            style={{ fontSize: card.rank.length > 1 ? '0.75em' : '0.875em' }}
+          >
             {card.rank}
           </div>
-          <div className={`text-lg ${getSuitColor(card.suit)}`}>
+          <div className={`text-base sm:text-lg md:text-xl ${getSuitColor(card.suit)}`}>
             {getSuitSymbol(card.suit)}
           </div>
-          <div className={`text-sm font-bold ${getSuitColor(card.suit)} self-end transform rotate-180`}>
+          <div 
+            className={`text-xs sm:text-sm md:text-base font-bold ${getSuitColor(card.suit)} self-end transform rotate-180 leading-none`}
+            style={{ fontSize: card.rank.length > 1 ? '0.75em' : '0.875em' }}
+          >
             {card.rank}
           </div>
         </>
