@@ -30,7 +30,7 @@ const RoomCard = ({ room, isAdmin, onJoinRoom, refetchRooms }: RoomCardProps) =>
   };
 
   return (
-    <div className="p-2 border rounded-lg shadow">
+    <div className="p-4 border rounded-lg shadow">
       <div className="flex justify-between items-center mb-2">
         <h3 className="text-lg font-semibold">{room.name}</h3>
         <div className="flex items-center gap-2">

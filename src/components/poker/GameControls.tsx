@@ -24,10 +24,10 @@ const GameControls: React.FC<GameControlsProps> = ({
 
   if (gameContext.gameState === "waiting") {
     return (
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
         <Button 
           onClick={onStartHand}
-          className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl z-20"
+          className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl"
         >
           <CircleDollarSign className="w-6 h-6 mr-2" />
           Start New Hand
@@ -61,13 +61,13 @@ const GameControls: React.FC<GameControlsProps> = ({
     };
 
     return (
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-30">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4">
         <div className="flex gap-4">
           <Button 
             variant="destructive" 
             onClick={onFold}
             disabled={!isPlayerTurn}
-            className="px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed z-20"
+            className="px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Fold
           </Button>
@@ -77,7 +77,7 @@ const GameControls: React.FC<GameControlsProps> = ({
               variant="outline" 
               onClick={() => onBet(amountToCall)}
               disabled={!isPlayerTurn}
-              className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white border-none px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed z-20"
+              className="bg-[#9b87f5] hover:bg-[#7E69AB] text-white border-none px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <CircleDollarSign className="w-5 h-5 mr-2" />
               Call ${amountToCall}
@@ -88,7 +88,7 @@ const GameControls: React.FC<GameControlsProps> = ({
             <Button 
               onClick={() => onBet(minRaise)}
               disabled={!isPlayerTurn}
-              className="bg-[#6E59A5] hover:bg-[#9b87f5] text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed z-20"
+              className="bg-[#6E59A5] hover:bg-[#9b87f5] text-white px-8 py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <CircleDollarSign className="w-5 h-5 mr-2" />
               Raise to ${minRaise}
@@ -96,18 +96,18 @@ const GameControls: React.FC<GameControlsProps> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-4 w-full max-w-md bg-black/40 p-4 rounded-xl z-20">
+        <div className="flex items-center gap-4 w-full max-w-md bg-black/40 p-4 rounded-xl">
           <Button
             onClick={() => adjustBetAmount(false)}
             disabled={!isPlayerTurn || customBetAmount <= gameContext.minimumBet}
             size="icon"
             variant="outline"
-            className="text-white border-white/20 z-20"
+            className="text-white border-white/20"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           
-          <div className="flex-1 px-4 z-20">
+          <div className="flex-1 px-4">
             <Slider
               value={[customBetAmount]}
               min={gameContext.minimumBet}
@@ -115,7 +115,7 @@ const GameControls: React.FC<GameControlsProps> = ({
               step={gameContext.minimumBet}
               onValueChange={handleSliderChange}
               disabled={!isPlayerTurn}
-              className="[&_[role=slider]]:bg-[#9b87f5] [&_[role=slider]]:border-white/20 z-20"
+              className="[&_[role=slider]]:bg-[#9b87f5] [&_[role=slider]]:border-white/20"
             />
           </div>
           
@@ -124,7 +124,7 @@ const GameControls: React.FC<GameControlsProps> = ({
             disabled={!isPlayerTurn || customBetAmount >= bottomPlayer.chips}
             size="icon"
             variant="outline"
-            className="text-white border-white/20 z-20"
+            className="text-white border-white/20"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -132,7 +132,7 @@ const GameControls: React.FC<GameControlsProps> = ({
           <Button
             onClick={handleCustomBet}
             disabled={!isPlayerTurn || customBetAmount <= 0}
-            className="bg-[#6E59A5] hover:bg-[#9b87f5] text-white px-4 py-2 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px] z-20"
+            className="bg-[#6E59A5] hover:bg-[#9b87f5] text-white px-4 py-2 font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px]"
           >
             <CircleDollarSign className="w-4 h-4 mr-2" />
             Bet ${customBetAmount}
