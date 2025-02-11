@@ -47,46 +47,31 @@ const PlayerSpot: React.FC<PlayerSpotProps> = ({ player, onTimeout }) => {
     
     switch (player.position) {
       case 'bottom':
-        return `${baseClasses} ${activeClasses} bottom-8 left-1/2 -translate-x-1/2`;
+        return `${baseClasses} ${activeClasses} bottom-4 left-1/2 -translate-x-1/2`;
       case 'bottomLeft':
-        return `${baseClasses} ${activeClasses} bottom-24 left-24 -translate-x-1/2`;
+        return `${baseClasses} ${activeClasses} bottom-16 left-16 -translate-x-1/2`;
       case 'left':
-        return `${baseClasses} ${activeClasses} left-12 top-1/2 -translate-y-1/2`;
+        return `${baseClasses} ${activeClasses} left-8 top-1/2 -translate-y-1/2`;
       case 'topLeft':
-        return `${baseClasses} ${activeClasses} top-24 left-24 -translate-x-1/2`;
+        return `${baseClasses} ${activeClasses} top-16 left-16 -translate-x-1/2`;
       case 'top':
-        return `${baseClasses} ${activeClasses} top-8 left-1/2 -translate-x-1/2`;
+        return `${baseClasses} ${activeClasses} top-4 left-1/2 -translate-x-1/2`;
       case 'topRight':
-        return `${baseClasses} ${activeClasses} top-24 right-24 translate-x-1/2`;
+        return `${baseClasses} ${activeClasses} top-16 right-16 translate-x-1/2`;
       case 'right':
-        return `${baseClasses} ${activeClasses} right-12 top-1/2 -translate-y-1/2`;
+        return `${baseClasses} ${activeClasses} right-8 top-1/2 -translate-y-1/2`;
       case 'bottomRight':
-        return `${baseClasses} ${activeClasses} bottom-24 right-24 translate-x-1/2`;
+        return `${baseClasses} ${activeClasses} bottom-16 right-16 translate-x-1/2`;
       default:
         return baseClasses;
     }
   };
 
   const getCardPositionClasses = () => {
-    const baseClasses = 'absolute left-1/2 transform -translate-x-1/2';
-    
-    switch (player.position) {
-      case 'bottom':
-        return `${baseClasses} top-full mt-4`;
-      case 'bottomLeft':
-      case 'bottomRight':
-        return `${baseClasses} top-full mt-2`;
-      case 'top':
-        return `${baseClasses} bottom-full mb-4`;
-      case 'topLeft':
-      case 'topRight':
-        return `${baseClasses} bottom-full mb-2`;
-      case 'left':
-      case 'right':
-        return `${baseClasses} top-0 -translate-y-full`;
-      default:
-        return `${baseClasses} top-0 -translate-y-full`;
+    if (player.position === 'bottom') {
+      return 'top-full mt-2';
     }
+    return 'top-0 -translate-y-full';
   };
 
   return (
