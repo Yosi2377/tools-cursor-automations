@@ -25,7 +25,7 @@ const CommunityCards: React.FC<CommunityCardsProps> = ({ cards }) => {
       {cards.map((card, index) => (
         <div
           key={index}
-          className="w-16 h-24 bg-white rounded-lg shadow-xl flex flex-col items-center justify-between p-2 transform hover:scale-105 transition-transform z-10"
+          className="w-12 h-18 bg-white rounded-lg shadow-xl flex flex-col items-center justify-between p-2 transform hover:scale-105 transition-transform z-10"
           style={{ 
             animation: `dealCard 0.5s ease-out ${index * 0.15}s both`,
             backgroundImage: 'linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%)',
