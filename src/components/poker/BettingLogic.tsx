@@ -119,9 +119,9 @@ export const useBettingLogic = (
         throw gameUpdateError;
       }
 
-      setGameContext(prev => ({
-        ...prev,
-        players: prev.players.map(p =>
+      const updatedGameContext = {
+        ...gameContext,
+        players: gameContext.players.map(p =>
           p.id === currentPlayer.id
             ? {
                 ...p,
@@ -133,28 +133,29 @@ export const useBettingLogic = (
               ? { ...p, isTurn: true }
               : p
         ),
-        pot: prev.pot + amount,
-        currentBet: Math.max(prev.currentBet, currentPlayer.currentBet + amount),
+        pot: gameContext.pot + amount,
+        currentBet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount),
         currentPlayer: nextPlayerIndex
-      }));
+      };
 
+      setGameContext(updatedGameContext);
       toast.success(`${currentPlayer.name} bet ${amount} chips`);
 
       // Trigger bot action immediately if next player is a bot
       if (nextPlayer.name.startsWith('Bot')) {
-        setTimeout(() => {
-          handleOpponentAction(
+        try {
+          await handleOpponentAction(
             nextPlayer,
-            {
-              ...gameContext,
-              currentPlayer: nextPlayerIndex,
-              pot: gameContext.pot + amount,
-              currentBet: Math.max(gameContext.currentBet, currentPlayer.currentBet + amount)
-            },
+            updatedGameContext,
             handleBet,
             handleFold
           );
-        }, 500); // Small delay for visual feedback
+        } catch (error) {
+          console.error('Error in bot action:', error);
+          toast.error('Bot encountered an error. Moving to next player.');
+          // Move to next player on error
+          await handleFold();
+        }
       }
     } catch (error) {
       console.error('Error handling bet:', error);
@@ -222,7 +223,7 @@ export const useBettingLogic = (
         .select('id')
         .eq('game_id', game.id)
         .eq('position', nextPlayer.position)
-        .single();
+        .maybeSingle();
 
       if (nextPlayerData) {
         await supabase
@@ -244,9 +245,9 @@ export const useBettingLogic = (
         throw gameUpdateError;
       }
 
-      setGameContext(prev => ({
-        ...prev,
-        players: prev.players.map(p =>
+      const updatedGameContext = {
+        ...gameContext,
+        players: gameContext.players.map(p =>
           p.id === currentPlayer.id
             ? { ...p, isActive: false, isTurn: false }
             : p.id === nextPlayer.id
@@ -254,23 +255,26 @@ export const useBettingLogic = (
               : p
         ),
         currentPlayer: nextPlayerIndex
-      }));
+      };
 
+      setGameContext(updatedGameContext);
       toast.success(`${currentPlayer.name} folded`);
 
       // Trigger bot action immediately if next player is a bot
       if (nextPlayer.name.startsWith('Bot')) {
-        setTimeout(() => {
-          handleOpponentAction(
+        try {
+          await handleOpponentAction(
             nextPlayer,
-            {
-              ...gameContext,
-              currentPlayer: nextPlayerIndex
-            },
+            updatedGameContext,
             handleBet,
             handleFold
           );
-        }, 500); // Small delay for visual feedback
+        } catch (error) {
+          console.error('Error in bot action:', error);
+          toast.error('Bot encountered an error. Moving to next player.');
+          // Move to next player on error
+          await handleFold();
+        }
       }
     } catch (error) {
       console.error('Error handling fold:', error);
