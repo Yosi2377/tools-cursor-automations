@@ -104,7 +104,7 @@ const PokerTable: React.FC<PokerTableProps> = ({ roomId, onLeaveRoom }) => {
   }, [gameContext.players, gameContext.currentBet, gameContext.communityCards, gameContext.gameId, gameContext.gameState]);
 
   return (
-    <div className="relative w-full h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213E] p-4 overflow-hidden">
+    <div className="relative w-full h-screen bg-gradient-to-b from-[#1a1a2e] to-[#16213E] p-2 sm:p-3 md:p-4 overflow-hidden">
       <div className="flex justify-between items-center absolute top-4 left-4 right-4 z-50">
         <Button 
           variant="outline" 

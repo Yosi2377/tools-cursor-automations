@@ -17,8 +17,8 @@ const TableLayout: React.FC<TableLayoutProps> = ({ gameContext, onTimeout }) => 
   ];
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      <div className="relative w-[900px] h-[500px]">
+    <div className="relative w-full h-full flex items-center justify-center p-2">
+      <div className="relative w-full max-w-[700px] h-[400px] sm:h-[450px] md:h-[400px]">
         <TableFelt />
         
         {positions.map((position, index) => {
@@ -34,7 +34,7 @@ const TableLayout: React.FC<TableLayoutProps> = ({ gameContext, onTimeout }) => 
           );
         })}
         
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
           <CommunityCards cards={gameContext.communityCards} />
           <PotDisplay pot={gameContext.pot} rake={gameContext.rake} />
         </div>
