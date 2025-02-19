@@ -1,0 +1,132 @@
+.game-table-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vw;
+    height: 80vh;
+    max-width: 1200px;
+    max-height: 800px;
+    background: rgba(22, 42, 22, 0.95);
+    border: 8px solid #654321;
+    border-radius: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    overflow: visible; /* Allow buttons to be visible outside the container */
+}
+
+.player-positions {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.player-position {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid #987654;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-shadow: 1px 1px 2px black;
+}
+
+/* Position players in a circle */
+.player-position:nth-child(1) { top: 10%; left: 50%; }
+.player-position:nth-child(2) { top: 25%; left: 85%; }
+.player-position:nth-child(3) { top: 50%; left: 90%; }
+.player-position:nth-child(4) { top: 75%; left: 85%; }
+.player-position:nth-child(5) { top: 90%; left: 50%; }
+.player-position:nth-child(6) { top: 75%; left: 15%; }
+.player-position:nth-child(7) { top: 50%; left: 10%; }
+.player-position:nth-child(8) { top: 25%; left: 15%; }
+
+.community-cards {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 10px;
+}
+
+.card {
+    width: 70px;
+    height: 98px;
+    background: white;
+    border: 1px solid #333;
+    border-radius: 5px;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.game-info {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 10px;
+    color: white;
+    text-align: center;
+    min-width: 200px;
+}
+
+.game-phase {
+    font-size: 1.2em;
+    margin-bottom: 5px;
+}
+
+.pot-size {
+    font-size: 1.1em;
+    color: #ffd700;
+}
+
+.current-bet {
+    font-size: 1em;
+    color: #90ee90;
+}
+
+.action-buttons {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 101; /* Ensure buttons are above the table */
+    max-height: 60px; /* Limit button height */
+}
+
+.action-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    background: #2c5530;
+    color: white;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background 0.2s;
+    height: 48px; /* Fixed height for all buttons */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-button:hover {
+    background: #3a703f;
+}
+
+.action-button:disabled {
+    background: #1a321e;
+    cursor: not-allowed;
+} 

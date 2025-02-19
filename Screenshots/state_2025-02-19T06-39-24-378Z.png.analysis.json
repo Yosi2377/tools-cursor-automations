@@ -1,0 +1,26 @@
+{
+  "buttons": [
+    {
+      "text": "LOGOUT",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1809.4375,
+        "y": 16,
+        "width": 94.5625,
+        "height": 36
+      }
+    }
+  ],
+  "errors": [],
+  "hasGameTable": false,
+  "gameTableRect": null,
+  "cards": [],
+  "players": [],
+  "gameState": {
+    "hasStartButton": false,
+    "hasJoinButton": false,
+    "hasLeaveButton": false,
+    "hasActionButtons": false
+  }
+}

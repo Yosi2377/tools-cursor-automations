@@ -1,0 +1,48 @@
+{
+  "baseUrl": "http://localhost:8080",
+  "timeout": 30000,
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "auth": {
+    "enabled": true,
+    "selectors": {
+      "username": "input[type='text']",
+      "password": "input[type='password']",
+      "submit": "button[type='submit']"
+    },
+    "credentials": {
+      "username": "bigbaga123",
+      "password": "121212"
+    }
+  },
+  "gameActions": {
+    "join": {
+      "selector": "button:has-text('JOIN')",
+      "timeout": 5000,
+      "screenshot": true
+    },
+    "startHand": {
+      "selector": "button:has-text('start new hand')",
+      "timeout": 5000,
+      "screenshot": true
+    }
+  },
+  "monitoring": {
+    "console": {
+      "enabled": true,
+      "levels": ["error", "warning", "info", "log"]
+    },
+    "screenshots": {
+      "enabled": true,
+      "directory": "./Screenshots",
+      "format": "base64",
+      "interval": 5000
+    },
+    "performance": {
+      "enabled": true,
+      "metrics": ["FPS", "Memory", "CPU"]
+    }
+  }
+} 

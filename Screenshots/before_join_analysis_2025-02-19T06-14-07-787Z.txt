@@ -1,0 +1,159 @@
+{
+  "url": "http://localhost:8080/",
+  "elements": {
+    "players": 0,
+    "buttons": [
+      {
+        "text": "Logout",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Create Room",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Show Admin Panel",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Create Room",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      }
+    ],
+    "cards": 0,
+    "errors": []
+  },
+  "console": {
+    "errors": [],
+    "warnings": []
+  }
+}
