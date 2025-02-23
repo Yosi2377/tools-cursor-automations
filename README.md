@@ -1,39 +1,39 @@
-# בדיקות אוטומטיות למשחק פוקר
+# Automated Testing Framework
 
-כלי אוטומטי לבדיקת משחק פוקר באמצעות Playwright. הכלי מאפשר לבדוק את תקינות המשחק באופן אוטומטי.
+This is an automated testing tool using Playwright. The tool allows you to verify the functionality of your web application automatically.
 
-## דרישות מערכת
+## System Requirements
 
-- Node.js (גרסה 18 ומעלה)
-- npm (גרסה 9 ומעלה)
+- Node.js (version 18 or higher)
+- npm (version 9 or higher)
 
-## התקנה
+## Installation
 
 ```bash
-# התקנת הפרויקט
+# Clone the project
 git clone https://github.com/Yosi2377/new-web-test-cursor.git
 cd new-web-test-cursor
 npm install
 
-# התקנת Playwright
+# Install Playwright
 npx playwright install chromium
 ```
 
-## שימוש
+## Usage
 
-הרצת הבדיקות:
+Run the tests:
 
 ```bash
-# הרצת כל הבדיקות
+# Run all tests
 npm run test
 
-# הרצת הבדיקות עם שרת פיתוח
+# Run tests with development server
 npm run test:e2e
 ```
 
-## קונפיגורציה
+## Configuration
 
-ניתן להגדיר את הגדרות הבדיקה בקובץ `test-config.json`:
+You can configure the testing settings in the `test-config.json` file:
 
 ```json
 {
@@ -46,38 +46,38 @@ npm run test:e2e
 }
 ```
 
-## מבנה הפרויקט
+## Project Structure
 
 ```
 ├── src/
 │   └── utils/
-│       ├── errorHandler.js    # טיפול בשגיאות
-│       └── gameAnalyzer.js    # ניתוח מצב המשחק
-├── game-test.js              # בדיקות המשחק
-├── run-test.js              # הרצת הבדיקות
-├── test-config.json         # קונפיגורציה
-└── package.json             # תלויות הפרויקט
+│       ├── errorHandler.js    # Error handling
+│       └── gameAnalyzer.js    # Game state analysis
+├── game-test.js              # Game tests
+├── run-test.js              # Run tests
+├── test-config.json         # Configuration
+└── package.json             # Project dependencies
 ```
 
-## תכונות
+## Features
 
-- בדיקת התחברות אוטומטית
-- בדיקת הצטרפות לחדר
-- בדיקת מהלכי משחק
-- צילומי מסך אוטומטיים
-- ניתוח מצב המשחק
-- טיפול בשגיאות
-- תיקון אוטומטי של מיקום השולחן
+- Automatic login verification
+- Room joining verification
+- Game moves verification
+- Automatic screenshots
+- Game state analysis
+- Error handling
+- Automatic table positioning correction
 
-## דיווח על באגים
+## Bug Reporting
 
-אם מצאת באג, אנא פתח [issue](https://github.com/Yosi2377/new-web-test-cursor/issues) חדש עם:
-1. תיאור הבעיה
-2. צעדים לשחזור
-3. התנהגות צפויה
-4. התנהגות בפועל
-5. צילומי מסך (אם רלוונטי)
+If you find a bug, please open a new [issue](https://github.com/Yosi2377/new-web-test-cursor/issues) with:
+1. A description of the problem
+2. Steps to reproduce
+3. Expected behavior
+4. Actual behavior
+5. Screenshots (if relevant)
 
-## רישיון
+## License
 
 MIT
