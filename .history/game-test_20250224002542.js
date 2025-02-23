@@ -17,19 +17,10 @@ import { analyzeGameState } from './src/utils/gameAnalyzer.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/**
- * Pauses execution for a specified amount of time.
- * @param {number} ms - The number of milliseconds to sleep.
- */
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * Initializes the browser and opens a new page.
- * @returns {Object} - An object containing the browser, context, and page.
- * @throws {ConnectionError} - If the browser fails to initialize.
- */
 async function initializeBrowser() {
     try {
         const browser = await chromium.launch({ 
@@ -223,11 +214,6 @@ async function checkAndFixTablePosition(page) {
     return tablePosition;
 }
 
-/**
- * Analyzes a screenshot and decides the next action based on the game state.
- * @param {Object} page - The Playwright page object.
- * @param {string} screenshotName - The name of the screenshot taken.
- */
 async function analyzeScreenshotAndDecideAction(page, screenshotName) {
     const timestamp = new Date().toISOString().replace(/:/g, '-');
     const screenshotsDir = path.join(process.cwd(), 'Screenshots');

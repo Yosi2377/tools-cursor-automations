@@ -223,11 +223,6 @@ async function checkAndFixTablePosition(page) {
     return tablePosition;
 }
 
-/**
- * Analyzes a screenshot and decides the next action based on the game state.
- * @param {Object} page - The Playwright page object.
- * @param {string} screenshotName - The name of the screenshot taken.
- */
 async function analyzeScreenshotAndDecideAction(page, screenshotName) {
     const timestamp = new Date().toISOString().replace(/:/g, '-');
     const screenshotsDir = path.join(process.cwd(), 'Screenshots');

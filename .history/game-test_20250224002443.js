@@ -17,19 +17,10 @@ import { analyzeGameState } from './src/utils/gameAnalyzer.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/**
- * Pauses execution for a specified amount of time.
- * @param {number} ms - The number of milliseconds to sleep.
- */
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * Initializes the browser and opens a new page.
- * @returns {Object} - An object containing the browser, context, and page.
- * @throws {ConnectionError} - If the browser fails to initialize.
- */
 async function initializeBrowser() {
     try {
         const browser = await chromium.launch({ 
@@ -76,11 +67,6 @@ async function initializeBrowser() {
     }
 }
 
-/**
- * Logs into the application using the provided credentials from the configuration.
- * @param {Object} page - The Playwright page object.
- * @throws {ConnectionError} If login fails.
- */
 async function login(page) {
     try {
         const config = JSON.parse(fs.readFileSync(path.join(__dirname, 'test-config.json')));
@@ -109,30 +95,34 @@ async function login(page) {
     }
 }
 
-/**
- * Checks the position of the game table on the screen and fixes it if necessary.
- * @param {Object} page - The Playwright page object.
- * @returns {Object} - Information about whether the table was fixed and its new position.
- */
 async function checkAndFixTablePosition(page) {
     const tablePosition = await page.evaluate(() => {
         const table = document.querySelector('.game-table-container');
         if (!table) return null;
+
+        // Force any existing transitions to complete
         table.style.transition = 'none';
+
         const rect = table.getBoundingClientRect();
         const viewport = {
             width: window.innerWidth,
             height: window.innerHeight
         };
+
+        // Check if table is fully visible and centered
         const isFullyVisible = 
             rect.left >= 0 &&
             rect.top >= 0 &&
             rect.right <= viewport.width &&
             rect.bottom <= viewport.height;
+
         const isCentered = 
             Math.abs((viewport.width - rect.width) / 2 - rect.left) < 10 &&
             Math.abs((viewport.height - rect.height) / 2 - rect.top) < 10;
+
+        // If not fully visible or not centered, fix it
         if (!isFullyVisible || !isCentered) {
+            // First, ensure the table container has the correct styles
             const container = table.parentElement;
             if (container) {
                 container.style.position = 'fixed';
@@ -146,36 +136,52 @@ async function checkAndFixTablePosition(page) {
                 container.style.margin = '0';
                 container.style.padding = '0';
             }
+            
+            // Reset and force table styles
             table.style.position = 'relative';
             table.style.margin = '0 auto';
             table.style.transform = 'none';
+            table.style.top = 'auto';
+            table.style.left = 'auto';
             table.style.width = '900px';
             table.style.height = '580px';
+            
+            // Force layout recalculation
             table.style.display = 'none';
-            table.offsetHeight;
+            table.offsetHeight; // Force reflow
             table.style.display = '';
+            
+            // Re-enable transitions
             requestAnimationFrame(() => {
                 table.style.transition = '';
             });
+            
+            // Scroll into view if needed
             table.scrollIntoView({
                 behavior: 'auto',
                 block: 'center',
                 inline: 'center'
             });
+
+            // Force window scroll to center
             window.scrollTo({
                 top: (document.documentElement.scrollHeight - window.innerHeight) / 2,
                 left: (document.documentElement.scrollWidth - window.innerWidth) / 2,
                 behavior: 'auto'
             });
+            
+            // Take a screenshot after centering
+            const newRect = table.getBoundingClientRect();
             return {
                 wasFixed: true,
-                newRect: table.getBoundingClientRect(),
+                newRect,
                 fixes: {
                     position: !isFullyVisible,
                     centering: !isCentered
                 }
             };
         }
+
         return { 
             wasFixed: false, 
             rect,
@@ -183,25 +189,32 @@ async function checkAndFixTablePosition(page) {
             isCentered
         };
     });
+
     if (tablePosition && tablePosition.wasFixed) {
         console.log('📏 Fixed table position:', {
             newPosition: tablePosition.newRect,
             fixes: tablePosition.fixes
         });
+        
+        // Take a screenshot to verify the fix
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         await page.screenshot({ 
             path: `Screenshots/table_position_fixed_${timestamp}.png`,
             fullPage: true 
         });
+        
+        // Double check the position after a short delay
         await page.waitForTimeout(500);
         const verifyPosition = await page.evaluate(() => {
             const table = document.querySelector('.game-table-container');
             if (!table) return null;
+            
             const rect = table.getBoundingClientRect();
             const viewport = {
                 width: window.innerWidth,
                 height: window.innerHeight
             };
+            
             return {
                 rect,
                 isFullyVisible: 
@@ -214,20 +227,17 @@ async function checkAndFixTablePosition(page) {
                     Math.abs((viewport.height - rect.height) / 2 - rect.top) < 10
             };
         });
+        
         if (verifyPosition && (!verifyPosition.isFullyVisible || !verifyPosition.isCentered)) {
             console.log('⚠️ Table position still not perfect after fix:', verifyPosition);
         } else {
             console.log('✅ Table position verified');
         }
     }
+
     return tablePosition;
 }
 
-/**
- * Analyzes a screenshot and decides the next action based on the game state.
- * @param {Object} page - The Playwright page object.
- * @param {string} screenshotName - The name of the screenshot taken.
- */
 async function analyzeScreenshotAndDecideAction(page, screenshotName) {
     const timestamp = new Date().toISOString().replace(/:/g, '-');
     const screenshotsDir = path.join(process.cwd(), 'Screenshots');
