@@ -1,0 +1,187 @@
+{
+  "buttons": [
+    {
+      "text": "LOGOUT",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1759.8333740234375,
+        "y": 16,
+        "width": 144.1666717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "CREATE ROOM",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1759.8333740234375,
+        "y": 60,
+        "width": 144.1666717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "SHOW ADMIN PANEL",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1759.8333740234375,
+        "y": 104,
+        "width": 144.1666717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "LEAVE ROOM",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 16,
+        "y": 16,
+        "width": 126.66667175292969,
+        "height": 36
+      }
+    },
+    {
+      "text": "LEADERBOARD",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1750.5833740234375,
+        "y": 16,
+        "width": 153.4166717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "START NEW HAND",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 847.1354370117188,
+        "y": 1000,
+        "width": 225.7291717529297,
+        "height": 48
+      }
+    }
+  ],
+  "errors": [],
+  "hasGameTable": true,
+  "gameTableRect": {
+    "x": 460,
+    "y": 240,
+    "width": 1000,
+    "height": 600,
+    "top": 240,
+    "right": 1460,
+    "bottom": 840,
+    "left": 460
+  },
+  "cards": [],
+  "players": [
+    {
+      "position": {
+        "x": 978,
+        "y": 354,
+        "width": 108,
+        "height": 108,
+        "top": 354,
+        "right": 1086,
+        "bottom": 462,
+        "left": 978
+      }
+    },
+    {
+      "position": {
+        "x": 1178,
+        "y": 384,
+        "width": 108,
+        "height": 108,
+        "top": 384,
+        "right": 1286,
+        "bottom": 492,
+        "left": 1178
+      }
+    },
+    {
+      "position": {
+        "x": 1278,
+        "y": 558,
+        "width": 108,
+        "height": 108,
+        "top": 558,
+        "right": 1386,
+        "bottom": 666,
+        "left": 1278
+      }
+    },
+    {
+      "position": {
+        "x": 1178,
+        "y": 588,
+        "width": 108,
+        "height": 108,
+        "top": 588,
+        "right": 1286,
+        "bottom": 696,
+        "left": 1178
+      }
+    },
+    {
+      "position": {
+        "x": 978,
+        "y": 618,
+        "width": 108,
+        "height": 108,
+        "top": 618,
+        "right": 1086,
+        "bottom": 726,
+        "left": 978
+      }
+    },
+    {
+      "position": {
+        "x": 634,
+        "y": 588,
+        "width": 108,
+        "height": 108,
+        "top": 588,
+        "right": 742,
+        "bottom": 696,
+        "left": 634
+      }
+    },
+    {
+      "position": {
+        "x": 534,
+        "y": 558,
+        "width": 108,
+        "height": 108,
+        "top": 558,
+        "right": 642,
+        "bottom": 666,
+        "left": 534
+      }
+    },
+    {
+      "position": {
+        "x": 634,
+        "y": 384,
+        "width": 108,
+        "height": 108,
+        "top": 384,
+        "right": 742,
+        "bottom": 492,
+        "left": 634
+      }
+    }
+  ],
+  "gameState": {
+    "hasStartButton": true,
+    "hasJoinButton": false,
+    "hasLeaveButton": true,
+    "hasActionButtons": false
+  }
+}

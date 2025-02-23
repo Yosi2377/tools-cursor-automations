@@ -1,0 +1,90 @@
+{
+  "buttons": [
+    {
+      "text": "LOGOUT",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1759.8333740234375,
+        "y": 16,
+        "width": 144.1666717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "CREATE ROOM",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1759.8333740234375,
+        "y": 60,
+        "width": 144.1666717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "SHOW ADMIN PANEL",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1759.8333740234375,
+        "y": 104,
+        "width": 144.1666717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "LEAVE ROOM",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 16,
+        "y": 16,
+        "width": 126.66667175292969,
+        "height": 36
+      }
+    },
+    {
+      "text": "LEADERBOARD",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1750.5833740234375,
+        "y": 16,
+        "width": 153.4166717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "START NEW HAND",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 847.1354370117188,
+        "y": 1000,
+        "width": 225.7291717529297,
+        "height": 48
+      }
+    }
+  ],
+  "errors": [],
+  "hasGameTable": true,
+  "gameTableRect": {
+    "x": 0,
+    "y": 0,
+    "width": 1920,
+    "height": 1080,
+    "top": 0,
+    "right": 1920,
+    "bottom": 1080,
+    "left": 0
+  },
+  "cards": [],
+  "players": [],
+  "gameState": {
+    "hasStartButton": true,
+    "hasJoinButton": false,
+    "hasLeaveButton": true,
+    "hasActionButtons": false
+  }
+}

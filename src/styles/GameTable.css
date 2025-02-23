@@ -1,0 +1,80 @@
+.game-table-container {
+  transform-origin: center center;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(to bottom, #1a472a, #2d5a3f);
+}
+
+/* Player positions */
+.player-spot {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.player-spot:hover {
+  transform: scale(1.05);
+}
+
+.player-spot.active {
+  animation: pulse 2s infinite;
+}
+
+/* Cards */
+.card {
+  width: 70px;
+  height: 100px;
+  transition: transform 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card:hover {
+  transform: translateY(-10px) scale(1.05);
+}
+
+/* Buttons */
+.action-button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  background: linear-gradient(to bottom, #4a90e2, #357abd);
+  border: none;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.action-button:active {
+  transform: translateY(0);
+}
+
+/* Animations */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .game-table-container {
+    width: 90vw;
+    height: 90vh;
+  }
+  
+  .card {
+    width: 50px;
+    height: 70px;
+  }
+  
+  .player-spot {
+    width: 100px;
+    height: 100px;
+  }
+} 

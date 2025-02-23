@@ -1,0 +1,162 @@
+{
+  "timestamp": "2025-02-19T07:21:20.063Z",
+  "screenshot": "C:\\Users\\HP\\OneDrive\\מסמכים\\GitHub\\multipoker-magic-world-33\\Screenshots\\after_login_2025-02-19T07-21-19-652Z.png",
+  "state": {
+    "url": "http://localhost:8081/",
+    "title": "multipoker-magic-world",
+    "gameTable": {
+      "exists": false
+    },
+    "players": [],
+    "communityCards": 0,
+    "visibleButtons": [
+      {
+        "text": "Logout",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Create Room",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Show Admin Panel",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Create Room",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Join",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": false,
+        "visible": true
+      }
+    ],
+    "errors": []
+  },
+  "details": {}
+}

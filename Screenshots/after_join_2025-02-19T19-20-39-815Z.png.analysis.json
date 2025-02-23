@@ -1,0 +1,57 @@
+{
+  "timestamp": "2025-02-19T19:20:40.324Z",
+  "screenshot": "C:\\Users\\HP\\OneDrive\\מסמכים\\GitHub\\multipoker-magic-world-33\\Screenshots\\after_join_2025-02-19T19-20-39-815Z.png",
+  "state": {
+    "url": "http://localhost:8080/",
+    "title": "multipoker-magic-world",
+    "gameTable": {
+      "exists": true,
+      "dimensions": {
+        "x": 410,
+        "y": 190,
+        "width": 1100,
+        "height": 700,
+        "top": 190,
+        "right": 1510,
+        "bottom": 890,
+        "left": 410
+      }
+    },
+    "players": [],
+    "communityCards": 0,
+    "visibleButtons": [
+      {
+        "text": "Logout",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Create Room",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Show Admin Panel",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Leave Room",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Leaderboard",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Start New Hand",
+        "disabled": false,
+        "visible": true
+      }
+    ],
+    "errors": []
+  },
+  "details": {}
+}

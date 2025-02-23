@@ -1,0 +1,145 @@
+{
+  "buttons": [
+    {
+      "text": "LOGOUT",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1759.8333740234375,
+        "y": 16,
+        "width": 144.1666717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "CREATE ROOM",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1759.8333740234375,
+        "y": 60,
+        "width": 144.1666717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "SHOW ADMIN PANEL",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1759.8333740234375,
+        "y": 104,
+        "width": 144.1666717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "LEAVE ROOM",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 16,
+        "y": 16,
+        "width": 126.66667175292969,
+        "height": 36
+      }
+    },
+    {
+      "text": "LEADERBOARD",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1750.5833740234375,
+        "y": 16,
+        "width": 153.4166717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "FOLD",
+      "disabled": true,
+      "visible": true,
+      "position": {
+        "x": 715.8541870117188,
+        "y": 912,
+        "width": 99.34375,
+        "height": 48
+      }
+    },
+    {
+      "text": "CALL $40",
+      "disabled": true,
+      "visible": true,
+      "position": {
+        "x": 831.1979370117188,
+        "y": 912,
+        "width": 161.2916717529297,
+        "height": 48
+      }
+    },
+    {
+      "text": "RAISE TO $80",
+      "disabled": true,
+      "visible": true,
+      "position": {
+        "x": 1008.4896240234375,
+        "y": 912,
+        "width": 195.65625,
+        "height": 48
+      }
+    },
+    {
+      "text": "",
+      "disabled": true,
+      "visible": true,
+      "position": {
+        "x": 752,
+        "y": 992,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "",
+      "disabled": true,
+      "visible": true,
+      "position": {
+        "x": 992,
+        "y": 992,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "BET $0",
+      "disabled": true,
+      "visible": true,
+      "position": {
+        "x": 1048,
+        "y": 992,
+        "width": 120,
+        "height": 40
+      }
+    }
+  ],
+  "errors": [],
+  "hasGameTable": true,
+  "gameTableRect": {
+    "x": 16,
+    "y": 16,
+    "width": 1888,
+    "height": 1048,
+    "top": 16,
+    "right": 1904,
+    "bottom": 1064,
+    "left": 16
+  },
+  "cards": [],
+  "players": [],
+  "gameState": {
+    "hasStartButton": false,
+    "hasJoinButton": false,
+    "hasLeaveButton": true,
+    "hasActionButtons": true
+  }
+}

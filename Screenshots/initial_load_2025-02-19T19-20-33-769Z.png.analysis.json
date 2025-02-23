@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-02-19T19:20:34.118Z",
+  "screenshot": "C:\\Users\\HP\\OneDrive\\מסמכים\\GitHub\\multipoker-magic-world-33\\Screenshots\\initial_load_2025-02-19T19-20-33-769Z.png",
+  "state": {
+    "url": "http://localhost:8080/auth",
+    "title": "multipoker-magic-world",
+    "gameTable": {
+      "exists": false
+    },
+    "players": [],
+    "communityCards": 0,
+    "visibleButtons": [
+      {
+        "text": "Log In / Sign Up",
+        "disabled": false,
+        "visible": true
+      }
+    ],
+    "errors": []
+  },
+  "details": {}
+}

@@ -1,0 +1,334 @@
+{
+  "buttons": [
+    {
+      "text": "LOGOUT",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1759.8333740234375,
+        "y": 16,
+        "width": 144.1666717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "CREATE ROOM",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1759.8333740234375,
+        "y": 60,
+        "width": 144.1666717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "SHOW ADMIN PANEL",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1759.8333740234375,
+        "y": 104,
+        "width": 144.1666717529297,
+        "height": 36
+      }
+    },
+    {
+      "text": "",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1717.7708740234375,
+        "y": 16,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "CREATE ROOM",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1765.7708740234375,
+        "y": 16,
+        "width": 138.2291717529297,
+        "height": 40
+      }
+    },
+    {
+      "text": "JOIN",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 512.2604370117188,
+        "y": 124.66667175292969,
+        "width": 57.739585876464844,
+        "height": 40
+      }
+    },
+    {
+      "text": "",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 578,
+        "y": 124.66667175292969,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "JOIN",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1146.9271240234375,
+        "y": 124.66667175292969,
+        "width": 57.739585876464844,
+        "height": 40
+      }
+    },
+    {
+      "text": "",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1212.666748046875,
+        "y": 124.66667175292969,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "JOIN",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1781.59375,
+        "y": 124.66667175292969,
+        "width": 57.739585876464844,
+        "height": 40
+      }
+    },
+    {
+      "text": "",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1847.3333740234375,
+        "y": 124.66667175292969,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "JOIN",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 512.2604370117188,
+        "y": 250,
+        "width": 57.739585876464844,
+        "height": 40
+      }
+    },
+    {
+      "text": "",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 578,
+        "y": 250,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "JOIN",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1146.9271240234375,
+        "y": 250,
+        "width": 57.739585876464844,
+        "height": 40
+      }
+    },
+    {
+      "text": "",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1212.666748046875,
+        "y": 250,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "JOIN",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1781.59375,
+        "y": 250,
+        "width": 57.739585876464844,
+        "height": 40
+      }
+    },
+    {
+      "text": "",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1847.3333740234375,
+        "y": 250,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "JOIN",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 512.2604370117188,
+        "y": 375.3333435058594,
+        "width": 57.739585876464844,
+        "height": 40
+      }
+    },
+    {
+      "text": "",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 578,
+        "y": 375.3333435058594,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "JOIN",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1146.9271240234375,
+        "y": 375.3333435058594,
+        "width": 57.739585876464844,
+        "height": 40
+      }
+    },
+    {
+      "text": "",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1212.666748046875,
+        "y": 375.3333435058594,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "JOIN",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1781.59375,
+        "y": 375.3333435058594,
+        "width": 57.739585876464844,
+        "height": 40
+      }
+    },
+    {
+      "text": "",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1847.3333740234375,
+        "y": 375.3333435058594,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "JOIN",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 512.2604370117188,
+        "y": 500.66668701171875,
+        "width": 57.739585876464844,
+        "height": 40
+      }
+    },
+    {
+      "text": "",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 578,
+        "y": 500.66668701171875,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "JOIN",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1146.9271240234375,
+        "y": 500.66668701171875,
+        "width": 57.739585876464844,
+        "height": 40
+      }
+    },
+    {
+      "text": "",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1212.666748046875,
+        "y": 500.66668701171875,
+        "width": 40,
+        "height": 40
+      }
+    },
+    {
+      "text": "JOIN",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1781.59375,
+        "y": 500.66668701171875,
+        "width": 57.739585876464844,
+        "height": 40
+      }
+    },
+    {
+      "text": "",
+      "disabled": false,
+      "visible": true,
+      "position": {
+        "x": 1847.3333740234375,
+        "y": 500.66668701171875,
+        "width": 40,
+        "height": 40
+      }
+    }
+  ],
+  "errors": [],
+  "hasGameTable": false,
+  "gameTableRect": null,
+  "cards": [],
+  "players": [],
+  "gameState": {
+    "hasStartButton": false,
+    "hasJoinButton": true,
+    "hasLeaveButton": false,
+    "hasActionButtons": false
+  }
+}

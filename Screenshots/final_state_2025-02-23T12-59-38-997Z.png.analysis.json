@@ -1,0 +1,132 @@
+{
+  "timestamp": "2025-02-23T12:59:39.987Z",
+  "screenshot": "C:\\Users\\HP\\OneDrive\\מסמכים\\GitHub\\multipoker-magic-world-33\\Screenshots\\final_state_2025-02-23T12-59-38-997Z.png",
+  "state": {
+    "url": "http://localhost:8080/",
+    "title": "multipoker-magic-world",
+    "gameTable": {
+      "exists": true,
+      "dimensions": {
+        "x": 288,
+        "y": 36,
+        "width": 1344,
+        "height": 1008,
+        "top": 36,
+        "right": 1632,
+        "bottom": 1044,
+        "left": 288
+      }
+    },
+    "players": [
+      {
+        "position": "bottom",
+        "isActive": false,
+        "isTurn": false,
+        "cards": 2
+      },
+      {
+        "position": "bottomLeft",
+        "isActive": false,
+        "isTurn": false,
+        "cards": 2
+      },
+      {
+        "position": "left",
+        "isActive": false,
+        "isTurn": false,
+        "cards": 2
+      },
+      {
+        "position": "topLeft",
+        "isActive": false,
+        "isTurn": false,
+        "cards": 2
+      },
+      {
+        "position": "top",
+        "isActive": false,
+        "isTurn": false,
+        "cards": 2
+      },
+      {
+        "position": "topRight",
+        "isActive": false,
+        "isTurn": false,
+        "cards": 2
+      },
+      {
+        "position": "right",
+        "isActive": false,
+        "isTurn": false,
+        "cards": 2
+      },
+      {
+        "position": "bottomRight",
+        "isActive": false,
+        "isTurn": false,
+        "cards": 2
+      }
+    ],
+    "communityCards": 0,
+    "pot": "$0",
+    "visibleButtons": [
+      {
+        "text": "Logout",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Create Room",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Show Admin Panel",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Leave Room",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Leaderboard",
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "text": "Fold",
+        "disabled": true,
+        "visible": true
+      },
+      {
+        "text": "Call $20",
+        "disabled": true,
+        "visible": true
+      },
+      {
+        "text": "Raise to $40",
+        "disabled": true,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": true,
+        "visible": true
+      },
+      {
+        "text": "",
+        "disabled": true,
+        "visible": true
+      },
+      {
+        "text": "Bet $0",
+        "disabled": true,
+        "visible": true
+      }
+    ],
+    "errors": []
+  },
+  "details": {}
+}
