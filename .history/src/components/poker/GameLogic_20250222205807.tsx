@@ -78,7 +78,7 @@ export const useGameLogic = (
 
       toast.success("New hand started");
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error starting new hand:', error);
       toast.error("Failed to start new hand");
     }
@@ -149,7 +149,7 @@ export const useGameLogic = (
         }));
 
         toast.success(`${stage} dealt!`);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error dealing community cards:', error);
         toast.error('Failed to deal community cards');
       }
@@ -162,10 +162,10 @@ export const useGameLogic = (
   };
 };
 
-const getPositionForIndex = (index: number, totalPlayers: number) => {
+const getPositionForIndex = (index: number, totalPlayers: number): string => {
   const positions = [
     'bottom', 'bottomRight', 'right', 'topRight',
     'top', 'topLeft', 'left', 'bottomLeft'
   ];
-  return positions[index % positions.length] as any;
+  return positions[index % positions.length] as string;
 };
